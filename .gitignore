@@ -1,0 +1,10 @@
+.DS_Store
+*~
+*.log
+target/
+build/
+dist/
+temp/
+test/
+components/
+node_modules/
