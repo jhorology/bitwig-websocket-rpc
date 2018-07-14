@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-install</actionName>
+            <displayName>install</displayName>
+            <recursive>false</recursive>
+            <goals>
+                <goal>install:install-file</goal>
+            </goals>
+        </action>
+    </actions>

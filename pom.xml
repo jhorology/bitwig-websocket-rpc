@@ -52,13 +52,30 @@
       <groupId>com.bitwig</groupId>
       <artifactId>extension-api</artifactId>
       <version>6</version>
-      <scope>provided</scope>
+      <scope>provided</scope> <!-- provided by bitwig.jar -->
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>18.0</version>
-      <scope>provided</scope>
+      <scope>provided</scope> <!-- provided by libs.jar -->
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.1</version>
+      <scope>provided</scope> <!-- provided by libs.jar -->
+    </dependency>
+    <dependency>
+      <groupId>org.msgpack</groupId>
+      <artifactId>msgpack</artifactId>
+      <version>0.6.11</version>
+      <scope>provided</scope> <!-- provided by libs.jar -->
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.5</version>
     </dependency>
     <dependency>
       <groupId>org.java-websocket</groupId>
@@ -74,12 +91,11 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.5.1</version>
         <configuration>
-          <optimize>true</optimize>
-          <fork>true</fork>
+          <debug>true</debug>
+          <debuglevel>lines,vars,source</debuglevel>
           <source>1.8</source>
           <target>1.8</target>
           <encoding>UTF-8</encoding>
-          <maxmem>1024m</maxmem>
         </configuration>
       </plugin>
 
@@ -87,11 +103,6 @@
         <artifactId>maven-assembly-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
-          <!-- <archive> -->
-          <!--   <manifest> -->
-          <!--     <mainClass>fully.qualified.MainClass</mainClass> -->
-          <!--   </manifest> -->
-          <!-- </archive> -->
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
           </descriptorRefs>
@@ -119,7 +130,7 @@
             </goals>
             <configuration>
               <sourceFile>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</sourceFile>
-              <destinationFile>${bitwig.extension.directory}/WebSocketServer.bwextension</destinationFile>
+              <destinationFile>${bitwig.extension.directory}/WebSocketRpcServer.bwextension</destinationFile>
             </configuration>
           </execution>
         </executions>
@@ -134,12 +145,4 @@
       <url>https://maven.bitwig.com</url>
     </repository>
   </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>onejar-maven-plugin.googlecode.com</id>
-      <url>https://github.com/jolira/onejar-maven-plugin</url>
-    </pluginRepository>
-  </pluginRepositories>
-
 </project>

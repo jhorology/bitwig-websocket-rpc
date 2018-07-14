@@ -1,9 +1,5 @@
 package com.github.jhorology.bitwig.extension;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Stack;
 import java.util.concurrent.Executor;
 
@@ -16,6 +12,7 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 public abstract class AbstractExtension extends ControllerExtension implements SubscriberExceptionHandler {
+    private static final Logger log = Logger.getLogger(AbstractExtension.class);
     private final EventBus eventBus;
     private final InitEvent initEvent;
     private final ExitEvent exitEvent;
@@ -32,10 +29,11 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         super(definition, host);
         this.modules = new Stack<>();
         eventBus = new EventBus(this);
-        executor = new ExtensionThreadExecutor();
+        executor = new ExtensionThreadExecutor(host);
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
+        Logger.init(host, Logger.TRACE);
     }
 
     /**
@@ -66,7 +64,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         
     @Override
     public void init() {
-        registerModule(executor);
         registerModules();
         eventBus.post(initEvent);
     }
@@ -87,32 +84,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     @Override
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
-        log( "extension event handling error. event:" +  context.getEvent().toString(), ex);
-    }
-    
-    public void log(String msg) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-        sb.append(" ");
-        sb.append(Thread.currentThread().getName());
-        sb.append(" ");
-        sb.append(msg);
-        getHost().println(sb.toString());
-    }
-
-    public void log(String msg, Throwable ex) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        pw.flush();
-        log(msg + "\n" + pw.toString());
-    }
-
-    public void log(Throwable ex) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        pw.flush();
-        log(sw.toString());
+        log.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
     }
 }

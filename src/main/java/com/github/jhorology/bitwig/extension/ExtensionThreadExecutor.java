@@ -1,25 +1,17 @@
 package com.github.jhorology.bitwig.extension;
 import java.util.concurrent.Executor;
-import com.google.common.eventbus.Subscribe;
-import java.util.ArrayDeque;
-import java.util.Queue;
+import com.bitwig.extension.controller.api.ControllerHost;
 
 public class ExtensionThreadExecutor implements Executor {
-    final Queue<Runnable> tasks = new ArrayDeque<Runnable>();
+    private final ControllerHost host;
     
-    public ExtensionThreadExecutor() {
+    public ExtensionThreadExecutor(ControllerHost host) {
+        this.host = host;
     }
     
     @Override
     public synchronized void execute(Runnable command) {
-        tasks.offer(command);
-    }
-
-    @Subscribe
-    public synchronized void onFlush(FlushEvent e) {
-        Runnable task;
-        while((task = tasks.poll()) != null) {
-            task.run();
-        }
+        // maybe not callable from extension thread.
+        host.scheduleTask( command, 0L);
     }
 }
