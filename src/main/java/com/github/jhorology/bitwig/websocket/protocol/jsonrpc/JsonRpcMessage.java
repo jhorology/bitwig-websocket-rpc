@@ -3,8 +3,6 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 import com.google.gson.annotations.Expose;
 
 public abstract class JsonRpcMessage {
-    protected static final String version = "2.0";
-    
     @Expose
     protected String jsonrpc;
 

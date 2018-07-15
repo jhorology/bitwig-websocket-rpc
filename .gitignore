@@ -8,3 +8,7 @@ temp/
 test/
 components/
 node_modules/
+.classpath
+.project
+.settings/
+nbaction.xml

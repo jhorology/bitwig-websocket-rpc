@@ -2,20 +2,23 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 import java.lang.reflect.Type;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
-import com.github.jhorology.bitwig.reflect.MethodInvoker;
+import com.github.jhorology.bitwig.reflect.MethodHolder;
 import com.github.jhorology.bitwig.reflect.MethodRegistry;
 
-public class RequestAdapter implements JsonDeserializer<Request>, JsonSerializer<Request> {
+public class RequestAdapter implements JsonDeserializer<Request> {
+    private final MethodRegistry methodRegistry;
+    
+    public RequestAdapter(MethodRegistry methodRegistry) {
+        this.methodRegistry = methodRegistry;
+    }
+    
     @Override
     public Request deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Request req = new Request();
@@ -43,16 +46,16 @@ public class RequestAdapter implements JsonDeserializer<Request>, JsonSerializer
             req.setMethod(method.getAsString());
             
             JsonElement params = obj.get("params");
-            int parameterCount = 0;
+            int paramCount = 0;
             if (params == null) {
             } else if (params.isJsonArray()) {
                 // "params": [1, 2]
-                parameterCount = params.getAsJsonArray().size();
-                if (parameterCount == 0)
+                paramCount = params.getAsJsonArray().size();
+                if (paramCount == 0)
                     throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty array.");
             } else if (params.isJsonObject()) {
                 // "params": {"arg1":1, "arg2": 2]
-                parameterCount = 1;
+                paramCount = 1;
                 if (params.getAsJsonObject().entrySet().isEmpty())
                     throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
             } else
@@ -70,22 +73,21 @@ public class RequestAdapter implements JsonDeserializer<Request>, JsonSerializer
                 req.setId(id.getAsInt());
             }
             
-            MethodInvoker invoker = MethodRegistry.getInstance()
-                .getMethodInvoker(req.getMethod(), parameterCount);
-            if (invoker == null)
+            MethodHolder methodHolder = methodRegistry.getMethod(req.getMethod(), paramCount);
+            if (methodHolder == null)
                 throw new JsonRpcException(ErrorEnum.METHOD_NOT_FOUND, "'" + req.getMethod() + "' method not found.");
-            req.setMethodInvoker(invoker);
+            req.setMethodHolder(methodHolder);
             
             if (params != null) {
-                Class<?> [] parameterTypes = invoker.getParameterTypes();
+                Type[] paramTypes = methodHolder.getParamTypes();
                 if (params.isJsonArray()) {
-                    Object[] args = new Object[parameterCount];
-                    for(int i = 0; i < parameterCount; i++) {
-                        args[i] = context.deserialize(params.getAsJsonArray().get(i), parameterTypes[i]);
+                    Object[] args = new Object[paramCount];
+                    for(int i = 0; i < paramCount; i++) {
+                        args[i] = context.deserialize(params.getAsJsonArray().get(i), paramTypes[i]);
                     }
                     req.setParams(args);
                 } else {
-                    req.setParams(context.deserialize(params, parameterTypes[0]));
+                    req.setParams(context.deserialize(params, paramTypes[0]));
                 }
             }
         } catch (JsonParseException ex) {
@@ -94,13 +96,6 @@ public class RequestAdapter implements JsonDeserializer<Request>, JsonSerializer
             req.setError(ex.getError());
         }
         return req;
-    }
-
-    @Override
-    public JsonElement serialize(Request src, Type typeOfSrc, JsonSerializationContext context) {
-        // a temporary step
-        JsonElement json = context.serialize(src);
-        return json;
     }
 }
 

@@ -4,20 +4,24 @@ import java.lang.reflect.Method;
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 
-import com.github.jhorology.bitwig.reflect.MethodInvoker;
+import com.github.jhorology.bitwig.reflect.MethodHolder;
 
 /**
  *  https://www.jsonrpc.org/specification
  */
-public class Request extends JsonRpcMessage {
+public class Request {
+    @Expose
+    protected String jsonrpc;
     @Expose
     private String method;
     @Expose
     private Object params;
+    @Expose
+    protected Object id;
     
     private boolean notify;
     private Error error;
-    private MethodInvoker methodInvoker;
+    private MethodHolder methodHolder;
     private Method rpcMethod;
         
     public Request() {
@@ -32,6 +36,10 @@ public class Request extends JsonRpcMessage {
         return jsonrpc;
     }
     
+    public void setJsonrpc(String jsonrpc) {
+        this.jsonrpc = jsonrpc;
+    }
+    
     public String getMethod() {
         return method;
     }
@@ -43,9 +51,21 @@ public class Request extends JsonRpcMessage {
     public Object getParams() {
         return params;
     }
-    
+
     public void setParams(Object params) {
         this.params = params;
+    }
+    
+    public Object getId() {
+        return id;
+    }
+    
+    public void setId(Integer id) {
+        this.id = id;
+    }
+    
+    public void setId(String id) {
+        this.id = id;
     }
     
     public Object[] getArgs() {
@@ -66,12 +86,12 @@ public class Request extends JsonRpcMessage {
         this.error = error;
     }
 
-    public MethodInvoker getMethodInvoker() {
-        return methodInvoker;
+    public MethodHolder getMethodHolder() {
+        return methodHolder;
     }
 
-    public void setMethodInvoker(MethodInvoker methodInvoker) {
-        this.methodInvoker = methodInvoker;
+    public void setMethodHolder(MethodHolder methodHolder) {
+        this.methodHolder = methodHolder;
     }
 
     public boolean hasError() {

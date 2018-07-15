@@ -1,29 +1,38 @@
 package com.github.jhorology.bitwig.reflect;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
 import com.github.jhorology.bitwig.extension.Logger;
 
 public class TestImpl implements Test {
     private static final Logger log = Logger.getLogger(TestImpl.class);
     
     @Override
+    public String echo(String message) {
+        log.info("echo(String message=" + message + ")");
+        return message;
+    }
+
+    @Override
     public void doSomething() {
         log.info("doSomething()");
     }
 
     @Override
-    public void doSomething(int a) {
-        log.info("doSomething(int a=" + a + ")");
+    public void doSomethingWithInt(int a) {
+        log.info("doSomethingWithInt(" + a + ")");
     }
 
     @Override
-    public void doSomething(int a, int b) {
-        log.info("doSomething(int a=" + a + ", b=" + b + ")");
+    public void doSomethingWithIntPair(IntPair pair) {
+        log.info("doSomethingWithIntPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
     }
     
     @Override
-    public int sum(ImmutablePair<Integer, Integer> pair) {
+    public void doSomethingWithGenericPair(GenericPair<Integer, Integer> pair) {
+        log.info("doSomethingWithGenericPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
+    }
+    
+    @Override
+    public int sum(IntPair pair) {
         log.info("sum({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
         return sum(pair.getLeft(), pair.getRight());
     }
@@ -41,7 +50,7 @@ public class TestImpl implements Test {
     }
     
     @Override
-    public String concat(ImmutablePair<String, String> pair) {
+    public String concat(GenericPair<String, String> pair) {
         log.info("concat({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
         return concat(pair.getLeft(), pair.getRight());
     }
@@ -53,7 +62,7 @@ public class TestImpl implements Test {
     }
 
     @Override
-    public String repeat(ImmutablePair<String, Integer> pair) {
+    public String repeat(GenericPair<String, Integer> pair) {
         log.info("repeat{left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
         return repeat(pair.getLeft(), pair.getRight());
     }

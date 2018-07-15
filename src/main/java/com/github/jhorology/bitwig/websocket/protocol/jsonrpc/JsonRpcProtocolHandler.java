@@ -1,6 +1,5 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,30 +9,57 @@ import com.google.gson.GsonBuilder;
 import org.java_websocket.WebSocket;
 
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.MethodInvoker;
+import com.github.jhorology.bitwig.reflect.MethodHolder;
+import com.github.jhorology.bitwig.websocket.CloseEvent;
+import com.github.jhorology.bitwig.websocket.OpenEvent;
+import com.github.jhorology.bitwig.websocket.StartEvent;
+import com.github.jhorology.bitwig.websocket.StopEvent;
 import com.github.jhorology.bitwig.websocket.StringMessageEvent;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 
 public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
     public static final String JSONRPC_VERSION = "2.0";
         
-    private static final Logger log = Logger.getLogger(JsonRpcProtocolHandler.class);
-    private static JsonRpcProtocolHandler instance = new JsonRpcProtocolHandler();
+    private Logger log;
 
-    private final Gson gson;
+    private Gson gson;
     
-    private JsonRpcProtocolHandler() {
+    @Subscribe
+    public void onStart(StartEvent e) {
+        log = Logger.getLogger(this.getClass());
         GsonBuilder gsonBuilder = new GsonBuilder()
             .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestDeserializer())
-            .registerTypeAdapter(Request.class, new RequestAdapter());
+            .registerTypeAdapter(Request.class, new RequestAdapter(e.getMethodRegistry()));
         gson = gsonBuilder.create();
     }
-
-    public static JsonRpcProtocolHandler getInstance() {
-        return instance;
+    
+    @Subscribe
+    public void onStop(StopEvent e) {
+        gson = null;
+        log = null;
     }
-
+    
+    @Subscribe
+    public void onOpen(OpenEvent e) {
+        if (log.isTraceEnabled()) {
+            WebSocket conn = e.getConnection();
+            log.trace("new connection. remoteAddress:" + conn.getRemoteSocketAddress() +
+                      "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
+        }
+    }
+    
+    @Subscribe
+    public void onClose(CloseEvent e) {
+        if (log.isTraceEnabled()) {
+            WebSocket conn = e.getConnection();
+            log.trace("connection closed. remoteAddress:" + conn.getRemoteSocketAddress() +
+                      "\ncode:" + e.getCode() +
+                      "\nreason:" + e.getReason() +
+                      "\nremote:" + e.isRemote());
+        }
+    }
+    
     @Subscribe
     public void onMessage(StringMessageEvent e) {
         WebSocket conn = e.getConnection();
@@ -80,7 +106,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         if (req.hasError()) {
             return new Response(req.getError(), req.getId());
         }
-        MethodInvoker method = req.getMethodInvoker();
+        MethodHolder method = req.getMethodHolder();
         Object result;
         try {
             result = method.invoke(req.getArgs());

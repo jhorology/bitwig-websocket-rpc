@@ -10,11 +10,30 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.function.Consumer;
 
+/**
+ * 
+ */
 public class Logger {
+    
+    /**
+     * severity level of trace
+     */
     public static final int TRACE = 0;
+    
+    /**
+     * severity level of info
+     */
     public static final int INFO = 1;
+    
+    /**
+     * severity level of warning
+     */
     public static final int WARN = 2;
+    /**
+     * severity level of error
+     */
     public static final int ERROR = 3;
+    
     private static final String[] SEVERITIES = {"T","I","W","E"};
     private static final int COLUMN_SIZE = 94;
     private static final String INDENT_PREFIX = " > ";
@@ -33,53 +52,103 @@ public class Logger {
         this.clazz = clazz;
     }
 
+    /**
+     * get a logger instance.
+     * @param clazz
+     * @return 
+     */
     public static Logger getLogger(Class<?> clazz) {
         return new Logger(clazz);
     }
 
+    /**
+     * initialize the logger.
+     * @param host
+     * @param level 
+     */
     static void init(ControllerHost host, int level) {
         Logger.host = host;
         Logger.level = level;
+        // is this safe?
+        // maybe not callable from other than extension thread.
         std = (s) -> {host.println(s);};
         err = (s) -> {host.errorln(s);};
     }
     
+    /**
+     * Is trace logging currently enabled?
+     * @return 
+     */
     public boolean isTraceEnabled() {
         return level <= TRACE;
     }
+    
+    /**
+     * Is info logging currently enabled?
+     * @return 
+     */
     public boolean isInfoEnabled() {
         return level <= INFO;
     }
+    
+    /**
+     * Is warning logging currently enabled?
+     * @return 
+     */
     public boolean isWarnEnabled() {
         return level <= WARN;
     }
     
+    /**
+     * Logs a trace message.
+     * @param msg
+     */
     public void trace(String msg) {
         if (level <= TRACE) {
-            log(createLogString(TRACE, msg), std);
+            log(formatLog(TRACE, msg), std);
         }
     }
     
+    /**
+     * Logs a info message.
+     * @param msg
+     */
     public void info(String msg) {
         if (level <= INFO) {
-            log(createLogString(INFO, msg), std);
+            log(formatLog(INFO, msg), std);
         }
     }
     
+    /**
+     * Logs a warning message.
+     * @param msg
+     */
     public void warn(String msg) {
         if (level <= WARN) {
-            log(createLogString(WARN, msg), std);
+            log(formatLog(WARN, msg), std);
         }
     }
 
+    /**
+     * Logs an error message.
+     * @param msg
+     */
     public void error(String msg) {
-        log(createLogString(ERROR, msg), err);
+        log(formatLog(ERROR, msg), err);
     }
     
+    /**
+     * Logs an error message with exception.
+     * @param msg
+     */
     public void error(String msg, Throwable ex) {
         error(msg + "\n" + createStackTraceString(ex));
     }
 
+    /**
+     * Logs an exception.
+     * @param msg
+     */
     public void error(Throwable ex) {
         error(createStackTraceString(ex));
     }
@@ -92,7 +161,13 @@ public class Logger {
         return sw.toString();
     }
     
-    private String createLogString(int severity, String msg) {
+    /**
+     * 
+     * @param severity
+     * @param msg
+     * @return 
+     */
+    private String formatLog(int severity, String msg) {
         StringBuilder sb = new StringBuilder();
         sb.append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
         sb.append("|");

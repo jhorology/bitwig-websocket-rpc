@@ -6,13 +6,10 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.eventbus.SubscriberExceptionContext;
-
-import com.bitwig.extension.controller.api.Transport;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.framing.Framedata;
@@ -23,6 +20,7 @@ import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.reflect.MethodRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 
 public class WebSocketRpcServer extends WebSocketServer implements SubscriberExceptionHandler {
@@ -31,15 +29,19 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private AbstractProtocolHandler protocol;
-    private Transport transport;
+    private MethodRegistry methodRegistry;
+
+    private WebSocketRpcServer() {
+    }
     
-    public WebSocketRpcServer(int port, AbstractProtocolHandler protocol) throws UnknownHostException {
-        this(new InetSocketAddress(port), protocol);
+    public WebSocketRpcServer(int port, AbstractProtocolHandler protocol, MethodRegistry methodRegistry) throws UnknownHostException {
+        this(new InetSocketAddress(port), protocol, methodRegistry);
     }
 
-    public WebSocketRpcServer(InetSocketAddress address, AbstractProtocolHandler protocol) {
+    public WebSocketRpcServer(InetSocketAddress address, AbstractProtocolHandler protocol, MethodRegistry methodRegistry) {
         super(address);
         this.protocol = protocol;
+        this.methodRegistry = methodRegistry;
     }
 
     @Subscribe
@@ -47,10 +49,6 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
         extension = e.getExtension();
         eventBus = new AsyncEventBus(extension.getExecutor(), this);
         eventBus.register(protocol);
-        transport = extension.getHost().createTransport();
-        Arrays.stream(Transport.class.getMethods()).forEach((method) -> {
-                log.info(method.getName());
-            });
         start();
         log.info("WebSocket RPC server started.");
     }
@@ -71,7 +69,14 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     }
 
     @Override
+    public void run() {
+        super.run();
+        eventBus.post(new StopEvent());
+    }
+
+    @Override
     public void onStart() {
+        eventBus.post(new StartEvent(methodRegistry));
     }
 
     @Override
@@ -82,7 +87,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
     }
-
+    
     @Override
     public void onMessage(WebSocket conn, String message) {
         eventBus.post(new StringMessageEvent(conn, message));
@@ -99,9 +104,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
 
     @Override
     public void onError(WebSocket conn, Exception ex) {
-        if( conn != null ) {
-            eventBus.post(new ErrorEvent(conn, ex));
-        }
+        eventBus.post(new ErrorEvent(conn, ex));
     }
 
     @Override

@@ -6,10 +6,16 @@ import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
+/**
+ * 
+ */
 public class WebSocketRpcServerExtensionDefinition extends ControllerExtensionDefinition
 {
     private static final UUID DRIVER_ID = UUID.fromString("68aa62d8-5a50-48d4-b9e4-9d684307f7ce");
    
+    /**
+     * default constructor
+     */
     public WebSocketRpcServerExtensionDefinition() {
     }
 
