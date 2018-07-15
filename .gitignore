@@ -5,7 +5,6 @@ target/
 build/
 dist/
 temp/
-test/
 components/
 node_modules/
 .classpath
