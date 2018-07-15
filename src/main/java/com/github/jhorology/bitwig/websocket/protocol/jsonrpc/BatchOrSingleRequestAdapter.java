@@ -10,7 +10,7 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
-public class BatchOrSingleRequestDeserializer implements JsonDeserializer<BatchOrSingleRequest> {
+public class BatchOrSingleRequestAdapter implements JsonDeserializer<BatchOrSingleRequest> {
     @Override
     public BatchOrSingleRequest deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         BatchOrSingleRequest req = new BatchOrSingleRequest();

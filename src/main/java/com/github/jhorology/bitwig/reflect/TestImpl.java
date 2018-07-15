@@ -12,23 +12,23 @@ public class TestImpl implements Test {
     }
 
     @Override
-    public void doSomething() {
-        log.info("doSomething()");
+    public void notifies() {
+        log.info("notifies()");
     }
 
     @Override
-    public void doSomethingWithInt(int a) {
-        log.info("doSomethingWithInt(" + a + ")");
+    public void notifies(int a) {
+        log.info("notifies(" + a + ")");
     }
 
     @Override
-    public void doSomethingWithIntPair(IntPair pair) {
-        log.info("doSomethingWithIntPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
+    public void notifiesWithIntPair(IntPair pair) {
+        log.info("notifiesWithIntPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
     }
     
     @Override
-    public void doSomethingWithGenericPair(GenericPair<Integer, Integer> pair) {
-        log.info("doSomethingWithGenericPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
+    public void notifiesWithGenericPair(GenericPair<Integer, Integer> pair) {
+        log.info("notifiesWithGenericPair({left:" + pair.getLeft() + ", right:" + pair.getRight() + "})");
     }
     
     @Override

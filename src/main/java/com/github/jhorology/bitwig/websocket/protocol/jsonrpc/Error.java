@@ -14,9 +14,9 @@ public class Error {
     private Object data;
 
     public Error(ErrorEnum error, Object data) {
-        code = error.getCode();
-        message = error.getMessage();
-        data = data;
+        this.code = error.getCode();
+        this.message = error.getMessage();
+        this.data = data;
     }
     
     public Error(ErrorEnum error) {

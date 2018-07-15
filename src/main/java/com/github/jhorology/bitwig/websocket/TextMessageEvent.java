@@ -2,10 +2,10 @@ package com.github.jhorology.bitwig.websocket;
 
 import org.java_websocket.WebSocket;
 
-public class StringMessageEvent extends AbstractWebSocketEvent {
+public class TextMessageEvent extends AbstractWebSocketEvent {
     private final String message;
     
-    StringMessageEvent(WebSocket conn, String message) {
+    TextMessageEvent(WebSocket conn, String message) {
         super(conn);
         this.message = message;
     }

@@ -169,11 +169,11 @@ public class Logger {
      */
     private String formatLog(int severity, String msg) {
         StringBuilder sb = new StringBuilder();
-        sb.append(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME));
+        sb.append((LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "   ").substring(0, 12));
         sb.append("|");
         sb.append(SEVERITIES[severity]);
         sb.append("|");
-        sb.append(clazz.getName());
+        sb.append(clazz.getSimpleName());
         sb.append("|");
         sb.append(Thread.currentThread().getName());
         sb.append("|");

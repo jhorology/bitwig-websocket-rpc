@@ -86,20 +86,17 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        eventBus.post(new CloseEvent(conn, code, reason, remote));
     }
     
     @Override
     public void onMessage(WebSocket conn, String message) {
-        eventBus.post(new StringMessageEvent(conn, message));
-    }
-
-    public void onFragment(WebSocket conn, Framedata fragment) {
-        eventBus.post(new FragmentEvent(conn, fragment));
+        eventBus.post(new TextMessageEvent(conn, message));
     }
 
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
-        eventBus.post(new BufferMessageEvent(conn, message));
+        eventBus.post(new BinaryMessageEvent(conn, message));
     }
 
     @Override

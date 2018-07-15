@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 
 import com.github.jhorology.bitwig.extension.Logger;
@@ -14,7 +15,7 @@ import com.github.jhorology.bitwig.websocket.CloseEvent;
 import com.github.jhorology.bitwig.websocket.OpenEvent;
 import com.github.jhorology.bitwig.websocket.StartEvent;
 import com.github.jhorology.bitwig.websocket.StopEvent;
-import com.github.jhorology.bitwig.websocket.StringMessageEvent;
+import com.github.jhorology.bitwig.websocket.TextMessageEvent;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 
 public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
@@ -28,9 +29,11 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
     public void onStart(StartEvent e) {
         log = Logger.getLogger(this.getClass());
         GsonBuilder gsonBuilder = new GsonBuilder()
+            .serializeNulls()
             .excludeFieldsWithoutExposeAnnotation()
-            .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestDeserializer())
-            .registerTypeAdapter(Request.class, new RequestAdapter(e.getMethodRegistry()));
+            .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
+            .registerTypeAdapter(Request.class, new RequestAdapter(e.getMethodRegistry()))
+            .registerTypeAdapter(Response.class, new ResponseAdapter());
         gson = gsonBuilder.create();
     }
     
@@ -61,16 +64,40 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
     }
     
     @Subscribe
-    public void onMessage(StringMessageEvent e) {
+    public void onMessage(TextMessageEvent e) {
         WebSocket conn = e.getConnection();
         String message = e.getMessage();
         if (log.isTraceEnabled()) {
             log.trace("onMessage\n" + message);
         }
-        BatchOrSingleRequest req = gson.fromJson(message, BatchOrSingleRequest.class);
-        String response = req.isBatch() ?
-            onBatchRequest(req.getBatch()) :
-            onSingleRequest(req.getRequest());
+        BatchOrSingleRequest req;
+        try {
+            req = gson.fromJson(message, BatchOrSingleRequest.class);
+        } catch (JsonSyntaxException ex) {
+            sendError(conn, ErrorEnum.PARSE_ERROR, ex.getMessage(), null);
+            return;
+        } catch (Exception ex) {
+            sendError(conn, ErrorEnum.INTERNAL_ERROR, ex.getMessage(), null);
+            return;
+        }
+        String response;
+        if (req.isBatch()) {
+            if (req.getBatch().isEmpty()) {
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch call with an empty Array.", null);
+                return;
+            }
+            if (req.getBatch().contains(null)) {
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch contains null object.", null);
+                return;
+            }
+            response = onBatchRequest(req.getBatch());
+        } else {
+            if (req.getRequest() == null) {
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "request call with null objects.", null);
+                return;
+            }
+            response = onSingleRequest(req.getRequest());
+        }
         if (response != null) {
             conn.send(response);
         }
@@ -112,11 +139,21 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
             result = method.invoke(req.getArgs());
         } catch (Exception ex) {
             log.error("rpc method invoking error.", ex);
-            return new Response(new Error(ErrorEnum.INTERNAL_ERROR, ex.getMessage()), req.getId());
+            return createErrorResponse(ErrorEnum.INTERNAL_ERROR, ex.getMessage(), req.getId());
         }
         if (!req.isNotify()) {
             return new Response(result, req.getId());
         }
         return null;
+    }
+
+    private Response createErrorResponse(ErrorEnum error, Object data, Object id) {
+        Response res = new Response(new Error(error, data), id);
+        return res;
+    }
+    
+    private void sendError(WebSocket conn, ErrorEnum error, Object data, Object id) {
+        Response res = createErrorResponse(error, data, id);
+        conn.send(gson.toJson(res));
     }
 }

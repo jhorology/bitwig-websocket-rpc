@@ -55,7 +55,9 @@ public class MethodRegistry {
         }
         
         MethodHolder method = module.getMethodHolder(methodName, parameterCount);
-        log.warn("'" + methodName + "' method with " + parameterCount + " parameters not found.");
+        if (method == null) {
+            log.warn("'" + methodName + "' method with " + parameterCount + " parameters not found.");
+        }
         return method;
     }
     

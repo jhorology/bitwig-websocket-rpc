@@ -4,7 +4,7 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
  *  https://www.jsonrpc.org/specification
  */
 public enum ErrorEnum {
-    PARSE_ERROR(     -32700, "Parse Error",      "An error occurred on the server while parsing the JSON text."),
+    PARSE_ERROR(     -32700, "Parse error",      "An error occurred on the server while parsing the JSON text."),
     INVALID_REQUEST( -32600, "Invalid Request",  "The JSON sent is not a valid Request object."),
     METHOD_NOT_FOUND(-32601, "Method not found", "The method does not exist / is not available."),
     INVALID_PARAMS(  -32602, "Invalid Params",   "nvalid method parameter(s)."),
