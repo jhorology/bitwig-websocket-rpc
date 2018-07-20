@@ -1,4 +1,4 @@
-package com.github.jhorology.bitwig.reflect;
+package com.github.jhorology.bitwig.rpc.test;
 
 import com.google.gson.annotations.Expose;
 

@@ -24,8 +24,7 @@ import com.github.jhorology.bitwig.reflect.MethodRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 
 public class WebSocketRpcServer extends WebSocketServer implements SubscriberExceptionHandler {
-    private static final Logger log = Logger.getLogger(WebSocketRpcServer.class);
-
+    private Logger log;
     private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private AbstractProtocolHandler protocol;
@@ -46,6 +45,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
 
     @Subscribe
     public void onInitExtension(InitEvent e) {
+        log = Logger.getLogger(WebSocketRpcServer.class);
         extension = e.getExtension();
         eventBus = new AsyncEventBus(extension.getExecutor(), this);
         eventBus.register(protocol);
@@ -57,13 +57,13 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     public void onExitExtension(ExitEvent e) {
         try {
             stop();
-            eventBus.unregister(protocol);
             log.info("WebSocket RPC server stopped.");
         } catch (IOException ex) {
             log.error(ex);
         } catch (InterruptedException ex) {
             log.error(ex);
         } finally {
+            eventBus.unregister(protocol);
             extension = null;
         }
     }

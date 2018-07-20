@@ -7,6 +7,7 @@ import com.google.gson.annotations.Expose;
 import com.github.jhorology.bitwig.reflect.MethodHolder;
 
 /**
+ *  A class to use deserialization from JSON-RPC request message.
  *  https://www.jsonrpc.org/specification
  */
 public class Request {

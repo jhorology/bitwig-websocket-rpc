@@ -11,7 +11,7 @@ import java.io.StringReader;
 import java.util.function.Consumer;
 
 /**
- * 
+ * A simple logging class for Controller Script Console. 
  */
 public class Logger {
     
@@ -161,12 +161,6 @@ public class Logger {
         return sw.toString();
     }
     
-    /**
-     * 
-     * @param severity
-     * @param msg
-     * @return 
-     */
     private String formatLog(int severity, String msg) {
         StringBuilder sb = new StringBuilder();
         sb.append((LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "   ").substring(0, 12));

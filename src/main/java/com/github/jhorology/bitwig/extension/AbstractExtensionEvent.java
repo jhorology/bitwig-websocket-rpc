@@ -1,13 +1,13 @@
 package com.github.jhorology.bitwig.extension;
 
 /**
- * 
+ * An abstract base class for extension event. 
  */
 public abstract class AbstractExtensionEvent {
     protected final AbstractExtension extension;
     
     /**
-     * Constructor
+     * Construct instance with extension.
      * @param extension 
      */
     protected AbstractExtensionEvent(AbstractExtension extension) {

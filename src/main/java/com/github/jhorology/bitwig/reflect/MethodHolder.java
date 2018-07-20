@@ -4,35 +4,50 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.List;
+import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
 
 
 public class MethodHolder {
-    private final ModuleHolder moduleHolder;
+    private final ModuleHolder module;
+    private final MethodIdentifier identifier;
     private final Method method;
-    private final boolean isStatic;
     private final Type[] paramTypes;
+    private final boolean isStatic;
     
-    public MethodHolder(ModuleHolder moduleHolder, Method method) throws IllegalAccessException {
-        this.moduleHolder = moduleHolder;
+    MethodHolder(ModuleHolder module, Method method) {
+        this.module = module;
+        this.paramTypes = method.getGenericParameterTypes();
+        this.identifier = new MethodIdentifier(method.getName(), paramTypes);
         this.method = method;
         this.isStatic = Modifier.isStatic(method.getModifiers());
-        this.paramTypes = method.getGenericParameterTypes();
+    }
+
+    public MethodIdentifier getIdentifier() {
+        return identifier;
+    }
+    
+    public boolean isVarargs() {
+        return identifier.isVarargs();
     }
 
     public Type[] getParamTypes() {
         return paramTypes;
     }
+
+    public List<SloppyType> getSloppyParamTypes() {
+        return identifier.getSloppyParamTypes();
+    }
     
-    public int getParamCount() {
-        return paramTypes == null ? 0 : paramTypes.length;
+    public Object invokeWithVarags(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
+        return method.invoke(isStatic ? null : module.getModuleInstance(), new Object[] {params});
     }
 
     public Object invoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
-        int size = getParamCount();
-        if (size == 0) {
-            return method.invoke(isStatic ? null : moduleHolder.getModuleInstance());
+        if (params == null || params.length == 0) {
+            return method.invoke(isStatic ? null : module.getModuleInstance());
         } else {
-            return method.invoke(isStatic ? null : moduleHolder.getModuleInstance(), params);
+            return method.invoke(isStatic ? null : module.getModuleInstance(), params);
         }
     }
 }

@@ -15,7 +15,6 @@ import com.github.jhorology.bitwig.reflect.MethodRegistry;
 public class WebSocketRpcServerExtension extends AbstractExtension {
     /**
      * Constructor
-     * 
      * @param definition
      * @param host 
      */

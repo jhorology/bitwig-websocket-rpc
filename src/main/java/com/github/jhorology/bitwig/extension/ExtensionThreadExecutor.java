@@ -3,13 +3,13 @@ import java.util.concurrent.Executor;
 import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
- * 
+ * Executor class  that always runs tasks in 'Controller Surface Session' thread.
  */
 public class ExtensionThreadExecutor implements Executor {
     private final ControllerHost host;
     
     /**
-     * 
+     * Create an Executor that always runs tasks in 'Controller Surface Session' thread.
      * @param host 
      */
     public ExtensionThreadExecutor(ControllerHost host) {
@@ -24,6 +24,13 @@ public class ExtensionThreadExecutor implements Executor {
     public void execute(Runnable command) {
         // is this safe?
         // maybe not callable from other than extension thread.
-        host.scheduleTask( command, 0L);
+        host.scheduleTask(() -> {
+                ExecutionContext.init(host);
+                try {
+                    command.run();
+                } finally {
+                    ExecutionContext.destroy();
+                }
+            }, 0L);
     }
 }

@@ -3,7 +3,8 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 import com.google.gson.annotations.Expose;
 
 /**
- *  https://www.jsonrpc.org/specification
+ *  A class to use for JSON srialization of response message.
+ *  @see https://www.jsonrpc.org/specification
  */
 public class Response {
     @Expose

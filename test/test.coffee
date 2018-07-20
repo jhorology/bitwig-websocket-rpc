@@ -6,7 +6,9 @@ _         = require 'underscore'
 assert = chai.assert
 chai.use require 'chai-as-promised'
 chai.should()
-  
+
+printMessage = off  
+
 # functions
 json = (data) ->
   data = JSON.stringify data if !_.isString data and _.isObject data
@@ -23,11 +25,11 @@ processRequest = (req) ->
     res = err = undefined
     ws.on 'open', ->
       ws.once 'message', (message) ->
-        console.info "# <-- #{message}"
+        console.info "# <-- #{message}" if printMessage
         res = message
         ws.close()
       ws.send req
-      console.info "# --> #{req}"
+      console.info "# --> #{req}" if printMessage
     ws.on 'error', (error) ->
       err = error
       ws.close()
@@ -58,7 +60,7 @@ processNotify = (req, id) ->
     echo = '{"jsonrpc":"2.0","method":"test.echo","params":["ok"],"id":999}'
     ws.on 'open', ->
       ws.once 'message', (message) ->
-        console.info "# <-- #{message}"
+        console.info "# <-- #{message}" if printMessage
         try
           ans = JSON.parse message
           assert.deepEqual ans,
@@ -71,10 +73,10 @@ processNotify = (req, id) ->
         ws.close()
       # send notify message
       ws.send req
-      console.info "# --> #{req}"
+      console.info "# --> #{req}"  if printMessage
       # send echo message
       ws.send echo
-      console.info "# --> #{echo}"
+      console.info "# --> #{echo}"  if printMessage
     ws.on 'error', (error) ->
       err = error
       ws.close()
