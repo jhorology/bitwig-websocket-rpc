@@ -23,8 +23,8 @@ public class ReflectUtils {
         
         public SloppyType toArrayType() {
             return isArray()
-                ? SloppyType.valueOf("ARRAY_OF_" + this.name())
-                : null;
+                ? null
+                : SloppyType.valueOf("ARRAY_OF_" + this.name());
         }
         
         public boolean isArray() {

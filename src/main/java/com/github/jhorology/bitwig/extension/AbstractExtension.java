@@ -31,7 +31,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     protected AbstractExtension(ControllerExtensionDefinition definition, ControllerHost host) {
         super(definition, host);
         eventBus = new EventBus(this);
-        executor = new ExtensionThreadExecutor(host);
+        executor = new ControlSurfaceSessionExecutor(this);
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
@@ -43,7 +43,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      * @return 
      * @throws java.lang.Exception
      */
-    public abstract Object[] createModules() throws Exception;
+    protected abstract Object[] createModules() throws Exception;
 
     /**
      * return instance of EventBus.

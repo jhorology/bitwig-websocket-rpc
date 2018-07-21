@@ -39,15 +39,13 @@ public class MethodHolder {
         return identifier.getSloppyParamTypes();
     }
     
-    public Object invokeWithVarags(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
-        return method.invoke(isStatic ? null : module.getModuleInstance(), new Object[] {params});
-    }
-
     public Object invoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
         if (params == null || params.length == 0) {
             return method.invoke(isStatic ? null : module.getModuleInstance());
         } else {
-            return method.invoke(isStatic ? null : module.getModuleInstance(), params);
+            return isVarargs()
+                ? method.invoke(isStatic ? null : module.getModuleInstance(), new Object[] {params})
+                : method.invoke(isStatic ? null : module.getModuleInstance(), params);
         }
     }
 }

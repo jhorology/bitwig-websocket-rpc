@@ -36,13 +36,16 @@ public class Logger {
     
     private static final String[] SEVERITIES = {"T","I","W","E"};
     private static final int COLUMN_SIZE = 94;
+    private static final String DELIMITER = "|";
     private static final String INDENT_PREFIX = " > ";
     private static final int INDENTED_COLUMN_SIZE = COLUMN_SIZE - INDENT_PREFIX.length();
+    private static final String EXTENSION_THREAD_NAME = "Control Surface Session";
     
     private static ControllerHost host;
     private static int level;
     private static Consumer<String> std;
     private static Consumer<String> err;
+    private static Thread extensionThread;
     private Class<?> clazz;
     
     private Logger() {
@@ -73,6 +76,10 @@ public class Logger {
         // maybe not callable from other than extension thread.
         std = (s) -> {host.println(s);};
         err = (s) -> {host.errorln(s);};
+        String currentThreadName = Thread.currentThread().getName();
+        if (EXTENSION_THREAD_NAME.equals(currentThreadName)) {
+            extensionThread = Thread.currentThread();
+        }
     }
     
     /**
@@ -164,13 +171,16 @@ public class Logger {
     private String formatLog(int severity, String msg) {
         StringBuilder sb = new StringBuilder();
         sb.append((LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "   ").substring(0, 12));
-        sb.append("|");
+        sb.append(DELIMITER);
         sb.append(SEVERITIES[severity]);
-        sb.append("|");
+        sb.append(DELIMITER);
         sb.append(clazz.getSimpleName());
-        sb.append("|");
-        sb.append(Thread.currentThread().getName());
-        sb.append("|");
+        sb.append(DELIMITER);
+        // only add a thread name when call from other than "Control Surface Session" therad.
+        if (extensionThread != Thread.currentThread()) {
+            sb.append(Thread.currentThread().getName());
+            sb.append(DELIMITER);
+        }
         sb.append(msg);
         return sb.toString();
     }

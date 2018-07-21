@@ -38,10 +38,10 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             if(!json.isJsonObject())
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "request should be JSON object.");
             
-            JsonObject obj = json.getAsJsonObject();
+            JsonObject request = json.getAsJsonObject();
 
             // "jsonrpc": "2.0"
-            JsonPrimitive jsonrpc = obj.getAsJsonPrimitive("jsonrpc");
+            JsonPrimitive jsonrpc = request.getAsJsonPrimitive("jsonrpc");
             if (jsonrpc == null)
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'jsonrpc' property does not exist.");
             if (!jsonrpc.isString())
@@ -51,17 +51,17 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "unsupported version of 'jsonrpc' property.");
 
             // "method": "sum"
-            JsonPrimitive method = obj.getAsJsonPrimitive("method");
+            JsonPrimitive method = request.getAsJsonPrimitive("method");
             if (method == null)
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'method' property does not exist.");
             if (!method.isString())
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'method' property should be string.");
             req.setMethod(method.getAsString());
 
-            final JsonElement params = obj.get("params");
+            final JsonElement params = request.get("params");
             MethodHolder methodHolder = methodRegistry.getMethod(req.getMethod(), toSloppyParamTypes(params));
             
-            JsonPrimitive id = obj.getAsJsonPrimitive("id");
+            JsonPrimitive id = request.getAsJsonPrimitive("id");
             req.setNotify(false);
             if (id == null) {
                 req.setNotify(true);
@@ -81,7 +81,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             
             if (params != null) {
                 Type[] paramTypes = methodHolder.getParamTypes();
-                if (params.isJsonArray()) {
+                if (params.isJsonArray() && !methodHolder.isVarargs()) {
                     JsonArray ja = params.getAsJsonArray();
                     Object[] args = new Object[ja.size()];
                     for(int i = 0; i < ja.size(); i++) {

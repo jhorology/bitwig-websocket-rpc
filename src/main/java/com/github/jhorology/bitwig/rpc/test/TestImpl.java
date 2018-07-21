@@ -90,7 +90,9 @@ public class TestImpl implements Test {
     
     @Override
     public String repeat(String s, int count) {
-        String result = IntStream.range(0, count).mapToObj(String::valueOf).collect(Collectors.joining());
+        String result = IntStream.range(0, count)
+            .mapToObj(i -> s)
+            .collect(Collectors.joining());
         log.info("String repat(String s=" + s + ", int count=" + count + ") = " + result);
         return result;
     }
@@ -99,8 +101,8 @@ public class TestImpl implements Test {
     public String repeat(GenericPair<String, Integer> pair) {
         String result = IntStream.range(0, pair.getRight())
             .mapToObj(i -> pair.getLeft())
-            .collect(Collectors.joining(", "));
+            .collect(Collectors.joining());
         log.info("String repeat{left:" + pair.getLeft() + ", right:" + pair.getRight() + "}) = " + result);
-        return repeat(pair.getLeft(), pair.getRight());
+        return result;
     }
 }

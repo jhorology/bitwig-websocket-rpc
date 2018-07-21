@@ -76,7 +76,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
 
     @Override
     public void onStart() {
-        eventBus.post(new StartEvent(methodRegistry));
+        eventBus.post(new StartEvent(this, methodRegistry));
     }
 
     @Override

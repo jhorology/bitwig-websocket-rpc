@@ -12,6 +12,8 @@ import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.test.Test;
 import com.github.jhorology.bitwig.rpc.test.TestImpl;
+import com.github.jhorology.bitwig.rpc.Rpc;
+import com.github.jhorology.bitwig.rpc.RpcImpl;
 import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
 
 public class MethodRegistry {
@@ -24,8 +26,9 @@ public class MethodRegistry {
         log = Logger.getLogger(MethodRegistry.class);
         modules = new ConcurrentHashMap<>();
         try {
-            // for debug
+            // for test
             register("test", Test.class, new TestImpl());
+            register("rpc", Rpc.class, new RpcImpl());
         } catch (IllegalAccessException ex) {
             log.error(ex);
         }

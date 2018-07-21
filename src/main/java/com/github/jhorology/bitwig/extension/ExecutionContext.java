@@ -5,18 +5,19 @@ import java.util.HashMap;
 
 import com.bitwig.extension.controller.api.ControllerHost;
 
+import com.github.jhorology.bitwig.extension.AbstractExtension;
+
 /**
  * A context holder for ExtentionThreadExecutor task state.
- * This class assumes that all methods are called from within "Controller Surface Session' thread.
+ * This class assumes that all methods are called from within "Control Surface Session' thread.
  */
 public class ExecutionContext {
     private static ExecutionContext instance;
 
-    private ControllerHost host;
+    private AbstractExtension extension;
     private final Map<String, Object> values;
-        
-    static void init(ControllerHost host) {
-        instance = new ExecutionContext(host);
+    static void init(AbstractExtension extension) {
+        instance = new ExecutionContext(extension);
     }
 
     static void destroy() {
@@ -36,9 +37,17 @@ public class ExecutionContext {
         values = new HashMap<>();
     }
     
-    private ExecutionContext(ControllerHost host) {
+    private ExecutionContext(AbstractExtension extension) {
         this();
-        this.host = host;
+        this.extension = extension;
+    }
+    
+    /**
+     * get a Extension instance.
+     * @return
+     */
+    public AbstractExtension getExtension() {
+        return extension;
     }
     
     /**
@@ -46,9 +55,9 @@ public class ExecutionContext {
      * @return
      */
     public ControllerHost getHost() {
-        return host;
+        return extension.getHost();
     }
-
+    
     /**
      * set a contextual value with name.
      * @param name
@@ -65,5 +74,24 @@ public class ExecutionContext {
      */
     public Object get(String name) {
         return values.get(name);
+    }
+    
+    /**
+     * set a contextual value with class.
+     * @param clazz
+     * @param value
+     */
+    public <T> void set(Class<T> clazz, T value) {
+        values.put(clazz.getName(), value);
+    }
+
+    /**
+     * get a contextual value by class.
+     * @param clazz
+     * @return value
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T get(Class<T> clazz) {
+        return (T)values.get(clazz.getName());
     }
 }

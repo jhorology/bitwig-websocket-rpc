@@ -1,19 +1,18 @@
 package com.github.jhorology.bitwig.extension;
 import java.util.concurrent.Executor;
-import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
- * Executor class  that always runs tasks in 'Controller Surface Session' thread.
+ * Executor class that always runs tasks in 'Control Surface Session' thread.
  */
-public class ExtensionThreadExecutor implements Executor {
-    private final ControllerHost host;
+public class ControlSurfaceSessionExecutor implements Executor {
+    private final AbstractExtension extension;
     
     /**
      * Create an Executor that always runs tasks in 'Controller Surface Session' thread.
-     * @param host 
+     * @param extension 
      */
-    public ExtensionThreadExecutor(ControllerHost host) {
-        this.host = host;
+    public ControlSurfaceSessionExecutor(AbstractExtension extension) {
+        this.extension = extension;
     }
     
     /**
@@ -24,8 +23,8 @@ public class ExtensionThreadExecutor implements Executor {
     public void execute(Runnable command) {
         // is this safe?
         // maybe not callable from other than extension thread.
-        host.scheduleTask(() -> {
-                ExecutionContext.init(host);
+        extension.getHost().scheduleTask(() -> {
+                ExecutionContext.init(extension);
                 try {
                     command.run();
                 } finally {

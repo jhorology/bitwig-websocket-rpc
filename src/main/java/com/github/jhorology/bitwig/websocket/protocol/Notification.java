@@ -1,4 +1,4 @@
-package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
+package com.github.jhorology.bitwig.websocket.protocol;
 
 import com.google.gson.annotations.Expose;
 

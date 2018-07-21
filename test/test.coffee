@@ -7,7 +7,9 @@ assert = chai.assert
 chai.use require 'chai-as-promised'
 chai.should()
 
-printMessage = off  
+# settings
+$ =
+  printMessage: off
 
 # functions
 json = (data) ->
@@ -25,11 +27,11 @@ processRequest = (req) ->
     res = err = undefined
     ws.on 'open', ->
       ws.once 'message', (message) ->
-        console.info "# <-- #{message}" if printMessage
+        console.info "# <-- #{message}" if $.printMessage
         res = message
         ws.close()
       ws.send req
-      console.info "# --> #{req}" if printMessage
+      console.info "# --> #{req}" if $.printMessage
     ws.on 'error', (error) ->
       err = error
       ws.close()
@@ -60,7 +62,7 @@ processNotify = (req, id) ->
     echo = '{"jsonrpc":"2.0","method":"test.echo","params":["ok"],"id":999}'
     ws.on 'open', ->
       ws.once 'message', (message) ->
-        console.info "# <-- #{message}" if printMessage
+        console.info "# <-- #{message}" if $.printMessage
         try
           ans = JSON.parse message
           assert.deepEqual ans,
@@ -73,10 +75,10 @@ processNotify = (req, id) ->
         ws.close()
       # send notify message
       ws.send req
-      console.info "# --> #{req}"  if printMessage
+      console.info "# --> #{req}"  if $.printMessage
       # send echo message
       ws.send echo
-      console.info "# --> #{echo}"  if printMessage
+      console.info "# --> #{echo}"  if $.printMessage
     ws.on 'error', (error) ->
       err = error
       ws.close()
@@ -85,7 +87,7 @@ processNotify = (req, id) ->
         reject err
       else
         resolve res
-      
+
 describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification', ->
   it 'rpc call with positional parameters. id:1', ->
     processRequest '{"jsonrpc":"2.0","method":"test.sum","params":[1,2],"id":1}'
@@ -93,21 +95,21 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
         jsonrpc: '2.0'
         result: 3
         id: 1
-    
+
   it 'rpc call with positional parameters. id:2', ->
     processRequest '{"jsonrpc":"2.0","method":"test.sum","params":[1,2,3],"id":2}'
       .should.become
         jsonrpc: '2.0'
         result: 6
         id: 2
-        
+
   it 'rpc call with named parameters. mapping params to POJO class. id:3', ->
     processRequest '{"jsonrpc":"2.0","method":"test.sum","params":{"left":1,"right":2},"id":3}'
       .should.become
         jsonrpc: '2.0'
         result: 3
         id: 3
-        
+
   it 'rpc call with named parameters. mapping params to generic class. id:4', ->
     processRequest '{"jsonrpc":"2.0","method":"test.repeat","params":{"left":"abc","right":3},"id":4}'
       .should.become
@@ -116,7 +118,7 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
         id: 4
 
   it 'a Notification.', ->
-    processNotify '{"jsonrpc":"2.0","method":"test.notifies","params":[999]}'
+    processNotify '{"jsonrpc":"2.0","method":"test.consume","params":[999]}'
       .should.become 'ok'
 
   it 'rpc call of non-existent method. id:6', ->
@@ -166,7 +168,7 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
           code: -32600
           message: 'Invalid Request'
         id: null
-        
+
   it 'rpc call with an invalid Batch (but not empty).', ->
     processRequest '[1]'
       .should.become [{
@@ -176,7 +178,7 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
           message: 'Invalid Request'
         id: null
       }]
-      
+
   it 'rpc call with invalid Batch.', ->
     processRequest '[1,2,3]'
       .should.become [
@@ -188,8 +190,8 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
   it 'rpc call Batch.', ->
     processRequest '''[
       {"jsonrpc":"2.0","method":"test.sum","params":[1,2,4],"id":"1"},
-      {"jsonrpc":"2.0","method":"test.notifies","params":[7]},
-      {"jsonrpc":"2.0","method":"test.staticRepeat","params":["abc",2], "id": "2"},
+      {"jsonrpc":"2.0","method":"test.consume","params":[7]},
+      {"jsonrpc":"2.0","method":"test.repeat","params":["abc",2], "id": "2"},
       {"foo": "boo"},
       {"jsonrpc": "2.0","method": "test.foobar", "params": {"name": "myself"}, "id": "5"},
       {"jsonrpc":"2.0","method":"test.hello","id":"9"}
@@ -204,7 +206,9 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
 
   it 'rpc call Batch (all notifications).', ->
     processNotify '''[
-      {"jsonrpc":"2.0","method":"test.notifiesWithIntPair","params":{"left":111,"right":333}},
-      {"jsonrpc":"2.0","method":"test.notifiesWithGenericPair","params":{"left":222,"right":444}}
+      {"jsonrpc":"2.0","method":"test.nop"},
+      {"jsonrpc":"2.0","method":"test.consume","params":[1.1, 2.2]},
+      {"jsonrpc":"2.0","method":"test.consume","params":[1.1, 2.2, 3.3]},
+      {"jsonrpc":"2.0","method":"test.consume","params":[1.1, 2.2, 3.3, 4.4]}
 ]'''
       .should.become "ok"
