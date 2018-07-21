@@ -2,6 +2,7 @@ package com.github.jhorology.bitwig.extension;
 
 import java.util.Stack;
 import java.util.concurrent.Executor;
+import java.util.stream.Stream;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
@@ -20,6 +21,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private final ExitEvent exitEvent;
     private final FlushEvent flushEvent;
     private final Executor executor;
+    private final Executor flushExecutor;
     private Stack<Object> modules;
     private Logger log;
     
@@ -32,6 +34,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         super(definition, host);
         eventBus = new EventBus(this);
         executor = new ControlSurfaceSessionExecutor(this);
+        flushExecutor = new FlushExecutor();
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
@@ -46,19 +49,19 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     protected abstract Object[] createModules() throws Exception;
 
     /**
-     * return instance of EventBus.
-     * @return event bus
-     */
-    public EventBus getEventBus() {
-        return eventBus;
-    }
-    
-    /**
-     * return instance of EventBus.
-     * @return event bus
+     * get a executor that always runs tasks on 'Control Surface Session' thread.
+     * @return executor
      */
     public Executor getExecutor() {
         return executor;
+    }
+    
+    /**
+     * get a executor that always runs tasks within 'ControllerHost#flush()' method.
+     * @return executor
+     */
+    public Executor getFlushExecutor() {
+        return flushExecutor;
     }
 
     /**
@@ -68,17 +71,16 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     public void init() {
         log = Logger.getLogger(this.getClass());
         modules = new Stack<>();
+        register(flushExecutor);
         try {
-            Object[] cratedModules = createModules();
-            if (cratedModules != null && cratedModules.length > 0) {
-                for(Object module : cratedModules) {
-                    eventBus.register(module);
-                    modules.push(module);
-                }
+            Object[] createdModules = createModules();
+            if (createdModules != null && createdModules.length > 0) {
+                Stream.of(createdModules).forEach(m -> register(m));
             }
         } catch (Exception ex) {
             log.error(ex);
         }
+        // trigger synchronous event
         eventBus.post(initEvent);
     }
 
@@ -87,7 +89,10 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     @Override
     public void exit() {
+        // trigger synchronous event
         eventBus.post(exitEvent);
+        
+        // unregister modules
         while(!modules.empty()) {
             eventBus.unregister(modules.pop());
         }
@@ -99,9 +104,19 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     @Override
     public void flush() {
+        // trigger synchronous event
         eventBus.post(flushEvent);
     }
 
+    /**
+     * register a subscriber module.
+     * @param module
+     */
+    protected void register(Object module) {
+        eventBus.register(module);
+        modules.push(module);
+    }
+    
     /**
      * implementation method of SubscriberExceptionHandler
      * @param ex

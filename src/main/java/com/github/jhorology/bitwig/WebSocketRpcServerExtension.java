@@ -7,7 +7,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
-import com.github.jhorology.bitwig.reflect.MethodRegistry;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 
 /**
  * 
@@ -23,11 +23,11 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
     }
 
     @Override
-    public Object[] createModules() throws UnknownHostException {
-        MethodRegistry methodRegistry = new MethodRegistry();
+    protected Object[] createModules() throws UnknownHostException {
+        ReflectionRegistry registry = new ReflectionRegistry();
         return new Object[] {
-            methodRegistry,
-            new WebSocketRpcServer(8887, Protocols.newJsonRpc20(), methodRegistry)
+            registry,
+            new WebSocketRpcServer(8887, Protocols.newJsonRpc20(), registry)
         };
     }
 }

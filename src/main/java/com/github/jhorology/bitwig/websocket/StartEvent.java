@@ -1,22 +1,22 @@
 package com.github.jhorology.bitwig.websocket;
 
 import org.java_websocket.server.WebSocketServer;
-import com.github.jhorology.bitwig.reflect.MethodRegistry;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 
 public class StartEvent extends AbstractWebSocketEvent {
     private final WebSocketServer webSocketServer;
-    private final MethodRegistry methodRegistry;
+    private final ReflectionRegistry registry;
 
-    StartEvent(WebSocketServer webSocketServer, MethodRegistry methodRegistry) {
+    StartEvent(WebSocketServer webSocketServer, ReflectionRegistry registry) {
         super(null);
         this.webSocketServer = webSocketServer;
-        this.methodRegistry = methodRegistry;
+        this.registry = registry;
     }
     
     public WebSocketServer getWebSocketServer() {
         return webSocketServer;
     }
-    public MethodRegistry getMethodRegistry() {
-        return methodRegistry;
+    public ReflectionRegistry getReflectionRegistry() {
+        return registry;
     }
 }

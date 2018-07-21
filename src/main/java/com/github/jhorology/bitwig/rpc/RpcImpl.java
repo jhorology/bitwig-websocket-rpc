@@ -1,6 +1,16 @@
 package com.github.jhorology.bitwig.rpc;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.java_websocket.WebSocket;
+
+import com.github.jhorology.bitwig.extension.ExecutionContext;
+import com.github.jhorology.bitwig.reflect.EventHolder;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 
 public class RpcImpl implements Rpc {
     /**
@@ -11,9 +21,10 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Map<String, String> on(String... eventNames) {
-        return null;
+        return acceptEvents(eventNames, (e, c) -> e.subscribe(c));
     }
 
+    
     /**
      * Add the remote connection to subscriber list of each event.
      * The next time event is triggered, this subscriber is removed and then invoked.
@@ -22,7 +33,7 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Map<String, String> once(String... eventNames) {
-        return null;
+        return acceptEvents(eventNames, (e, c) -> e.subscribeOnce(c));
     }
     
     /**
@@ -32,7 +43,7 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Map<String, String> off(String... eventNames) {
-        return null;
+        return acceptEvents(eventNames, (e, c) -> e.unsubscribe(c));
     }
     
     /**
@@ -50,6 +61,30 @@ public class RpcImpl implements Rpc {
      * @param message
      */
     @Override
-    public void chat(String message) {
+    public void broadcast(String message, Object[] params) {
+    }
+    
+    private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<EventHolder, WebSocket> lamda) {
+        return Stream.of(eventNames)
+            .map(s -> acceptEvent(s, lamda))
+            .collect(Collectors.toMap(ImmutablePair::getLeft, ImmutablePair::getRight));
+    }
+    
+    private EventHolder getEvent(String eventName) {
+        ExecutionContext context = ExecutionContext.getContext();
+        ReflectionRegistry registry = context.get(ReflectionRegistry.class);
+        EventHolder event = registry.getEvent(eventName);
+        return event;
+    }
+    
+    private ImmutablePair<String, String> acceptEvent(String eventName, BiConsumer<EventHolder, WebSocket> lamda) {
+        EventHolder event = getEvent(eventName);
+        if (event == null) {
+            return new ImmutablePair<>(eventName, ERROR_EVENT_NOT_FOUND);
+        }
+        WebSocket client = ExecutionContext.getContext()
+            .get(WebSocket.class);
+        lamda.accept(event, client);
+        return new ImmutablePair<>(eventName, OK);
     }
 }

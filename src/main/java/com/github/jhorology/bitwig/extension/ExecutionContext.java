@@ -5,7 +5,6 @@ import java.util.HashMap;
 
 import com.bitwig.extension.controller.api.ControllerHost;
 
-import com.github.jhorology.bitwig.extension.AbstractExtension;
 
 /**
  * A context holder for ExtentionThreadExecutor task state.

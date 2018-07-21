@@ -2,7 +2,7 @@ package com.github.jhorology.bitwig.extension;
 import java.util.concurrent.Executor;
 
 /**
- * Executor class that always runs tasks in 'Control Surface Session' thread.
+ * Executor class that always runs tasks on 'Control Surface Session' thread.
  */
 public class ControlSurfaceSessionExecutor implements Executor {
     private final AbstractExtension extension;

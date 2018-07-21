@@ -20,7 +20,7 @@ import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.MethodRegistry;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 
 public class WebSocketRpcServer extends WebSocketServer implements SubscriberExceptionHandler {
@@ -28,19 +28,19 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private AbstractProtocolHandler protocol;
-    private MethodRegistry methodRegistry;
+    private ReflectionRegistry registry;
 
     private WebSocketRpcServer() {
     }
     
-    public WebSocketRpcServer(int port, AbstractProtocolHandler protocol, MethodRegistry methodRegistry) throws UnknownHostException {
-        this(new InetSocketAddress(port), protocol, methodRegistry);
+    public WebSocketRpcServer(int port, AbstractProtocolHandler protocol, ReflectionRegistry registry) throws UnknownHostException {
+        this(new InetSocketAddress(port), protocol, registry);
     }
 
-    public WebSocketRpcServer(InetSocketAddress address, AbstractProtocolHandler protocol, MethodRegistry methodRegistry) {
+    public WebSocketRpcServer(InetSocketAddress address, AbstractProtocolHandler protocol, ReflectionRegistry registry) {
         super(address);
         this.protocol = protocol;
-        this.methodRegistry = methodRegistry;
+        this.registry = registry;
     }
 
     @Subscribe
@@ -76,7 +76,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
 
     @Override
     public void onStart() {
-        eventBus.post(new StartEvent(this, methodRegistry));
+        eventBus.post(new StartEvent(this, registry));
     }
 
     @Override

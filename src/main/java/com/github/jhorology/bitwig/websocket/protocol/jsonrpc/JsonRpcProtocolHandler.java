@@ -27,11 +27,11 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
     @Override
     public void onStart() {
         log = Logger.getLogger(this.getClass());
-        GsonBuilder gsonBuilder = new GsonBuilder()
+        GsonBuilder gsonBuilder = BitwigAdapters.newGsonBuilder()
             .serializeNulls()
             .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
-            .registerTypeAdapter(Request.class, new RequestAdapter(methodRegistry))
+            .registerTypeAdapter(Request.class, new RequestAdapter(registry))
             .registerTypeAdapter(Response.class, new ResponseAdapter());
         gson = gsonBuilder.create();
     }
@@ -65,17 +65,17 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         String response;
         if (req.isBatch()) {
             if (req.getBatch().isEmpty()) {
-                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch call with an empty Array.", null);
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch call with an empty array.", null);
                 return;
             }
             if (req.getBatch().contains(null)) {
-                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch contains null object.", null);
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "batch contains null.", null);
                 return;
             }
             response = onBatchRequest(req.getBatch());
         } else {
             if (req.getRequest() == null) {
-                sendError(conn, ErrorEnum.INVALID_REQUEST, "request call with null objects.", null);
+                sendError(conn, ErrorEnum.INVALID_REQUEST, "request call with null.", null);
                 return;
             }
             response = onSingleRequest(req.getRequest());
@@ -103,7 +103,6 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         broadcast(server, gson.toJson(notification));
     }
     
-
     private String onBatchRequest(List<Request> batch) {
         List<Response> results = batch.stream()
             .map(req -> processRequest(req))

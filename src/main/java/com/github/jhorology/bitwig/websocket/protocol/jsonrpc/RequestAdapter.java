@@ -17,14 +17,14 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 
 import com.github.jhorology.bitwig.reflect.MethodHolder;
-import com.github.jhorology.bitwig.reflect.MethodRegistry;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
 
 public class RequestAdapter implements JsonDeserializer<Request> {
-    private final MethodRegistry methodRegistry;
+    private final ReflectionRegistry registry;
 
-    public RequestAdapter(MethodRegistry methodRegistry) {
-        this.methodRegistry = methodRegistry;
+    public RequestAdapter(ReflectionRegistry registry) {
+        this.registry = registry;
     }
 
     private static Predicate<Type[]> methodFinder = types -> {
@@ -59,7 +59,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             req.setMethod(method.getAsString());
 
             final JsonElement params = request.get("params");
-            MethodHolder methodHolder = methodRegistry.getMethod(req.getMethod(), toSloppyParamTypes(params));
+            MethodHolder methodHolder = registry.getMethod(req.getMethod(), toSloppyParamTypes(params));
             
             JsonPrimitive id = request.getAsJsonPrimitive("id");
             req.setNotify(false);

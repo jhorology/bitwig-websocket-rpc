@@ -7,7 +7,7 @@ import java.util.concurrent.Executor;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * Executor class that always runs tasks in 'Control Surface Session' thread.
+ * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
 public class FlushExecutor implements Executor {
     private Queue<Runnable> tasks;

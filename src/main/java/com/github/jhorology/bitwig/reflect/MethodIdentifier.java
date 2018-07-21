@@ -14,7 +14,7 @@ public class MethodIdentifier {
     
     public MethodIdentifier(String name, Type[] paramTypes) {
         this(name, Arrays.stream(paramTypes)
-             .map(ReflectUtils::toSloppyType)
+             .map(ReflectUtils::sloppyTypeOf)
              .collect(Collectors.toList()));
     }
     

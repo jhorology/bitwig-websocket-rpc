@@ -4,7 +4,13 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
+/**
+ * utility class
+ */
 public class ReflectUtils {
+    /**
+     * sloppy type enum that uses for lazy matching parameters.
+     */
     public static enum SloppyType {
         BOOLEAN,
         NUMBER,
@@ -15,24 +21,41 @@ public class ReflectUtils {
         ARRAY_OF_STRING,
         ARRAY_OF_OBJECT;
 
+        /**
+         * return a component type of this enum value if this enum is array type, 
+         * @return
+         */
         public SloppyType arrayTypeOf() {
             return isArray()
                 ? SloppyType.valueOf(this.name().substring(9))
                 : null;
         }
         
+        /**
+         * return a array type of this enum value if this enum is component type, 
+         * @return
+         */
         public SloppyType toArrayType() {
             return isArray()
                 ? null
                 : SloppyType.valueOf("ARRAY_OF_" + this.name());
         }
         
+        /**
+         * return this type is array or not.
+         * @return
+         */
         public boolean isArray() {
             return this.name().startsWith("ARRAY_OF_");
         }
     };
 
-    public static SloppyType toSloppyType(Type t) {
+    /**
+     * return a sloppy type of java strict type.
+     * @param t paramter type.
+     * @return
+     */
+    public static SloppyType sloppyTypeOf(Type t) {
         if (t instanceof Class) {
             Class<?> c = (Class)t;
             if (c.isPrimitive()) {
@@ -70,4 +93,33 @@ public class ReflectUtils {
         }
         return SloppyType.OBJECT;
     };
+
+
+    /**
+     * return interface type is Bitwig API or not.
+     * @param interfaceType
+     * @return
+     */
+    public static boolean isBitwigAPI(Class<?> interfaceType) {
+        return isBitwigControllerAPI(interfaceType)
+            || isBitwigExtensionAPI(interfaceType);
+    }
+        
+    /**
+     * return interface type is Bitwig Controller API or not.
+     * @param interfaceType
+     * @return
+     */
+    public static boolean isBitwigControllerAPI(Class<?> interfaceType) {
+        return interfaceType.getName().startsWith("com.bitwig.extension.controller.api.");
+    }
+    
+    /**
+     * return interface type is Bitwig Extension API or not.
+     * @param interfaceType
+     * @return
+     */
+    public static boolean isBitwigExtensionAPI(Class<?> interfaceType) {
+        return interfaceType.getName().startsWith("com.bitwig.extension.api.");
+    }
 }

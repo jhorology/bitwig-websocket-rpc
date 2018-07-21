@@ -7,6 +7,9 @@ import java.util.Map;
  * @see https://github.com/elpheria/rpc-websockets
  */
 public interface Rpc {
+    public static final String OK = "ok";
+    public static final String ERROR_EVENT_NOT_FOUND = "Event not found";
+    
     /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
@@ -41,5 +44,5 @@ public interface Rpc {
      * broadcast message to all remote connections.
      * @param message
      */
-    void chat(String message);
+    void broadcast(String message, Object[] params);
 }

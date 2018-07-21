@@ -8,7 +8,7 @@ import org.java_websocket.server.WebSocketServer;
 
 import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.MethodRegistry;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.websocket.BinaryMessageEvent;
 import com.github.jhorology.bitwig.websocket.CloseEvent;
 import com.github.jhorology.bitwig.websocket.ErrorEvent;
@@ -19,7 +19,7 @@ import com.github.jhorology.bitwig.websocket.TextMessageEvent;
 
 public abstract class AbstractProtocolHandler implements ProtocolHandler, PushModel {
     protected WebSocketServer server;
-    protected MethodRegistry methodRegistry;
+    protected ReflectionRegistry registry;
     private Logger log;
     private ExecutionContext context;
     
@@ -27,7 +27,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
     public final void onStart(StartEvent e) {
         log = Logger.getLogger(this.getClass());
         server = e.getWebSocketServer();
-        methodRegistry = e.getMethodRegistry();
+        registry = e.getReflectionRegistry();
         context = ExecutionContext.getContext();
         onStart();
     }
@@ -64,6 +64,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
                       "\n --> " + e.getMessage());
         }
         context.set(WebSocket.class, e.getConnection());
+        context.set(ReflectionRegistry.class, registry);
         onMessage(e.getConnection(), e.getMessage());
     }
     
@@ -74,6 +75,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
                       "\n --> " + e.getMessage());
         }
         context.set(WebSocket.class, e.getConnection());
+        context.set(ReflectionRegistry.class, registry);
         onMessage(e.getConnection(), e.getMessage());
     }
     
