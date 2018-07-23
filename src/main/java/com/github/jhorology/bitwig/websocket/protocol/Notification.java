@@ -1,18 +1,14 @@
 package com.github.jhorology.bitwig.websocket.protocol;
 
-import com.google.gson.annotations.Expose;
-
 /**
  *  A class to use for JSON serialization of notification message.
  *  Sending notification to client is not specied in JSON-RPC 2.0 specifiations.
- *  this aims to support 'rpc-websockets' javascript moudel.
+ *  this aims to support 'rpc-websockets' javascript module.
  *  @see https://github.com/elpheria/rpc-websockets
  */
 public class Notification {
-    @Expose
     private String notification;
-    @Expose
-    private Object[] params;
+    private Object params;
 
     /**
      * construct a notification message.
@@ -52,7 +48,7 @@ public class Notification {
      * get an array of parameters.
      * @return
      */
-    public Object[] getParams() {
+    public Object getParams() {
         return params;
     }
 
@@ -60,7 +56,7 @@ public class Notification {
      * set an array of parameters.
      * @param params
      */
-    public void setParams(Object[] params) {
+    public void setParams(Object params) {
         this.params = params;
     }
 }

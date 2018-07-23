@@ -1,3 +1,25 @@
+/*
+ * Copyright (c) 2018 Masafumi Fujimaru
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.github.jhorology.bitwig.websocket.protocol;
 
 import java.net.InetSocketAddress;
@@ -17,23 +39,39 @@ import com.github.jhorology.bitwig.websocket.StartEvent;
 import com.github.jhorology.bitwig.websocket.StopEvent;
 import com.github.jhorology.bitwig.websocket.TextMessageEvent;
 
-public abstract class AbstractProtocolHandler implements ProtocolHandler, PushModel {
+/**
+ * An abstract base class of ProtocolHandler.
+ */
+public abstract class AbstractProtocolHandler implements ProtocolHandler {
+    /**
+     * an instance of WebSocketServer
+     */
     protected WebSocketServer server;
+    
+    /**
+     * an instance of ReflectionRegistry
+     */
     protected ReflectionRegistry registry;
+
     private Logger log;
-    private ExecutionContext context;
     
     @Subscribe
     public final void onStart(StartEvent e) {
         log = Logger.getLogger(this.getClass());
         server = e.getWebSocketServer();
         registry = e.getReflectionRegistry();
-        context = ExecutionContext.getContext();
+        if (this instanceof PushModel) {
+            registry.subscribeNotification(this);
+        }
         onStart();
     }
 
     @Subscribe
     public final void onStop(StopEvent e) {
+        if (this instanceof PushModel) {
+            registry.unsubscribeNotification(this);
+        }
+        onStop();
     }
 
     @Subscribe
@@ -63,8 +101,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
             log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
-        context.set(WebSocket.class, e.getConnection());
-        context.set(ReflectionRegistry.class, registry);
+        RequestContext.init(e.getConnection(), registry);
         onMessage(e.getConnection(), e.getMessage());
     }
     
@@ -74,8 +111,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
             log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
-        context.set(WebSocket.class, e.getConnection());
-        context.set(ReflectionRegistry.class, registry);
+        RequestContext.init(e.getConnection(), registry);
         onMessage(e.getConnection(), e.getMessage());
     }
     
@@ -87,10 +123,13 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler, PushMo
 
     @Subscribe
     public void onPush(NotificationEvent e) {
-        if (e.getClients() != null) {
-            broadcast(server, e.getClients(), e.getNotification());
-        } else {
-            broadcast(server, e.getNotification());
+        if (this instanceof PushModel) {
+            PushModel model = (PushModel)this;
+            if (e.getClients() != null) {
+                model.push(e.getNotification(), e.getClients());
+            } else {
+                model.broadcast(e.getNotification());
+            }
         }
     }
 

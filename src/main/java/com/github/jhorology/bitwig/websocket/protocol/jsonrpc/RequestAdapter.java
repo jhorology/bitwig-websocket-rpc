@@ -16,9 +16,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 
-import com.github.jhorology.bitwig.reflect.MethodHolder;
+import com.github.jhorology.bitwig.reflect.ReflectUtils;
 import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
+import com.github.jhorology.bitwig.rpc.RpcMethod;
 
 public class RequestAdapter implements JsonDeserializer<Request> {
     private final ReflectionRegistry registry;
@@ -26,11 +27,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
     public RequestAdapter(ReflectionRegistry registry) {
         this.registry = registry;
     }
-
-    private static Predicate<Type[]> methodFinder = types -> {
-        return true;
-    };
-
+    
     @Override
     public Request deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Request req = new Request();
@@ -59,7 +56,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             req.setMethod(method.getAsString());
 
             final JsonElement params = request.get("params");
-            MethodHolder methodHolder = registry.getMethod(req.getMethod(), toSloppyParamTypes(params));
+            RpcMethod rpcMethod = registry.getMethod(req.getMethod(), toSloppyParamTypes(params));
             
             JsonPrimitive id = request.getAsJsonPrimitive("id");
             req.setNotify(false);
@@ -75,13 +72,13 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 }
             }
 
-            if (methodHolder == null)
+            if (rpcMethod == null)
                 throw new JsonRpcException(ErrorEnum.METHOD_NOT_FOUND, "'" + req.getMethod() + "' method not found.");
-            req.setMethodHolder(methodHolder);
+            req.setRpcMethod(rpcMethod);
             
             if (params != null) {
-                Type[] paramTypes = methodHolder.getParamTypes();
-                if (params.isJsonArray() && !methodHolder.isVarargs()) {
+                Type[] paramTypes = rpcMethod.getParamTypes();
+                if (params.isJsonArray() && !ReflectUtils.isVarargs(paramTypes)) {
                     JsonArray ja = params.getAsJsonArray();
                     Object[] args = new Object[ja.size()];
                     for(int i = 0; i < ja.size(); i++) {

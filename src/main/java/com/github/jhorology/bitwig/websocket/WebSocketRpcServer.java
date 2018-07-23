@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
@@ -12,7 +11,6 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.eventbus.SubscriberExceptionContext;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
@@ -44,17 +42,16 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     }
 
     @Subscribe
-    public void onInitExtension(InitEvent e) {
+    public void onInit(InitEvent e) {
         log = Logger.getLogger(WebSocketRpcServer.class);
-        extension = e.getExtension();
-        eventBus = new AsyncEventBus(extension.getExecutor(), this);
+        eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         start();
         log.info("WebSocket RPC server started.");
     }
 
     @Subscribe
-    public void onExitExtension(ExitEvent e) {
+    public void onExit(ExitEvent e) {
         try {
             stop();
             log.info("WebSocket RPC server stopped.");

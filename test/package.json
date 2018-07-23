@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --require coffeescript/register test.coffee -R nyan"
+    "test": "mocha --require coffeescript/register *.spec.coffee -R nyan"
   },
   "author": "",
   "license": "MIT",

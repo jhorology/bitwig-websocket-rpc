@@ -2,26 +2,25 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.nio.ByteBuffer;
+import java.util.Collection;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
 
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.MethodHolder;
+import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
-import java.nio.ByteBuffer;
-import java.util.Collection;
+import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
-public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
+public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements PushModel {
     public static final String JSONRPC_VERSION = "2.0";
         
     private Logger log;
-
     private Gson gson;
     
     @Override
@@ -32,7 +31,8 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
             .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
             .registerTypeAdapter(Request.class, new RequestAdapter(registry))
-            .registerTypeAdapter(Response.class, new ResponseAdapter());
+            .registerTypeAdapter(Response.class, new ResponseAdapter())
+            .registerTypeAdapter(Notification.class, new NotificationAdapter());
         gson = gsonBuilder.create();
     }
     
@@ -58,7 +58,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         } catch (JsonSyntaxException ex) {
             sendError(conn, ErrorEnum.PARSE_ERROR, ex.getMessage(), null);
             return;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             sendError(conn, ErrorEnum.INTERNAL_ERROR, ex.getMessage(), null);
             return;
         }
@@ -94,13 +94,13 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
     }
     
     @Override
-    public void broadcast(WebSocketServer server, Collection<WebSocket> clients, Notification notification) {
-        broadcast(server, clients, gson.toJson(notification));
+    public void push(Notification notification, Collection<WebSocket> clients) {
+        push(gson.toJson(notification), clients);
     }
     
     @Override
-    public void broadcast(WebSocketServer server, Notification notification) {
-        broadcast(server, gson.toJson(notification));
+    public void broadcast(Notification notification) {
+        broadcast(gson.toJson(notification));
     }
     
     private String onBatchRequest(List<Request> batch) {
@@ -126,7 +126,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         if (req.hasError()) {
             return new Response(req.getError(), req.getId());
         }
-        MethodHolder method = req.getMethodHolder();
+        RpcMethod method = req.getRpcMethod();
         Object result;
         try {
             result = method.invoke(req.getArgs());
@@ -158,7 +158,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         }
     }
     
-    private void broadcast(WebSocketServer server, Collection<WebSocket> clients, String message) {
+    private void push(String message, Collection<WebSocket> clients) {
         server.broadcast(message, clients);
         if (log.isTraceEnabled()) {
             log.trace("broadcast message to " + clients.size() + " clients." +
@@ -166,7 +166,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler {
         }
     }
     
-    private void broadcast(WebSocketServer server, String message) {
+    private void broadcast( String message) {
         server.broadcast(message);
         if (log.isTraceEnabled()) {
             log.trace("broadcast message to all " + server.getConnections().size() + " clients." +

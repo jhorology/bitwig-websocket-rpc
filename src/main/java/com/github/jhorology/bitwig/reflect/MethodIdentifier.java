@@ -8,32 +8,27 @@ import java.util.stream.Collectors;
 import com.google.common.base.Objects;
 import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
 
-public class MethodIdentifier {
+class MethodIdentifier {
     private final String name;
     private final List<SloppyType> sloppyParamTypes;
     
-    public MethodIdentifier(String name, Type[] paramTypes) {
+    MethodIdentifier(String name, Type[] paramTypes) {
         this(name, Arrays.stream(paramTypes)
              .map(ReflectUtils::sloppyTypeOf)
              .collect(Collectors.toList()));
     }
     
-    public MethodIdentifier(String name, List<SloppyType> sloppyParamTypes) {
+    MethodIdentifier(String name, List<SloppyType> sloppyParamTypes) {
         this.name = name;
         this.sloppyParamTypes = sloppyParamTypes;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 
-    public List<ReflectUtils.SloppyType> getSloppyParamTypes() {
+    List<ReflectUtils.SloppyType> getSloppyParamTypes() {
         return sloppyParamTypes;
-    }
-
-    public boolean isVarargs() {
-        return sloppyParamTypes.size() == 1
-            && sloppyParamTypes.get(0).isArray();
     }
 
     @Override

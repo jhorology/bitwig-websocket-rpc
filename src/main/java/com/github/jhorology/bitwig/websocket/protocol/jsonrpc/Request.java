@@ -1,10 +1,8 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import java.lang.reflect.Method;
-import com.google.gson.JsonElement;
 import com.google.gson.annotations.Expose;
 
-import com.github.jhorology.bitwig.reflect.MethodHolder;
+import com.github.jhorology.bitwig.rpc.RpcMethod;
 
 /**
  *  A class to use deserialization from JSON-RPC request message.
@@ -22,8 +20,7 @@ public class Request {
     
     private boolean notify;
     private Error error;
-    private MethodHolder methodHolder;
-    private Method rpcMethod;
+    private RpcMethod rpcMethod;
         
     public Request() {
     }
@@ -87,12 +84,12 @@ public class Request {
         this.error = error;
     }
 
-    public MethodHolder getMethodHolder() {
-        return methodHolder;
+    public RpcMethod getRpcMethod() {
+        return rpcMethod;
     }
 
-    public void setMethodHolder(MethodHolder methodHolder) {
-        this.methodHolder = methodHolder;
+    public void setRpcMethod(RpcMethod rpcMethod) {
+        this.rpcMethod = rpcMethod;
     }
 
     public boolean hasError() {

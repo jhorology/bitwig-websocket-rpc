@@ -3,9 +3,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jhorology.bitwig</groupId>
-  <artifactId>bitwig.websocket.rpc</artifactId>
+  <artifactId>bitwig-websocket-rpc</artifactId>
   <packaging>jar</packaging>
-  <name>bitwig-websocket-rpc</name>
+  <name>Bitwig WebSocket RPC server</name>
   <version>snapshot</version>
 
   <properties>

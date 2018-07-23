@@ -22,6 +22,8 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
+import com.github.jhorology.bitwig.websocket.protocol.Notification;
+import com.google.gson.JsonArray;
 import java.lang.reflect.Type;
 
 import com.google.gson.JsonElement;
@@ -29,19 +31,25 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
-public class ResponseAdapter implements JsonSerializer<Response> {
+public class NotificationAdapter implements JsonSerializer<Notification> {
 
     @Override
-    public JsonElement serialize(Response src, Type typeOfSrc, JsonSerializationContext context) {
+    public JsonElement serialize(Notification src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject json = new JsonObject();
-        json.addProperty("jsonrpc", src.getJsonrpc());
-        if (src.getResult() != null) {
-            json.add("result", context.serialize(src.getResult()));
+        json.addProperty("notification", src.getNotifictaion());
+        JsonElement params = context.serialize(src.getParams());
+        // flatten params
+        // params:[{a:1, b:2}] -> params:{a:1, b:2}
+        if (params.isJsonArray()) {
+            JsonArray arrayParams = params.getAsJsonArray();
+            if (arrayParams.size() == 1) {
+                JsonElement singleParam = arrayParams.get(0);
+                if (singleParam.isJsonObject()) {
+                    params = singleParam;
+                }
+            }
         }
-        if (src.getError() != null) {
-            json.add("error", context.serialize(src.getError()));
-        }
-        json.add("id", context.serialize(src.getId()));
+        json.add("params", params);
         return json;
     }
 }

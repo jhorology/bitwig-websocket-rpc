@@ -1,14 +1,37 @@
+/*
+ * Copyright (c) 2018 Masafumi Fujimaru
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.github.jhorology.bitwig.extension;
+
 import java.util.concurrent.Executor;
 
 /**
- * Executor class that always runs tasks on 'Control Surface Session' thread.
+ * Executor class that is used to execute task aasynchronously in the 'Control Surface Session' thread.
  */
 public class ControlSurfaceSessionExecutor implements Executor {
     private final AbstractExtension extension;
     
     /**
-     * Create an Executor that always runs tasks in 'Controller Surface Session' thread.
+     * Consutruct an instance of Executor.
      * @param extension 
      */
     public ControlSurfaceSessionExecutor(AbstractExtension extension) {
@@ -16,8 +39,7 @@ public class ControlSurfaceSessionExecutor implements Executor {
     }
     
     /**
-     * An implementation method of Executor interface
-     * @param command 
+     * {@inheritDoc}
      */
     @Override
     public void execute(Runnable command) {
