@@ -25,7 +25,7 @@ package com.github.jhorology.bitwig.websocket.protocol;
 import org.java_websocket.WebSocket;
 
 import com.github.jhorology.bitwig.extension.ExecutionContext;
-import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
+import com.github.jhorology.bitwig.rpc.RpcRegistry;
 
 /**
  * A context holder for RPC request state. <br>
@@ -33,16 +33,18 @@ import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
  */
 public class RequestContext {
     private WebSocket connection;
-    private ReflectionRegistry registry;
+    private RpcRegistry registry;
+    private PushModel pushModel;
 
     // private constructor to prevent instantiation of this class
     private RequestContext() {
     }
     
     // private constructor to prevent instantiation of this class
-    private RequestContext(WebSocket connection, ReflectionRegistry registry) {
+    private RequestContext(WebSocket connection, RpcRegistry registry, PushModel pushModel) {
         this.connection = connection;
         this.registry = registry;
+        this.pushModel= pushModel;
     }
     
     /**
@@ -50,8 +52,8 @@ public class RequestContext {
      * @param connection
      * @param registry
      */
-    static void init(WebSocket connection, ReflectionRegistry registry) {
-        RequestContext context = new RequestContext(connection, registry);
+    static void init(WebSocket connection, RpcRegistry registry, PushModel pushModel) {
+        RequestContext context = new RequestContext(connection, registry, pushModel);
         ExecutionContext.getContext().set(RequestContext.class, context);
     }
 
@@ -73,9 +75,17 @@ public class RequestContext {
 
     /**
      * Get a instance of ReflectionRegistry.
-     * @return The current context.
+     * @return An interface for RPC registry.
      */
-    public ReflectionRegistry getReflectionRegistry() {
+    public RpcRegistry getRpcRegistry() {
         return registry;
+    }
+    
+    /**
+     * Get a instance of PushModel.
+     * @return An interface for RPC registry.
+     */
+    public PushModel getPushModel() {
+        return pushModel;
     }
 }

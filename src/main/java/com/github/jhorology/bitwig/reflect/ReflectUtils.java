@@ -22,14 +22,11 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-import com.bitwig.extension.callback.BooleanValueChangedCallback;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.bitwig.extension.callback.Callback;
@@ -37,9 +34,8 @@ import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
 
-import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.rpc.RpcParamType;
 import java.lang.reflect.ParameterizedType;
-import java.util.function.Consumer;
 
 /**
  * utility class
@@ -53,90 +49,51 @@ public class ReflectUtils {
     private static List<Method> METHODS_OF_SUBSCRIBABLE = Arrays.asList(Subscribable.class.getMethods());
     private static List<Method> METHODS_OF_VALUE = Arrays.asList(Value.class.getMethods());
     
-    /**
-     * sloppy type enum that uses for lazy matching parameters.
-     */
-    public static enum SloppyType {
-        BOOLEAN,
-        NUMBER,
-        STRING,
-        OBJECT,
-        ARRAY_OF_BOOLEAN,
-        ARRAY_OF_NUMBER,
-        ARRAY_OF_STRING,
-        ARRAY_OF_OBJECT;
-
-        /**
-         * return a component type of this enum value if this enum is array type, 
-         * @return
-         */
-        public SloppyType arrayTypeOf() {
-            return isArray()
-                ? SloppyType.valueOf(this.name().substring(9))
-                : null;
-        }
-        
-        /**
-         * return a array type of this enum value if this enum is component type, 
-         * @return
-         */
-        public SloppyType toArrayType() {
-            return isArray()
-                ? null
-                : SloppyType.valueOf("ARRAY_OF_" + this.name());
-        }
-        
-        /**
-         * return this type is array or not.
-         * @return
-         */
-        public boolean isArray() {
-            return this.name().startsWith("ARRAY_OF_");
-        }
-    };
 
     /**
      * return a sloppy type of java strict type.
      * @param t paramter type.
      * @return
      */
-    public static SloppyType sloppyTypeOf(Type t) {
+    public static RpcParamType rpcParamTypeOf(Type t) {
         if (t instanceof Class) {
             Class<?> c = (Class)t;
             if (c.isPrimitive()) {
                 if (c.equals(boolean.class)) {
-                    return SloppyType.BOOLEAN;
+                    return RpcParamType.BOOLEAN;
+                } else if (Void.TYPE.equals(c)) {
+                    return RpcParamType.VOID;
                 } else {
-                    return SloppyType.NUMBER;
+                    return RpcParamType.NUMBER;
                 }
             } else if (c.isArray()) {
                 Class<?> cc = c.getComponentType();
                 if (cc.isPrimitive()) {
                     if (cc.equals(boolean.class)) {
-                        return SloppyType.ARRAY_OF_BOOLEAN;
+                        return RpcParamType.ARRAY_OF_BOOLEAN;
                     } else {
-                        return SloppyType.ARRAY_OF_NUMBER;
+                        return RpcParamType.ARRAY_OF_NUMBER;
                     }
                 } else if (Boolean.class.isAssignableFrom(cc)) {
-                    return SloppyType.ARRAY_OF_BOOLEAN;
+                    return RpcParamType.ARRAY_OF_BOOLEAN;
                 } else if (Number.class.isAssignableFrom(cc)) {
-                    return SloppyType.ARRAY_OF_NUMBER;
+                    return RpcParamType.ARRAY_OF_NUMBER;
                 } else if (String.class.isAssignableFrom(cc)) {
-                    return SloppyType.ARRAY_OF_STRING;
+                    return RpcParamType.ARRAY_OF_STRING;
                 } else {
-                    return SloppyType.ARRAY_OF_OBJECT;
+                    return RpcParamType.ARRAY_OF_OBJECT;
                 }
             } else if (Boolean.class.isAssignableFrom(c)) {
-                return SloppyType.BOOLEAN;
+                return RpcParamType.BOOLEAN;
             } else if (Number.class.isAssignableFrom(c)) {
-                return SloppyType.NUMBER;
+                return RpcParamType.NUMBER;
             } else if (String.class.isAssignableFrom(c)) {
-                return SloppyType.STRING;
+                return RpcParamType.STRING;
             }
         } else if (t instanceof GenericArrayType) {
-            return SloppyType.ARRAY_OF_OBJECT;
+            return RpcParamType.ARRAY_OF_OBJECT;
         }
-        return SloppyType.OBJECT;
+        return RpcParamType.OBJECT;
     };
 
     public static boolean isVarargs(Type[] paramTypes) {
@@ -271,4 +228,12 @@ public class ReflectUtils {
         return null;
     }
 
+    /**
+     * return method is depricated or not.
+     * @param method
+     * @return
+     */
+    public static boolean isDeprecated(Method method) {
+        return method.getAnnotation(Deprecated.class) != null;
+    }
 }

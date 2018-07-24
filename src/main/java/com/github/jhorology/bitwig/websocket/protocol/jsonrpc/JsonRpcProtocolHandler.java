@@ -152,7 +152,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
 
     private void send(WebSocket conn, String message) {
         conn.send(message);
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("message sended to " + conn.getRemoteSocketAddress() +
                       "\n <-- " + message);
         }
@@ -160,7 +160,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     
     private void push(String message, Collection<WebSocket> clients) {
         server.broadcast(message, clients);
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("broadcast message to " + clients.size() + " clients." +
                       "\n <-- " + message);
         }
@@ -168,7 +168,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     
     private void broadcast( String message) {
         server.broadcast(message);
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("broadcast message to all " + server.getConnections().size() + " clients." +
                       "\n <-- " + message);
         }

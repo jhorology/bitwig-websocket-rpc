@@ -26,7 +26,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import com.github.jhorology.bitwig.rpc.RpcMethod;
+import com.github.jhorology.bitwig.rpc.RpcParamType;
 
 public class MethodHolder implements RpcMethod {
     private final ModuleHolder<?> module;
@@ -103,6 +107,40 @@ public class MethodHolder implements RpcMethod {
         } else {
             sb.insert(0, module.getModuleName());
         }
+        return sb.toString();
+    }
+    
+    /**
+     * return a expression of this method.<be>
+     * @retuen
+     */
+    List<RpcParamType> getRpcParamTypes() {
+        return identifier.getRpcParamTypes();
+    }
+    
+    /**
+     * return a expression of this method.<be>
+     * @retuen
+     */
+    RpcParamType getRpcReturnType() {
+        return ReflectUtils
+            .rpcParamTypeOf(method.getGenericReturnType());
+    }
+    
+    /**
+     * return a expression of this method.<be>
+     * @retuen
+     */
+    String getMethodExpression() {
+        StringBuilder sb = new StringBuilder
+            (getRpcReturnType().getExpression());
+        sb.append(" ");
+        sb.append(getAbsoluteName());
+        sb.append("(");
+        sb.append(getRpcParamTypes().stream()
+                  .map(t -> t.getExpression())
+                  .collect(Collectors.joining(", ")));
+        sb.append(")");
         return sb.toString();
     }
 

@@ -1,0 +1,33 @@
+{
+  "name": "bitwig-websocket-rpc",
+  "version": "1.0.0",
+  "description": "Currentlly under construction, no use at all.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
+    "report": "coffee report-spec.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhorology/bitwig-websocket-rpc.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jhorology/bitwig-websocket-rpc/issues"
+  },
+  "homepage": "https://github.com/jhorology/bitwig-websocket-rpc#readme",
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "coffeescript": "^2.3.1",
+    "js-beautify": "^1.7.5",
+    "mocha": "^5.2.0",
+    "nyan": "^1.1.0",
+    "rpc-websockets": "^4.2.6",
+    "underscore": "^1.9.1"
+  }
+}

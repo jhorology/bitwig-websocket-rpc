@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -17,14 +16,14 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 
 import com.github.jhorology.bitwig.reflect.ReflectUtils;
-import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
-import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
+import com.github.jhorology.bitwig.rpc.RpcParamType;
+import com.github.jhorology.bitwig.rpc.RpcRegistry;
 
 public class RequestAdapter implements JsonDeserializer<Request> {
-    private final ReflectionRegistry registry;
+    private final RpcRegistry registry;
 
-    public RequestAdapter(ReflectionRegistry registry) {
+    public RequestAdapter(RpcRegistry registry) {
         this.registry = registry;
     }
     
@@ -56,7 +55,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             req.setMethod(method.getAsString());
 
             final JsonElement params = request.get("params");
-            RpcMethod rpcMethod = registry.getMethod(req.getMethod(), toSloppyParamTypes(params));
+            RpcMethod rpcMethod = registry.getRpcMethod(req.getMethod(), toRpcParamTypes(params));
             
             JsonPrimitive id = request.getAsJsonPrimitive("id");
             req.setNotify(false);
@@ -97,7 +96,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         return req;
     }
 
-    private List<SloppyType> toSloppyParamTypes(final JsonElement json) {
+    private List<RpcParamType> toRpcParamTypes(final JsonElement json) {
         if (json == null) {
             return Collections.emptyList();
         }
@@ -113,50 +112,50 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         if(json.isJsonObject()) {
             if (json.getAsJsonObject().entrySet().isEmpty())
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
-            return  Arrays.asList(new SloppyType[] {SloppyType.OBJECT});
+            return  Arrays.asList(new RpcParamType[] {RpcParamType.OBJECT});
         }
         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported type of 'params' property.");
     }
 
-    private SloppyType paramItemTypeOf(JsonElement json) {
+    private RpcParamType paramItemTypeOf(JsonElement json) {
         if (json.isJsonPrimitive()) {
             return primitiveParamTypeOf(json.getAsJsonPrimitive());
         }
         if (json.isJsonArray()) {
             final JsonArray ja = json.getAsJsonArray();
             if (ja.size() == 0) {
-                return SloppyType.ARRAY_OF_OBJECT;
+                return RpcParamType.ARRAY_OF_OBJECT;
             }
             // exclude doble nested array
             StreamSupport.stream(ja.spliterator(), false).forEach(e -> {
                     if (e.isJsonArray())
                         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported double nested array type of 'params' property.");
                 });
-            final SloppyType firstParamType = ja.get(0).isJsonPrimitive()
+            final RpcParamType firstParamType = ja.get(0).isJsonPrimitive()
                 ? primitiveParamTypeOf(ja.get(0).getAsJsonPrimitive())
-                : SloppyType.OBJECT;
+                : RpcParamType.OBJECT;
             if (ja.size() == 1) {
                 return firstParamType.toArrayType();
             }
             boolean allMatch = StreamSupport.stream(ja.spliterator(), false)
                 .skip(1)
-                .map(e -> e.isJsonPrimitive() ? primitiveParamTypeOf(e.getAsJsonPrimitive()) : SloppyType.OBJECT)
+                .map(e -> e.isJsonPrimitive() ? primitiveParamTypeOf(e.getAsJsonPrimitive()) : RpcParamType.OBJECT)
                 .allMatch(e -> e == firstParamType);
             if (allMatch) {
                 return firstParamType.toArrayType();
             }
-            return SloppyType.ARRAY_OF_OBJECT;
+            return RpcParamType.ARRAY_OF_OBJECT;
         }
-        return SloppyType.OBJECT;
+        return RpcParamType.OBJECT;
     }
 
-    private SloppyType primitiveParamTypeOf(JsonPrimitive json) {
+    private RpcParamType primitiveParamTypeOf(JsonPrimitive json) {
         if (json.isBoolean()) {
-            return SloppyType.BOOLEAN;
+            return RpcParamType.BOOLEAN;
         } else if (json.isNumber()) {
-            return SloppyType.NUMBER;
+            return RpcParamType.NUMBER;
         } else if (json.isString()) {
-            return SloppyType.STRING;
+            return RpcParamType.STRING;
         } else {
             throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported type of 'params' property.");
         }

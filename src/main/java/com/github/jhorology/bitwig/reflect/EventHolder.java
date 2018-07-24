@@ -80,9 +80,10 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     }
     
     @Override
-    public void post(Notification notification) {
+    public void post(Object params) {
         if (!clients.isEmpty()) {
             // trigger synchronous event
+            Notification notification = new Notification(getAbsoluteName(), params);
             pushEventBus.post(new NotificationEvent(notification, clients));
             triggerOnceClients.stream().forEach(e -> clients.remove(e));
             triggerOnceClients.clear();

@@ -25,12 +25,12 @@ package com.github.jhorology.bitwig.websocket.protocol;
 import java.net.InetSocketAddress;
 
 import com.google.common.eventbus.Subscribe;
+
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
 
-import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
+import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.BinaryMessageEvent;
 import com.github.jhorology.bitwig.websocket.CloseEvent;
 import com.github.jhorology.bitwig.websocket.ErrorEvent;
@@ -43,6 +43,7 @@ import com.github.jhorology.bitwig.websocket.TextMessageEvent;
  * An abstract base class of ProtocolHandler.
  */
 public abstract class AbstractProtocolHandler implements ProtocolHandler {
+    
     /**
      * an instance of WebSocketServer
      */
@@ -51,7 +52,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     /**
      * an instance of ReflectionRegistry
      */
-    protected ReflectionRegistry registry;
+    protected RpcRegistry registry;
 
     private Logger log;
     
@@ -59,9 +60,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     public final void onStart(StartEvent e) {
         log = Logger.getLogger(this.getClass());
         server = e.getWebSocketServer();
-        registry = e.getReflectionRegistry();
+        registry = e.getRpcRegistry();
         if (this instanceof PushModel) {
-            registry.subscribeNotification(this);
+            registry.subscribePushEvent(this);
         }
         onStart();
     }
@@ -69,14 +70,14 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public final void onStop(StopEvent e) {
         if (this instanceof PushModel) {
-            registry.unsubscribeNotification(this);
+            registry.unsubscribePushEvent(this);
         }
         onStop();
     }
 
     @Subscribe
     public void onOpen(OpenEvent e) {
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("new connection. remoteAddress:" + remoteAddress(e.getConnection()) +
                       "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
         }
@@ -85,7 +86,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onColse(CloseEvent e) {
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             WebSocket conn = e.getConnection();
             log.trace("connection closed. remoteAddress:" + remoteAddress(e.getConnection()) +
                       "\ncode:" + e.getCode() +
@@ -97,21 +98,23 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(TextMessageEvent e) {
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
-        RequestContext.init(e.getConnection(), registry);
+        RequestContext.init(e.getConnection(), registry,
+                            (this instanceof PushModel) ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
     }
     
     @Subscribe
     public void onMessage(BinaryMessageEvent e) {
-        if (log.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
-        RequestContext.init(e.getConnection(), registry);
+        RequestContext.init(e.getConnection(), registry,
+                            (this instanceof PushModel) ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
     }
     

@@ -4,12 +4,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-
-import com.github.jhorology.bitwig.reflect.ReflectUtils.SloppyType;
-import com.google.common.eventbus.EventBus;
 import java.lang.reflect.Method;
 
+import com.google.common.eventbus.EventBus;
+
+import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.rpc.RpcParamType;
+
 class ModuleHolder<T> {
+    // Logger
+    private static final Logger LOG = Logger.getLogger(ModuleHolder.class);
+    
     /**
      * the name of this module.
      */
@@ -29,7 +34,7 @@ class ModuleHolder<T> {
     
     protected final Map<MethodIdentifier, MethodHolder> methods;
     protected final Map<String, EventHolder> events;
-    
+
     /**
      * Constructor
      * @param moduleName
@@ -60,8 +65,15 @@ class ModuleHolder<T> {
         return moduleName;
     }
     
+    Map<MethodIdentifier, MethodHolder> getMethods() {
+        return methods;
+    }
+    
+    Map<String, EventHolder> getEvents() {
+        return events;
+    }
 
-    MethodHolder getMethod(String name, List<SloppyType> paramTypes) {
+    MethodHolder getMethod(String name, List<RpcParamType> paramTypes) {
         return methods.get(new MethodIdentifier(name, paramTypes));
     }
 
@@ -89,6 +101,17 @@ class ModuleHolder<T> {
     private void registerMethod(Method method, String prefix, MethodHolder parentChain) {
         // exclude addXxxxxObserver methods
         if (ReflectUtils.hasAnyCallbackParameter(method)) {
+            if (Logger.isWarnEnabled()) {
+                LOG.warn("Ignore registering [" + moduleName + "."
+                         + prefix + method.getName() + "] method that has callback paramater.");
+            }
+            return;
+        }
+        if (ReflectUtils.isDeprecated(method)) {
+            if (Logger.isWarnEnabled()) {
+                LOG.warn("Ignore registering deprecated [" + moduleName + "."
+                         + prefix + method.getName() + "] method.");
+            }
             return;
         }
         // method's return type is implemented the interfaces of both Subscribable and Value.
@@ -110,7 +133,11 @@ class ModuleHolder<T> {
             }
             // TODO
             if (mh.getParamTypes().length != 0) {
-                throw new UnsupportedOperationException("Not support Yet. '" + key + "' method that positions other than terminal end of chain has parameter(s).");
+                // throw new UnsupportedOperationException("Not support Yet. '" + key + "' method that positions midle of chain could not have parameter(s).");
+                if (Logger.isWarnEnabled()) {
+                    LOG.warn("Failed to register [" + moduleName
+                             + "." + key + "] method. The method that positions midle of chain could not have parameters." );
+                }
             }
             for(Method m : methods) {
                 registerMethod(m, key + ".", mh);

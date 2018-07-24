@@ -46,7 +46,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private Executor flushExecutor;
     private Stack<Object> modules;
     private Logger log;
-    
+
     /**
      * Constructor.<br/>
      * Inherited class should call this as super().
@@ -61,7 +61,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     /**
      * create events subscriber modules.
      * @return 
-     * @throws java.lang.Exception
      */
     protected abstract Object[] createModules() throws Exception;
 
@@ -97,9 +96,9 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         
         register(flushExecutor);
         try {
-            Object[] createdModules = createModules();
-            if (createdModules != null && createdModules.length > 0) {
-                Stream.of(createdModules).forEach(m -> register(m));
+            Object[] providedModules = createModules();
+            if (providedModules != null && providedModules.length > 0) {
+                Stream.of(providedModules).forEach(m -> register(m));
             }
         } catch (Exception ex) {
             log.error(ex);

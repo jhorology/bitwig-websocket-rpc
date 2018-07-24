@@ -22,14 +22,19 @@
  */
 package com.github.jhorology.bitwig;
 
-import java.net.UnknownHostException;
 
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.Transport;
 
 import com.github.jhorology.bitwig.extension.AbstractExtension;
+import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
+import com.github.jhorology.bitwig.rpc.Rpc;
+import com.github.jhorology.bitwig.rpc.RpcImpl;
+import com.github.jhorology.bitwig.rpc.test.Test;
+import com.github.jhorology.bitwig.rpc.test.TestImpl;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
-import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
+import java.util.function.Supplier;
 
 /**
  * Bitwig Studio extension to support RPC over WebSocket.
@@ -48,8 +53,11 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
      * {@inheritDoc}
      */
     @Override
-    protected Object[] createModules() throws UnknownHostException {
+    protected Object[] createModules() throws Exception {
         ReflectionRegistry registry = new ReflectionRegistry();
+        registry.register("test", Test.class, new TestImpl());
+        registry.register("rpc", Rpc.class, new RpcImpl());
+        registry.register("transport", Transport.class, getHost().createTransport());
         return new Object[] {
             registry,
             new WebSocketRpcServer(8887, Protocols.newJsonRpc20(), registry)

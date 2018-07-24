@@ -23,7 +23,7 @@ public class Notification {
      * @param params
      * @return
      */
-    public Notification(String notification, Object[] params) {
+    public Notification(String notification, Object params) {
         this.notification = notification;
         this.params = params;
     }

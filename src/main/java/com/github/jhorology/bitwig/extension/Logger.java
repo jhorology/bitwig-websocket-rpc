@@ -109,7 +109,7 @@ public class Logger {
      * Is trace logging currently enabled?
      * @return 
      */
-    public boolean isTraceEnabled() {
+    public static boolean isTraceEnabled() {
         return level <= TRACE;
     }
     
@@ -117,7 +117,7 @@ public class Logger {
      * Is info logging currently enabled?
      * @return 
      */
-    public boolean isInfoEnabled() {
+    public static boolean isInfoEnabled() {
         return level <= INFO;
     }
     
@@ -125,7 +125,7 @@ public class Logger {
      * Is warning logging currently enabled?
      * @return 
      */
-    public boolean isWarnEnabled() {
+    public static boolean isWarnEnabled() {
         return level <= WARN;
     }
     
@@ -155,7 +155,7 @@ public class Logger {
      */
     public void warn(String msg) {
         if (level <= WARN) {
-            log(formatLog(WARN, msg), std);
+            log(formatLog(WARN, msg), err);
         }
     }
 
