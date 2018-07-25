@@ -1,7 +1,5 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import com.google.gson.annotations.Expose;
-
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 
 /**
@@ -9,13 +7,9 @@ import com.github.jhorology.bitwig.rpc.RpcMethod;
  *  https://www.jsonrpc.org/specification
  */
 public class Request {
-    @Expose
     protected String jsonrpc;
-    @Expose
     private String method;
-    @Expose
     private Object params;
-    @Expose
     protected Object id;
     
     private boolean notify;

@@ -88,4 +88,11 @@ public class RequestContext {
     public PushModel getPushModel() {
         return pushModel;
     }
+
+    /**
+     * gurantee to execute next command in next tick.
+     */
+    public void nextTick() {
+        ExecutionContext.getContext().nextTick();
+    }
 }

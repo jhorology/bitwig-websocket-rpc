@@ -22,12 +22,13 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.lang.reflect.ParameterizedType;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.callback.BooleanValueChangedCallback;
@@ -57,28 +58,32 @@ import com.bitwig.extension.callback.SysexMidiDataReceivedCallback;
 import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class BitwigCallbacks {
     // TODO
+    // which is better?
     // convert multiple paramers to named parameter or not.
     private static final boolean PREFER_NAMED_PARAMS = true;
     
     // All knwon Subinterfaces of ValueChangedCallback
-    private static final Class<?>[] VALUE_CHANGED_CALLBACKS = {
-        BooleanValueChangedCallback.class,      // 0
-        ColorValueChangedCallback.class,        // 1
-        DoubleValueChangedCallback.class,       // 2
-        EnumValueChangedCallback.class,         // 3
-        IntegerValueChangedCallback.class,      // 4
-        ObjectValueChangedCallback.class,       // 5
-        StringArrayValueChangedCallback.class,  // 6
-        StringValueChangedCallback.class        // 7
-    };
-    private static final List<Class<?>> VALUE_CHANGED_CALLBACK_LIST = Arrays.asList(VALUE_CHANGED_CALLBACKS);
+    private static final Map<Class<?>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new HashMap<>();
+    static {
+        CALLBACK_FACTORY.put(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback);
+        CALLBACK_FACTORY.put(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback);
+        CALLBACK_FACTORY.put(DoubleValueChangedCallback.class,      BitwigCallbacks::newDoubleValueChangedCallback);
+        CALLBACK_FACTORY.put(EnumValueChangedCallback.class,        BitwigCallbacks::newEnumValueChangedCallback);
+        CALLBACK_FACTORY.put(IntegerValueChangedCallback.class,     BitwigCallbacks::newIntegerValueChangedCallback);
+        CALLBACK_FACTORY.put(StringArrayValueChangedCallback.class, BitwigCallbacks::newStringArrayValueChangedCallback);
+        CALLBACK_FACTORY.put(StringValueChangedCallback.class,      BitwigCallbacks::newStringValueChangedCallback);
+        CALLBACK_FACTORY.put(ObjectValueChangedCallback.class,      BitwigCallbacks::newObjectValueChangedCallback);
+    }
 
     /**
-     * add the observer to instance of Value interface.<br>
-     * All knwon Subinterfaces of ValueChangedCallback:
+     * create a new callback for 'addValueObserber' method from the instance of Value interface.
+     * All Konwn Subinterfaces of ValueChangedCallback:
      * <pre>{@code
      *   BooleanValueChangedCallback
      *   ColorValueChangedCallback
@@ -89,52 +94,33 @@ public class BitwigCallbacks {
      *     StringValueChangedCallback
      *   StringArrayValueChangedCallback
      * }</pre>
-     * @param value the instance of Value interface
+     * @param value the instance of Value interface.
      * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @return new callback instance
      */
-    @SuppressWarnings("unchecked")
-    public static void addObserver(Value<? extends ValueChangedCallback> value, Consumer<Object> lamda) {
-        Class<? extends ValueChangedCallback> callbackType = ReflectUtils.getBitwigCallbackType(value);
+    public static ValueChangedCallback newValueChangedCallback(Value<? extends ValueChangedCallback>value, Consumer<Object> lamda) {
+        Class<?> callbackType = Stream.of(value.getClass().getMethods())
+            .filter(m -> "addValueObserver".equals(m.getName()))
+            .map(m -> m.getParameterTypes())
+            .filter(t -> t.length == 1)
+            .map(t -> t[0])
+            .filter(t -> !ValueChangedCallback.class.equals(t))
+            .findFirst().orElse(null);
+        
         if (callbackType == null) {
-            throw new UnsupportedOperationException("Unknwon Value type ["
+            throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type ["
                                                     + value.getClass()
-                                                    + "].  Couldn't register observer");
+                                                    + "].");
         }
-        int index = VALUE_CHANGED_CALLBACK_LIST.indexOf(callbackType);
-        if (index < 0) {
-            throw new UnsupportedOperationException("Unknwon callback type ["
+        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = CALLBACK_FACTORY.get(callbackType);
+        if (factory == null) {
+            throw new UnsupportedOperationException("Unsupported callback type ["
                                                     + callbackType
-                                                    + "].  Couldn't register observer");
+                                                    + "].");
         }
-        switch (index) {
-        case 0: ((Value<BooleanValueChangedCallback>)value)
-                .addValueObserver(newBooleanValueChangedCallback(lamda));
-            return;
-        case 1: ((Value<ColorValueChangedCallback>)value)
-                .addValueObserver(newColorValueChangedCallback(lamda));
-            return;
-        case 2: ((Value<DoubleValueChangedCallback>)value)
-                .addValueObserver(newDoubleValueChangedCallback(lamda));
-            return;
-        case 3: ((Value<EnumValueChangedCallback>)value)
-                .addValueObserver(newEnumValueChangedCallback(lamda));
-            return;
-        case 4: ((Value<IntegerValueChangedCallback>)value)
-                .addValueObserver(newIntegerValueChangedCallback(lamda));
-            return;
-            // TODO ObjectValueChangedCallback is generic type.
-        case 5: ((Value<ObjectValueChangedCallback>)value)
-                .addValueObserver(newObjectValueChangedCallback(lamda));
-            return;
-        case 6: ((Value<StringArrayValueChangedCallback>)value)
-                .addValueObserver(newStringArrayValueChangedCallback(lamda));
-            return;
-        case 7: ((Value<StringValueChangedCallback>)value)
-                .addValueObserver(newStringValueChangedCallback(lamda));
-            return;
-        }
+        return factory.apply(lamda);
     }
-
+    
     /**
      * create new BooleanValueChangedCallback.
      * @param lamda the lamda consumer to observe the callback parameter(s).

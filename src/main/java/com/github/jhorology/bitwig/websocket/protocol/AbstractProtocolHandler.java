@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.websocket.protocol;
 
 import java.net.InetSocketAddress;
+import java.util.Collection;
 
 import com.google.common.eventbus.Subscribe;
 
@@ -58,7 +59,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public final void onStart(StartEvent e) {
-        log = Logger.getLogger(this.getClass());
+        log = Logger.getLogger(AbstractProtocolHandler.class);
         server = e.getWebSocketServer();
         registry = e.getRpcRegistry();
         if (this instanceof PushModel) {
@@ -120,7 +121,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onError(ErrorEvent e) {
-        log.error("error occurred remoteAddress:"  + remoteAddress(e.getConnection()), e.getException());
+        Logger.getLogger(AbstractProtocolHandler.class)
+            .error("error occurred remoteAddress:"  + remoteAddress(e.getConnection()), e.getException());
         onError(e.getConnection(), e.getException());
     }
 
@@ -140,5 +142,33 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
         return conn != null
             ? conn.getRemoteSocketAddress()
             : null;
+    }
+
+    protected void send(String message) {
+        send(message, RequestContext.getContext().getConnection());
+    }
+    
+    protected void send(String message, WebSocket conn) {
+        conn.send(message);
+        if (Logger.isTraceEnabled()) {
+            log.trace("message sended to " + conn.getRemoteSocketAddress() +
+                      "\n <-- " + message);
+        }
+    }
+    
+    protected void push(String message, Collection<WebSocket> clients) {
+        server.broadcast(message, clients);
+        if (Logger.isTraceEnabled()) {
+            log.trace("broadcast message to " + clients.size() + " clients." +
+                      "\n <-- " + message);
+        }
+    }
+    
+    protected void broadcast(String message) {
+        server.broadcast(message);
+        if (Logger.isTraceEnabled()) {
+            log.trace("broadcast message to all " + server.getConnections().size() + " clients." +
+                      "\n <-- " + message);
+        }
     }
 }

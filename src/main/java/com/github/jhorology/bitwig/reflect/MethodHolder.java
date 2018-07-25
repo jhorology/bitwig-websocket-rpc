@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import java.lang.reflect.Proxy;
 
 public class MethodHolder implements RpcMethod {
     private final ModuleHolder<?> module;
@@ -177,12 +178,30 @@ public class MethodHolder implements RpcMethod {
     }
 
     protected Object internalInvoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
-        if (params == null || params.length == 0) {
-            return method.invoke(staticMethod ? null : getMethodInstance());
+        Object ret;
+        if (staticMethod) {
+            if (params == null || params.length == 0) {
+                ret = method.invoke(null);
+            } else {
+                if (varargs) {
+                    ret = method.invoke(null, new Object[] {params});
+                } else {
+                    ret = method.invoke(null, params);
+                }
+            }
         } else {
-            return varargs
-                ? method.invoke(staticMethod ? null : getMethodInstance(), new Object[] {params})
-                : method.invoke(staticMethod ? null : getMethodInstance(), params);
+            Object target = getMethodInstance();
+            boolean proxy = Proxy.isProxyClass(target.getClass());
+            if (params == null || params.length == 0) {
+                ret = method.invoke(target);
+            } else {
+                if (varargs) {
+                    ret = method.invoke(target, new Object[] {params});
+                } else {
+                    ret = method.invoke(target, params);
+                }
+            }
         }
+        return ret;
     }
 }

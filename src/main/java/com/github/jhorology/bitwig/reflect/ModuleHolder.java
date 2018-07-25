@@ -101,20 +101,20 @@ class ModuleHolder<T> {
     private void registerMethod(Method method, String prefix, MethodHolder parentChain) {
         // exclude addXxxxxObserver methods
         if (ReflectUtils.hasAnyCallbackParameter(method)) {
-            if (Logger.isWarnEnabled()) {
+            if (false && Logger.isWarnEnabled()) {
                 LOG.warn("Ignore registering [" + moduleName + "."
                          + prefix + method.getName() + "] method that has callback paramater.");
             }
             return;
         }
         if (ReflectUtils.isDeprecated(method)) {
-            if (Logger.isWarnEnabled()) {
+            if (false && Logger.isWarnEnabled()) {
                 LOG.warn("Ignore registering deprecated [" + moduleName + "."
                          + prefix + method.getName() + "] method.");
             }
             return;
         }
-        // method's return type is implemented the interfaces of both Subscribable and Value.
+        // method's return type is inherited from Value interface.
         boolean isEvent = ReflectUtils.isBitwigEvent(method);
         MethodHolder mh = isEvent
             ? new EventHolder(this, method, parentChain, pushEventBus)

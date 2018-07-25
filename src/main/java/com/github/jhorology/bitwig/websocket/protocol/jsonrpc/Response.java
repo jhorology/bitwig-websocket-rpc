@@ -1,19 +1,13 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import com.google.gson.annotations.Expose;
-
 /**
  *  A class to use for JSON srialization of response message.
  *  @see https://www.jsonrpc.org/specification
  */
 public class Response {
-    @Expose
     private String jsonrpc;
-    @Expose
     private Object result;
-    @Expose
     private Error error;
-    @Expose
     private Object id;
 
     public Response() {

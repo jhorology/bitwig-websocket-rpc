@@ -37,6 +37,7 @@ public class ExecutionContext {
 
     private AbstractExtension extension;
     private final Map<String, Object> values;
+    private boolean nextTick;
     
     /**
      * initialize the context
@@ -100,6 +101,21 @@ public class ExecutionContext {
      */
     public Executor getFlushExecutor() {
         return extension.getFlushExecutor();
+    }
+    
+    /**
+     * gurantee to execute next command in next tick.
+     */
+    public void nextTick() {
+        nextTick = true;
+    }
+    
+    /**
+     * nextTick() method was called in this context or not.
+     * @return
+     */
+    public boolean isNextTickRequested() {
+        return nextTick;
     }
     
     /**

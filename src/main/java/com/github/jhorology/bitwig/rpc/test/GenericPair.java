@@ -1,14 +1,10 @@
 package com.github.jhorology.bitwig.rpc.test;
 
-import com.google.gson.annotations.Expose;
-
 /**
  * Generic POJO class for testing JSON deserialization
  */
 public class GenericPair<L, R> {
-    @Expose
     private L left;
-    @Expose
     private R right;
 
     public GenericPair() {

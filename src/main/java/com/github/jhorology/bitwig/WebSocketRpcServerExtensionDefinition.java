@@ -74,7 +74,7 @@ public class WebSocketRpcServerExtensionDefinition extends ControllerExtensionDe
 
     @Override
     public int getRequiredAPIVersion() {
-        return 6;
+        return 7;
     }
 
     @Override

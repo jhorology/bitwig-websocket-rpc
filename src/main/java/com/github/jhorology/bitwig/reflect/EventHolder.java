@@ -22,7 +22,10 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.Subscribable;
+import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcException;
 import java.lang.reflect.Method;
@@ -54,8 +57,29 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         this.pushEventBus =pushEventBus;
         clients = new LinkedList<>();
         triggerOnceClients = new ArrayList<>();
+        subscribeBitwigEvent();
     }
 
+    private void subscribeBitwigEvent() {
+        try {
+            Value valueObject = (Value)getReturnValue();
+            ValueChangedCallback callback =
+                BitwigCallbacks.newValueChangedCallback(valueObject, v -> {
+                        if (!clients.isEmpty()) {
+                            Notification notification = new Notification(this.getAbsoluteName(), v);
+                            pushEventBus.post(new NotificationEvent(notification, clients));
+                        }
+                    });
+            valueObject.addValueObserver(callback);
+            syncSubscribedState();
+            Logger.getLogger(EventHolder.class)
+                .info("Event[" + getAbsoluteName() + "] Succeed registering observer.");
+        } catch (Exception ex) {
+            Logger.getLogger(EventHolder.class)
+                .error("Event[" + getAbsoluteName() + "] Failed registering observer.", ex);
+        }
+    }
+    
     @Override
     public void subscribe(WebSocket client) {
         if (!clients.contains(client)) {

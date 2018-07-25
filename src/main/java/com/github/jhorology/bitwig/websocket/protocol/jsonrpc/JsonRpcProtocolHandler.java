@@ -25,13 +25,14 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     
     @Override
     public void onStart() {
-        log = Logger.getLogger(this.getClass());
+        log = Logger.getLogger(JsonRpcProtocolHandler.class);
         GsonBuilder gsonBuilder = BitwigAdapters.newGsonBuilder()
             .serializeNulls()
-            .excludeFieldsWithoutExposeAnnotation()
+            // .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
             .registerTypeAdapter(Request.class, new RequestAdapter(registry))
             .registerTypeAdapter(Response.class, new ResponseAdapter())
+            .registerTypeAdapter(Error.class, new ErrorAdapter())
             .registerTypeAdapter(Notification.class, new NotificationAdapter());
         gson = gsonBuilder.create();
     }
@@ -81,7 +82,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
             response = onSingleRequest(req.getRequest());
         }
         if (response != null) {
-            send(conn, response);
+            send(response, conn);
         }
     }
 
@@ -147,30 +148,6 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     
     private void sendError(WebSocket conn, ErrorEnum error, Object data, Object id) {
         Response res = createErrorResponse(error, data, id);
-        send(conn, gson.toJson(res));
-    }
-
-    private void send(WebSocket conn, String message) {
-        conn.send(message);
-        if (Logger.isTraceEnabled()) {
-            log.trace("message sended to " + conn.getRemoteSocketAddress() +
-                      "\n <-- " + message);
-        }
-    }
-    
-    private void push(String message, Collection<WebSocket> clients) {
-        server.broadcast(message, clients);
-        if (Logger.isTraceEnabled()) {
-            log.trace("broadcast message to " + clients.size() + " clients." +
-                      "\n <-- " + message);
-        }
-    }
-    
-    private void broadcast( String message) {
-        server.broadcast(message);
-        if (Logger.isTraceEnabled()) {
-            log.trace("broadcast message to all " + server.getConnections().size() + " clients." +
-                      "\n <-- " + message);
-        }
+        send(gson.toJson(res), conn);
     }
 }

@@ -206,7 +206,7 @@ public class ReflectionRegistry
     }
 
     private ImmutablePair<String, String> parseName(String name) {
-        int index = name.lastIndexOf('.');
+        int index = name.indexOf('.');
         if (index < 1 || index > (name.length() - 1)) {
             log.warn("name should be formatted as \"[moduleName].[method or event name]\".");
             return null;

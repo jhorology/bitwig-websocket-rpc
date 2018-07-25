@@ -44,7 +44,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     @Subscribe
     public void onInit(InitEvent e) {
         log = Logger.getLogger(WebSocketRpcServer.class);
-        eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
+        eventBus = new AsyncEventBus(e.getFlushExecutor(), this);
         eventBus.register(protocol);
         start();
         log.info("WebSocket RPC server started.");
@@ -54,6 +54,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     public void onExit(ExitEvent e) {
         try {
             stop();
+            eventBus.post(new StopEvent());
             log.info("WebSocket RPC server stopped.");
         } catch (IOException ex) {
             log.error(ex);
@@ -68,7 +69,6 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     @Override
     public void run() {
         super.run();
-        eventBus.post(new StopEvent());
     }
 
     @Override

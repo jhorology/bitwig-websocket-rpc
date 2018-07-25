@@ -30,12 +30,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.bitwig.extension.callback.Callback;
-import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
 
 import com.github.jhorology.bitwig.rpc.RpcParamType;
-import java.lang.reflect.ParameterizedType;
 
 /**
  * utility class
@@ -206,26 +204,6 @@ public class ReflectUtils {
     public static boolean hasAnyCallbackParameter(Method method) {
         return Stream.of(method.getParameterTypes())
             .anyMatch(Callback.class::isAssignableFrom);
-    }
-
-    /**
-     * get a callback type of 'addValueObserber' method from the instance of Value interface.
-     * @param value the instance of Value interface.
-     * @return callback type
-     */
-    public static Class<? extends ValueChangedCallback> getBitwigCallbackType(Value<? extends ValueChangedCallback> value) {
-        if (value == null) {
-            return null;
-        }
-        for(Type t : value.getClass().getGenericInterfaces()) {
-            if (t instanceof ParameterizedType) {
-                ParameterizedType pt = (ParameterizedType)t;
-                if (Value.class.equals(pt.getRawType())) {
-                    return (Class<? extends ValueChangedCallback>)pt.getActualTypeArguments()[0];
-                }
-            }
-        }
-        return null;
     }
 
     /**

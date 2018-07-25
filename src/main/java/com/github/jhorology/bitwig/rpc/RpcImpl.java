@@ -22,6 +22,8 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+import com.bitwig.extension.callback.StringValueChangedCallback;
+import com.bitwig.extension.controller.api.Value;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -69,6 +71,24 @@ public class RpcImpl implements Rpc {
         return acceptEvents(eventNames, (e, c) -> e.unsubscribe(c));
     }
 
+    /**
+     * wait for next tick to gurantee value integrity of concurrency.
+     */
+    @Override
+    public void nextTick() {
+        RequestContext.getContext().nextTick();
+    }
+    
+    /**
+     * log event for debugging
+     * @return
+     */
+    @Override
+    public Value<StringValueChangedCallback> log() {
+        // TODO
+        return null;
+    }
+    
     /**
      * just return back message to remote connection.
      * @param message

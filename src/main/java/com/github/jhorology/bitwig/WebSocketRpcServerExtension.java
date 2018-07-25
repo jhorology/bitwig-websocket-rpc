@@ -54,10 +54,12 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
      */
     @Override
     protected Object[] createModules() throws Exception {
+        Transport transport = getHost().createTransport();
+        // transport.isPlaying().markInterested();
         ReflectionRegistry registry = new ReflectionRegistry();
         registry.register("test", Test.class, new TestImpl());
         registry.register("rpc", Rpc.class, new RpcImpl());
-        registry.register("transport", Transport.class, getHost().createTransport());
+        registry.register("transport", Transport.class, transport);
         return new Object[] {
             registry,
             new WebSocketRpcServer(8887, Protocols.newJsonRpc20(), registry)

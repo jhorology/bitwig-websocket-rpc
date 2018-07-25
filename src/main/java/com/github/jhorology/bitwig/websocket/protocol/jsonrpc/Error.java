@@ -1,16 +1,11 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import com.google.gson.annotations.Expose;
-
 /**
  *  https://www.jsonrpc.org/specification
  */
 public class Error {
-    @Expose
     private int code;
-    @Expose
     private String message;
-    @Expose
     private Object data;
 
     public Error(ErrorEnum error, Object data) {

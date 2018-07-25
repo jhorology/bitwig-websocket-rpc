@@ -7,8 +7,10 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
-    "report": "coffee report-spec.coffee"
+    "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
+    "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
+    "report": "coffee report-spec.coffee",
+    "coffeelint": "coffeelint -f coffeelint.json test/"
   },
   "repository": {
     "type": "git",
@@ -23,6 +25,7 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "coffeelint": "^2.1.0",
     "coffeescript": "^2.3.1",
     "js-beautify": "^1.7.5",
     "mocha": "^5.2.0",

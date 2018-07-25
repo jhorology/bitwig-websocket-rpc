@@ -6,7 +6,7 @@ processRequest = testUtils.processRequest
 $ =
   reportFile: 'rpc-implementation-spec.json'
   
-processRequest {jsonrpc: '2.0', method:'rpc.report', id:1}
+processRequest undefined, {jsonrpc: '2.0', method:'rpc.report', id:1}
  .then (response) ->
    if response.error
      console.error response.error

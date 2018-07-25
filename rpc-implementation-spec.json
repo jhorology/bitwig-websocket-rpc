@@ -9,6 +9,10 @@
       "params": ["String"],
       "return": "String"
     }, {
+      "method": "rpc.nextTick",
+      "params": [],
+      "return": "void"
+    }, {
       "method": "rpc.off",
       "params": ["String[]"],
       "return": "Object"

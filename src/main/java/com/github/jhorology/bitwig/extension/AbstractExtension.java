@@ -68,6 +68,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      * get a Executor to run the task from other than 'Control Surface Session' thread.
      * @return 
      */
+    @Deprecated
     Executor getAsyncExecutor() {
         return asyncExecutor;
     }
@@ -85,7 +86,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     @Override
     public void init() {
-        log = Logger.getLogger(this.getClass());
+        log = Logger.getLogger(AbstractExtension.class);
         eventBus = new EventBus(this);
         asyncExecutor = new ControlSurfaceSessionExecutor(this);
         flushExecutor = new FlushExecutor();

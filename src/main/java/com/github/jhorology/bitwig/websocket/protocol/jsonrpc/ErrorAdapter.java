@@ -20,39 +20,27 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig.extension;
+package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
-import java.util.concurrent.Executor;
+import java.lang.reflect.Type;
 
-/**
- * Executor class that is used to execute task aasynchronously in the 'Control Surface Session' thread.
- */
-@Deprecated
-public class ControlSurfaceSessionExecutor implements Executor {
-    private final AbstractExtension extension;
-    
-    /**
-     * Consutruct an instance of Executor.
-     * @param extension 
-     */
-    public ControlSurfaceSessionExecutor(AbstractExtension extension) {
-        this.extension = extension;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+public class ErrorAdapter implements JsonSerializer<Error> {
+
     @Override
-    public synchronized void execute(Runnable command) {
-        // This is not Safe
-        // easy to see ConcurrentModificationException
-        extension.getHost().scheduleTask(() -> {
-                ExecutionContext.init(extension);
-                try {
-                    command.run();
-                } finally {
-                    ExecutionContext.destroy();
-                }
-            }, 0L);
+    public JsonElement serialize(Error src, Type typeOfSrc, JsonSerializationContext context) {
+        JsonObject json = new JsonObject();
+        json.addProperty("code", src.getCode());
+        json.addProperty("message", src.getMessage());
+        if (src.getData() != null) {
+            json.add("data", context.serialize(src.getData()));
+        }
+        return json;
     }
 }
+
+
