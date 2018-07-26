@@ -10,6 +10,7 @@ import com.google.common.eventbus.EventBus;
 
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 class ModuleHolder<T> {
@@ -106,7 +107,8 @@ class ModuleHolder<T> {
      * @return 
      */
     Object report() {
-        Map<String, List<Object>> report = new HashMap<>();
+        Map<String, Object> report = new LinkedHashMap<>();
+        report.put("name", getModuleName());
         report.put("methods", reportMethods());
         report.put("events", reportEvents());
         return report;

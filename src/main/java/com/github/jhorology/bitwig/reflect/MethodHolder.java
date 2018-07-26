@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -228,7 +228,7 @@ public class MethodHolder implements RpcMethod {
      * @return 
      */
     Object report() {
-        Map<String, Object> report = new HashMap<>();
+        Map<String, Object> report = new LinkedHashMap<>();
         report.put("method", getAbsoluteName());
         report.put("params", getRpcParamTypes()
                    .stream()

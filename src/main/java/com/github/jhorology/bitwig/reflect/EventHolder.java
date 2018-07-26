@@ -22,6 +22,12 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
@@ -29,17 +35,12 @@ import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 
 import com.google.common.eventbus.EventBus;
 import org.java_websocket.WebSocket;
 
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.NotificationEvent;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * An event holder class.<br>
@@ -93,8 +94,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             pushEventBus.post(new NotificationEvent(notification, clients));
             triggerOnceClients.stream().forEach(e -> clients.remove(e));
             triggerOnceClients.clear();
+            syncSubscribedState();
         }
-        syncSubscribedState();
     }
     
     /**
@@ -112,7 +113,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
      * @return 
      */
     Object report() {
-        Map<String, Object> report = new HashMap<>();
+        Map<String, Object> report = new LinkedHashMap<>();
         report.put("event", getAbsoluteName());
         return report;
     }

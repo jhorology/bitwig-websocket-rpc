@@ -13214,11 +13214,11 @@ wsConnect = function() {
       ws.onerror = void 0;
       return clearTimeout(timer);
     };
-    ws.onopen = function(err) {
+    ws.onopen = function() {
       clear();
       return resolve(ws);
     };
-    ws.onerror = function() {
+    ws.onerror = function(err) {
       clear();
       return reject(err);
     };
@@ -13238,8 +13238,8 @@ wsClose = function(ws) {
     }
     timer = void 0;
     clear = function() {
-      ws.onclose = null;
-      ws.onerror = null;
+      ws.onclose = void 0;
+      ws.onerror = void 0;
       return clearTimeout(timer);
     };
     ws.onclose = function() {
@@ -13263,8 +13263,8 @@ _sendAndResponse = function(ws, req, assertError, notify) {
     var clear, timer;
     timer = void 0;
     clear = function() {
-      ws.onmessage = null;
-      ws.onerror = null;
+      ws.onmessage = void 0;
+      ws.onerror = void 0;
       return clearTimeout(timer);
     };
     ws.onmessage = function(message) {
@@ -13362,7 +13362,8 @@ wsClose = utils.wsClose;
 
 $ = {
   OK: 'ok',
-  expectError: true
+  expectError: true,
+  nextTickMillis: 50
 };
 
 describe('Transport Module', function() {
@@ -13387,22 +13388,11 @@ describe('Transport Module', function() {
       method: 'transport.isPlaying.subscribe'
     }).should.become($.OK);
   });
-  it('nextTick()', function() {
+  it(`nextTick(${$.nextTickMillis})`, function() {
     return wsNotify(ws, {
       jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
+      method: 'rpc.nextTick',
+      params: [$.nextTickMillis]
     }).should.become($.OK);
   });
   it('stop()', function() {
@@ -13411,28 +13401,11 @@ describe('Transport Module', function() {
       method: 'transport.stop'
     }).should.become($.OK);
   });
-  it('nextTick()', function() {
+  it(`nextTick(${$.nextTickMillis})`, function() {
     return wsNotify(ws, {
       jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
+      method: 'rpc.nextTick',
+      params: [$.nextTickMillis]
     }).should.become($.OK);
   });
   it('isPlaying.get id:1', function() {
@@ -13463,22 +13436,11 @@ describe('Transport Module', function() {
       method: 'transport.play'
     }).should.become($.OK);
   });
-  it('nextTick()', function() {
+  it(`nextTick(${$.nextTickMillis})`, function() {
     return wsNotify(ws, {
       jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
-    }).should.become($.OK);
-  });
-  it('nextTick()', function() {
-    return wsNotify(ws, {
-      jsonrpc: '2.0',
-      method: 'rpc.nextTick'
+      method: 'rpc.nextTick',
+      params: [$.nextTickMillis]
     }).should.become($.OK);
   });
   it('isPlaying.get() id:2', function() {

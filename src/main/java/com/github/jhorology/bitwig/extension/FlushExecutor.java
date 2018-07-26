@@ -51,7 +51,7 @@ public class FlushExecutor implements Executor {
     @Override
     public synchronized void execute(Runnable command) {
         tasks.add(command);
-        if (state == IDLE) {
+        if (state != WAITING) {
             // TODO
             // is this safe?
             // maybe not callable from other than control surface session thread.

@@ -26,7 +26,8 @@ import com.bitwig.extension.Extension;
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.api.Host;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,7 +46,6 @@ import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
-import java.util.Date;
 
 public class ReflectionRegistry
     implements RpcRegistry,SubscriberExceptionHandler {
@@ -132,7 +132,7 @@ public class ReflectionRegistry
      */
     @Override
     public Object report() {
-        Map<String, Object> report = new HashMap<>();
+        Map<String, Object> report = new LinkedHashMap<>();
         report.put("reportedOn", new Date());
         report.put("host", reportHost());
         report.put("extension", reportExtension());
@@ -175,7 +175,7 @@ public class ReflectionRegistry
      * @return 
      */
     private Object reportHost() {
-        Map<String,Object> report = new HashMap<>();
+        Map<String,Object> report = new LinkedHashMap<>();
         Host host = extension.getHost();
         report.put("apiVersion", host.getHostApiVersion());
         report.put("product", host.getHostProduct());
@@ -190,7 +190,7 @@ public class ReflectionRegistry
      * @return 
      */
     private Object reportExtension() {
-        Map<String,Object> report = new HashMap<>();
+        Map<String,Object> report = new LinkedHashMap<>();
         ExtensionDefinition def = extension.getExtensionDefinition();
         report.put("name", def.getName());
         report.put("author", def.getAuthor());

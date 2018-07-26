@@ -13,7 +13,7 @@ wsClose= utils.wsClose
 $ =
   OK: 'ok'
   expectError: on
-
+  nextTickMillis: 50
 describe 'Transport Module', ->
   ws = undefined
   before ->
@@ -30,31 +30,15 @@ describe 'Transport Module', ->
   it 'isPlaying.subscrive()', ->
     wsNotify ws, {jsonrpc: '2.0', method: 'transport.isPlaying.subscribe'}
       .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
+  it "nextTick(#{$.nextTickMillis})", ->
+    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
       .should.become $.OK
       
   it 'stop()', ->
     wsNotify ws, {jsonrpc: '2.0', method: 'transport.stop'}
       .should.become $.OK
-      
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
+  it "nextTick(#{$.nextTickMillis})", ->
+    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
       .should.become $.OK
       
   it 'isPlaying.get id:1', ->
@@ -68,15 +52,8 @@ describe 'Transport Module', ->
   it 'play()', ->
     wsNotify ws, {jsonrpc:'2.0', method: 'transport.play'}
       .should.become $.OK
-      
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
-      .should.become $.OK
-  it 'nextTick()', ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick'}
+  it "nextTick(#{$.nextTickMillis})", ->
+    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
       .should.become $.OK
       
   it 'isPlaying.get() id:2', ->
