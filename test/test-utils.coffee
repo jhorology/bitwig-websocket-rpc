@@ -1,11 +1,11 @@
-WebSocket = require 'ws'
-_         = require 'underscore'
 chai      = require 'chai'
+WebSocket = require 'isomorphic-ws'
+_         = require 'underscore'
 assert = chai.assert
 
 $ =
   url: 'ws://localhost:8887'
-  timeout: 700
+  timeout: 1000
   printMessage: off
   echoRequest:  {jsonrpc: '2.0', method: 'rpc.echo', params: ['ok'], id: 999}
   echoResponse: {jsonrpc: '2.0', result: 'ok', id: 999}
@@ -17,7 +17,7 @@ $ =
 #    ... close
 # @req request message
 # -----------------------------
-processRequest = (ws, req, assertError) ->
+wsRequest = (ws, req, assertError) ->
   # use static onnection
   return _sendAndResponse ws, req, assertError, off  if ws
   # use one-by-one connection
@@ -36,7 +36,7 @@ processRequest = (ws, req, assertError) ->
   #    ... close
   # @req  notify message
   # -----------------------------
-processNotify = (ws, req, assertError) ->
+wsNotify = (ws, req, assertError) ->
   # use static onnection
   return _sendAndResponse ws, req, assertError, on if ws
   # use one-by-one connection
@@ -50,77 +50,69 @@ processNotify = (ws, req, assertError) ->
 # connect to BitigStudio via WebSocket
 wsConnect = ->
   return new Promise (resolve, reject) ->
-    timer = onOpen = onError = undefined
+    timer = undefined
     ws = new WebSocket $.url
     clear = ->
-      ws.off 'open', onOpen
-      ws.off 'error', onError
+      ws.onopen = undefined
+      ws.onerror = undefined
       clearTimeout timer
-    onOpen = (err) ->
+    ws.onopen = (err) ->
       clear()
-      if err
-        reject err
       resolve ws
-    onError = (err) ->
+    ws.onerror = () ->
       clear()
       reject err
     timer = setTimeout ->
       clear()
       reject new Error 'connection open timeout.'
     , $.timeout
-    ws.once 'open', onOpen
-    ws.once 'error',onError
 
 # close connection
 wsClose = (ws) ->
   return new Promise (resolve, reject) ->
     return resolve() unless ws
-    timer = onClose = onError = undefined
+    timer = undefined
     clear = () ->
-      ws.off 'close', onClose
-      ws.off 'error', onError
+      ws.onclose = null
+      ws.onerror = null
       clearTimeout timer
-    onClose = ->
+    ws.onclose = ->
       clear()
       resolve()
-    onError = (err) ->
+    ws.onerror = (err) ->
       clear()
       reject err
     timer = setTimeout ->
       clear()
       reject new Error 'connection close timeout.'
     , $.timeout
-    ws.once 'close', onClose
-    ws.once 'error', onError
     ws.close()
     
 _sendAndResponse = (ws, req, assertError, notify) ->
   return new Promise (resolve, reject) ->
-    timer = onMessage = onError = undefined
+    timer = undefined
     clear = () ->
-      ws.off 'message', onMessage
-      ws.off 'error', onError
+      ws.onmessage = null
+      ws.onerror = null
       clearTimeout timer
-    onMessage = (message) ->
+    ws.onmessage = (message) ->
       console.info "# <-- #{message}" if $.printMessage
       clear()
       try
-        response = _parseResponse message, assertError
+        response = _parseResponse message.data, assertError
         if notify
           assert.deepEqual response, $.echoResponse
           response = 'ok'
         resolve response
       catch error
         reject error
-    onError = (error) ->
+    ws.onerror = (error) ->
       clear()
       reject error
     timer = setTimeout ->
       clear()
       reject new Error 'operation timeout.'
     , $.timeout
-    ws.once 'message', onMessage
-    ws.once 'error', onError
     _send ws, req
     if notify
       _send ws, JSON.stringify $.echoRequest
@@ -143,8 +135,8 @@ _parseResponse = (res, assertError) ->
 
 
 module.exports =
- processRequest: processRequest
- processNotify: processNotify
+ wsRequest: wsRequest
+ wsNotify:  wsNotify
  wsConnect: wsConnect
- wsClose: wsClose
+ wsClose:   wsClose
  

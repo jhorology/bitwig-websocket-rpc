@@ -10,7 +10,8 @@
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
     "report": "coffee report-spec.coffee",
-    "coffeelint": "coffeelint -f coffeelint.json test/"
+    "coffeelint": "coffeelint -f coffeelint.json test/",
+    "build-test": "browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/test-suite.js"
   },
   "repository": {
     "type": "git",
@@ -23,14 +24,18 @@
   },
   "homepage": "https://github.com/jhorology/bitwig-websocket-rpc#readme",
   "devDependencies": {
+    "browserify": "^16.2.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
+    "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
     "coffeescript": "^2.3.1",
+    "isomorphic-ws": "^4.0.1",
     "js-beautify": "^1.7.5",
     "mocha": "^5.2.0",
     "nyan": "^1.1.0",
     "rpc-websockets": "^4.2.6",
+    "simple-websocket": "^7.0.2",
     "underscore": "^1.9.1"
   }
 }
