@@ -91,8 +91,9 @@ public class RequestContext {
 
     /**
      * gurantee to execute next command in next tick.
+     * @param millis
      */
-    public void nextTick() {
-        ExecutionContext.getContext().nextTick();
+    public void nextTick(long millis) {
+        ExecutionContext.getContext().nextTick(millis);
     }
 }

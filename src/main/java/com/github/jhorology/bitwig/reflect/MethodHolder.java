@@ -27,12 +27,16 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
-import java.lang.reflect.Proxy;
 
+/**
+ *
+ */
 public class MethodHolder implements RpcMethod {
     private final ModuleHolder<?> module;
     private final Method method;
@@ -43,6 +47,8 @@ public class MethodHolder implements RpcMethod {
     private final boolean staticMethod;
     private final boolean subscribable;
     private final boolean varargs;
+    private String name;
+    private String absoluteName;
     
     protected boolean havingChildChain;
     // cache the return value of method;
@@ -88,12 +94,15 @@ public class MethodHolder implements RpcMethod {
      * @retuen
      */
     String getName() {
-        StringBuilder sb = new StringBuilder(getSimpleName());
-        if (getParentChain() != null) {
-            sb.insert(0, ".");
-            sb.insert(0, getParentChain().getName());
+        if (name == null) {
+            StringBuilder sb = new StringBuilder(getSimpleName());
+            if (getParentChain() != null) {
+                sb.insert(0, ".");
+                sb.insert(0, getParentChain().getName());
+            }
+            name = sb.toString();
         }
-        return sb.toString();
+        return name;
     }
     
     /**
@@ -101,14 +110,17 @@ public class MethodHolder implements RpcMethod {
      * @retuen
      */
     String getAbsoluteName() {
-        StringBuilder sb = new StringBuilder(getSimpleName());
-        sb.insert(0, ".");
-        if (getParentChain() != null) {
-            sb.insert(0, getParentChain().getAbsoluteName());
-        } else {
-            sb.insert(0, module.getModuleName());
+        if (absoluteName == null) {
+            StringBuilder sb = new StringBuilder(getSimpleName());
+            sb.insert(0, ".");
+            if (getParentChain() != null) {
+                sb.insert(0, getParentChain().getAbsoluteName());
+            } else {
+                sb.insert(0, module.getModuleName());
+            }
+            absoluteName =sb.toString();
         }
-        return sb.toString();
+        return absoluteName;
     }
     
     /**
@@ -191,7 +203,6 @@ public class MethodHolder implements RpcMethod {
             }
         } else {
             Object target = getMethodInstance();
-            boolean proxy = Proxy.isProxyClass(target.getClass());
             if (params == null || params.length == 0) {
                 ret = method.invoke(target);
             } else {
@@ -203,5 +214,27 @@ public class MethodHolder implements RpcMethod {
             }
         }
         return ret;
+    }
+
+    /**
+     * cleanup this instance.
+     */
+    void clear() {
+    }
+
+    /**
+     * create a report object for MehodHolder.
+     * @param eh
+     * @return 
+     */
+    Object report() {
+        Map<String, Object> report = new HashMap<>();
+        report.put("method", getAbsoluteName());
+        report.put("params", getRpcParamTypes()
+                   .stream()
+                   .map(t -> t.getExpression()).
+                   collect(Collectors.toList()));
+        report.put("result", getRpcReturnType().getExpression());
+        return report;
     }
 }

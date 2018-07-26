@@ -38,6 +38,8 @@ import org.java_websocket.WebSocket;
 
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.NotificationEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An event holder class.<br>
@@ -57,29 +59,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         this.pushEventBus =pushEventBus;
         clients = new LinkedList<>();
         triggerOnceClients = new ArrayList<>();
-        subscribeBitwigEvent();
+        subscribeHostEvent();
     }
 
-    private void subscribeBitwigEvent() {
-        try {
-            Value valueObject = (Value)getReturnValue();
-            ValueChangedCallback callback =
-                BitwigCallbacks.newValueChangedCallback(valueObject, v -> {
-                        if (!clients.isEmpty()) {
-                            Notification notification = new Notification(this.getAbsoluteName(), v);
-                            pushEventBus.post(new NotificationEvent(notification, clients));
-                        }
-                    });
-            valueObject.addValueObserver(callback);
-            syncSubscribedState();
-            Logger.getLogger(EventHolder.class)
-                .info("Event[" + getAbsoluteName() + "] Succeed registering observer.");
-        } catch (Exception ex) {
-            Logger.getLogger(EventHolder.class)
-                .error("Event[" + getAbsoluteName() + "] Failed registering observer.", ex);
-        }
-    }
-    
     @Override
     public void subscribe(WebSocket client) {
         if (!clients.contains(client)) {
@@ -115,11 +97,43 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         syncSubscribedState();
     }
     
+    /**
+     * clear this instance.
+     */
     void clear() {
+        super.clear();
         clients.clear();
         triggerOnceClients.clear();
     }
+    
+    /**
+     * create a report object for this class.
+     * @param eh
+     * @return 
+     */
+    Object report() {
+        Map<String, Object> report = new HashMap<>();
+        report.put("event", getAbsoluteName());
+        return report;
+    }
 
+    private void subscribeHostEvent() {
+        try {
+            Value valueObject = (Value)getReturnValue();
+            ValueChangedCallback callback =
+                BitwigCallbacks.newValueChangedCallback(valueObject, params -> post(params));
+            valueObject.addValueObserver(callback);
+            syncSubscribedState();
+            if (Logger.isTraceEnabled()) {
+                Logger.getLogger(EventHolder.class)
+                    .trace("Event[" + getAbsoluteName() + "] Succeed registering observer.");
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(EventHolder.class)
+                .error("Event[" + getAbsoluteName() + "] Failed registering observer.", ex);
+        }
+    }
+    
     /**
      * Sync state of event subscription between RPC and Bitwig Studio.
      */
@@ -142,4 +156,5 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             throw new RpcException(ex);
         }
     }
+
 }

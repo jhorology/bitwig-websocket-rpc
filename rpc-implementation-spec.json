@@ -1,1917 +1,1865 @@
 {
-  "rpc": {
+  "extension": {
+    "author": "hogehoge",
+    "name": "WebSocket RPC",
+    "requiredApiVersion": 7,
+    "version": "snapshot"
+  },
+  "reportedOn": "Jul 26, 2018 11:36:02 PM",
+  "host": {
+    "product": "Bitwig Studio",
+    "apiVersion": 7,
+    "vendor": "Bitwig",
+    "platformType": "MAC",
+    "version": "2.4 Beta 1"
+  },
+  "modules": [{
     "methods": [{
+      "result": "void",
       "method": "rpc.broadcast",
-      "params": ["String", "Object[]"],
-      "return": "void"
+      "params": ["String", "Object[]"]
     }, {
+      "result": "String",
       "method": "rpc.echo",
-      "params": ["String"],
-      "return": "String"
+      "params": ["String"]
     }, {
+      "event": "rpc.log"
+    }, {
+      "result": "boolean",
+      "method": "rpc.log.isSubscribed",
+      "params": []
+    }, {
+      "result": "void",
+      "method": "rpc.log.markInterested",
+      "params": []
+    }, {
+      "result": "void",
+      "method": "rpc.log.setIsSubscribed",
+      "params": ["boolean"]
+    }, {
+      "result": "void",
+      "method": "rpc.log.subscribe",
+      "params": []
+    }, {
+      "result": "void",
+      "method": "rpc.log.unsubscribe",
+      "params": []
+    }, {
+      "result": "void",
       "method": "rpc.nextTick",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
+      "method": "rpc.nextTick",
+      "params": ["Number"]
+    }, {
+      "result": "Object",
       "method": "rpc.off",
-      "params": ["String[]"],
-      "return": "Object"
+      "params": ["String[]"]
     }, {
+      "result": "Object",
       "method": "rpc.on",
-      "params": ["String[]"],
-      "return": "Object"
+      "params": ["String[]"]
     }, {
+      "result": "Object",
       "method": "rpc.once",
-      "params": ["String[]"],
-      "return": "Object"
+      "params": ["String[]"]
     }, {
+      "result": "Object",
       "method": "rpc.report",
-      "params": [],
-      "return": "Object"
+      "params": []
     }],
-    "events": []
-  },
-  "test": {
+    "events": [{
+      "event": "rpc.log"
+    }]
+  }, {
     "methods": [{
+      "result": "String",
       "method": "test.concat",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "String",
       "method": "test.concat",
-      "params": ["String[]"],
-      "return": "String"
+      "params": ["String[]"]
     }, {
+      "result": "String",
       "method": "test.concat",
-      "params": ["String", "String"],
-      "return": "String"
+      "params": ["String", "String"]
     }, {
+      "result": "void",
       "method": "test.consume",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "test.consume",
-      "params": ["Number[]"],
-      "return": "void"
+      "params": ["Number[]"]
     }, {
+      "result": "void",
       "method": "test.consume",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "test.consume",
-      "params": ["Number", "Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number", "Number"]
     }, {
+      "result": "String",
       "method": "test.echo",
-      "params": ["String"],
-      "return": "String"
+      "params": ["String"]
     }, {
+      "result": "String",
       "method": "test.hello",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "void",
       "method": "test.nop",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "String",
       "method": "test.repeat",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "String",
       "method": "test.repeat",
-      "params": ["String", "Number"],
-      "return": "String"
+      "params": ["String", "Number"]
     }, {
+      "result": "Number",
       "method": "test.sum",
-      "params": ["Object"],
-      "return": "Number"
+      "params": ["Object"]
     }, {
+      "result": "Number",
       "method": "test.sum",
-      "params": ["Number[]"],
-      "return": "Number"
+      "params": ["Number[]"]
     }, {
+      "result": "Number",
       "method": "test.sum",
-      "params": ["Number", "Number"],
-      "return": "Number"
+      "params": ["Number", "Number"]
     }, {
+      "result": "Number",
       "method": "test.sum",
-      "params": ["Number", "Number", "Number"],
-      "return": "Number"
+      "params": ["Number", "Number", "Number"]
     }],
     "events": []
-  },
-  "transport": {
+  }, {
     "methods": [{
-      "method": "transport.automationWriteMode",
-      "params": [],
-      "return": "Object"
+      "event": "transport.automationWriteMode"
     }, {
+      "result": "String",
       "method": "transport.automationWriteMode.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.automationWriteMode.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.automationWriteMode.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.automationWriteMode.set",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.automationWriteMode.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.automationWriteMode.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.automationWriteMode.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.clipLauncherPostRecordingAction",
-      "params": [],
-      "return": "Object"
+      "event": "transport.clipLauncherPostRecordingAction"
     }, {
+      "result": "String",
       "method": "transport.clipLauncherPostRecordingAction.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.clipLauncherPostRecordingAction.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.clipLauncherPostRecordingAction.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.clipLauncherPostRecordingAction.set",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.clipLauncherPostRecordingAction.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.clipLauncherPostRecordingAction.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.clipLauncherPostRecordingAction.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.createEqualsValue",
-      "params": ["Object"],
-      "return": "Object"
+      "event": "transport.createEqualsValue"
     }, {
+      "result": "boolean",
       "method": "transport.createEqualsValue.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.createEqualsValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.createEqualsValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.createEqualsValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.createEqualsValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.createEqualsValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade"
     }, {
-      "method": "transport.crossfade.createEqualsValue",
-      "params": ["Object"],
-      "return": "Object"
+      "event": "transport.crossfade.createEqualsValue"
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.createEqualsValue.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.createEqualsValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.createEqualsValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.createEqualsValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.createEqualsValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.createEqualsValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.crossfade.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.crossfade.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade.exists",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.exists"
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.exists.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.exists.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.exists.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.exists.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.exists.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.exists.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.inc",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.incRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade.modulatedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.modulatedValue"
     }, {
-      "method": "transport.crossfade.modulatedValue.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.modulatedValue.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.crossfade.modulatedValue.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.crossfade.modulatedValue.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.modulatedValue.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.modulatedValue.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.modulatedValue.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.modulatedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.modulatedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade.name",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.name"
     }, {
+      "result": "String",
       "method": "transport.crossfade.name.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.crossfade.name.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.name.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.name.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.name.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.name.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.name.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.reset",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.restoreAutomationControl",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.set",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.setImmediately",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.setIndication",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.setLabel",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.setRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.touch",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.crossfade.value",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.value"
     }, {
-      "method": "transport.crossfade.value.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.crossfade.value.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.crossfade.value.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.crossfade.value.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.value.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.value.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.crossfade.value.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.inc",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.incRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.crossfade.value.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.set",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.setImmediately",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.setRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.crossfade.value.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.exists",
-      "params": [],
-      "return": "Object"
+      "event": "transport.exists"
     }, {
+      "result": "boolean",
       "method": "transport.exists.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.exists.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.exists.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.exists.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.exists.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.exists.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.fastForward",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.getClipLauncherPostRecordingTimeOffset",
-      "params": [],
-      "return": "Object"
+      "event": "transport.getClipLauncherPostRecordingTimeOffset"
     }, {
+      "result": "Number",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.getFormatted",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.getFormatted",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getClipLauncherPostRecordingTimeOffset.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.getInPosition",
-      "params": [],
-      "return": "Object"
+      "event": "transport.getInPosition"
     }, {
+      "result": "Number",
       "method": "transport.getInPosition.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getInPosition.getFormatted",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getInPosition.getFormatted",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "void",
       "method": "transport.getInPosition.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.getInPosition.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getInPosition.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getInPosition.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.getInPosition.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.getInPosition.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getInPosition.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.getOutPosition",
-      "params": [],
-      "return": "Object"
+      "event": "transport.getOutPosition"
     }, {
+      "result": "Number",
       "method": "transport.getOutPosition.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getOutPosition.getFormatted",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getOutPosition.getFormatted",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.getOutPosition.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getOutPosition.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.getPosition",
-      "params": [],
-      "return": "Object"
+      "event": "transport.getPosition"
     }, {
+      "result": "Number",
       "method": "transport.getPosition.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getPosition.getFormatted",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.getPosition.getFormatted",
-      "params": ["Object"],
-      "return": "String"
+      "params": ["Object"]
     }, {
+      "result": "void",
       "method": "transport.getPosition.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.getPosition.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getPosition.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getPosition.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.getPosition.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.getPosition.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.getPosition.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.incPosition",
-      "params": ["Number", "boolean"],
-      "return": "void"
+      "params": ["Number", "boolean"]
     }, {
+      "result": "void",
       "method": "transport.increaseTempo",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
-      "method": "transport.isArrangerAutomationWriteEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isArrangerAutomationWriteEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerAutomationWriteEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerAutomationWriteEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerAutomationWriteEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isArrangerLoopEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isArrangerLoopEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerLoopEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerLoopEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerLoopEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isArrangerOverdubEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isArrangerOverdubEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerOverdubEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerOverdubEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerOverdubEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isArrangerRecordEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isArrangerRecordEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerRecordEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isArrangerRecordEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isArrangerRecordEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isAutomationOverrideActive",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isAutomationOverrideActive"
     }, {
+      "result": "boolean",
       "method": "transport.isAutomationOverrideActive.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isAutomationOverrideActive.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isAutomationOverrideActive.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isAutomationOverrideActive.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isAutomationOverrideActive.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isAutomationOverrideActive.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isClipLauncherAutomationWriteEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isClipLauncherAutomationWriteEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isClipLauncherAutomationWriteEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isClipLauncherAutomationWriteEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherAutomationWriteEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isClipLauncherOverdubEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isClipLauncherOverdubEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isClipLauncherOverdubEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isClipLauncherOverdubEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isClipLauncherOverdubEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isMetronomeAudibleDuringPreRoll",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isMetronomeAudibleDuringPreRoll"
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeAudibleDuringPreRoll.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeAudibleDuringPreRoll.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeAudibleDuringPreRoll.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isMetronomeEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isMetronomeEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isMetronomeTickPlaybackEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isMetronomeTickPlaybackEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeTickPlaybackEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isMetronomeTickPlaybackEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isMetronomeTickPlaybackEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isPlaying",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isPlaying"
     }, {
+      "result": "boolean",
       "method": "transport.isPlaying.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isPlaying.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPlaying.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPlaying.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPlaying.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPlaying.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPlaying.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPlaying.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isPunchInEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isPunchInEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isPunchInEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isPunchInEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchInEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.isPunchOutEnabled",
-      "params": [],
-      "return": "Object"
+      "event": "transport.isPunchOutEnabled"
     }, {
+      "result": "boolean",
       "method": "transport.isPunchOutEnabled.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isPunchOutEnabled.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.set",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.toggle",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.isPunchOutEnabled.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
-      "method": "transport.metronomeVolume",
-      "params": [],
-      "return": "Object"
+      "event": "transport.metronomeVolume"
     }, {
-      "method": "transport.metronomeVolume.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.metronomeVolume.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.metronomeVolume.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.metronomeVolume.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.metronomeVolume.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.metronomeVolume.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.metronomeVolume.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.inc",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.incRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.metronomeVolume.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.set",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.setImmediately",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.setRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.metronomeVolume.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.play",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.preRoll",
-      "params": [],
-      "return": "Object"
+      "event": "transport.preRoll"
     }, {
+      "result": "String",
       "method": "transport.preRoll.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.preRoll.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.preRoll.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.preRoll.set",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.preRoll.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.preRoll.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.preRoll.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.record",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.resetAutomationOverrides",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.restart",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.returnToArrangement",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.rewind",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.setPosition",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.stop",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tapTempo",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo"
     }, {
-      "method": "transport.tempo.createEqualsValue",
-      "params": ["Object"],
-      "return": "Object"
+      "event": "transport.tempo.createEqualsValue"
     }, {
+      "result": "boolean",
       "method": "transport.tempo.createEqualsValue.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.tempo.createEqualsValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.createEqualsValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.createEqualsValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.createEqualsValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.createEqualsValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.tempo.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.tempo.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo.exists",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.exists"
     }, {
+      "result": "boolean",
       "method": "transport.tempo.exists.get",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.tempo.exists.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.exists.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.exists.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.exists.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.exists.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.inc",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.incRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo.modulatedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.modulatedValue"
     }, {
-      "method": "transport.tempo.modulatedValue.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.modulatedValue.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.tempo.modulatedValue.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.tempo.modulatedValue.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.modulatedValue.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.modulatedValue.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.modulatedValue.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.tempo.modulatedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.modulatedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo.name",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.name"
     }, {
+      "result": "String",
       "method": "transport.tempo.name.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.tempo.name.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.name.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.name.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.name.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.name.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.name.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.reset",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.restoreAutomationControl",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.set",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.setImmediately",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.setIndication",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.setLabel",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.tempo.setRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.touch",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.tempo.value",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.value"
     }, {
-      "method": "transport.tempo.value.displayedValue",
-      "params": [],
-      "return": "Object"
+      "event": "transport.tempo.value.displayedValue"
     }, {
+      "result": "String",
       "method": "transport.tempo.value.displayedValue.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.tempo.value.displayedValue.getLimited",
-      "params": ["Number"],
-      "return": "String"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.value.displayedValue.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.displayedValue.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.displayedValue.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.displayedValue.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.displayedValue.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.value.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "Number",
       "method": "transport.tempo.value.getRaw",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.inc",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.incRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.tempo.value.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.set",
-      "params": ["Number", "Number"],
-      "return": "void"
+      "params": ["Number", "Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.setImmediately",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.setRaw",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.tempo.value.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.tempo.value.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.timeSignature",
-      "params": [],
-      "return": "Object"
+      "event": "transport.timeSignature"
     }, {
-      "method": "transport.timeSignature.denominator",
-      "params": [],
-      "return": "Object"
+      "event": "transport.timeSignature.denominator"
     }, {
+      "result": "Number",
       "method": "transport.timeSignature.denominator.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.timeSignature.denominator.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.denominator.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "String",
       "method": "transport.timeSignature.get",
-      "params": [],
-      "return": "String"
+      "params": []
     }, {
+      "result": "boolean",
       "method": "transport.timeSignature.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.timeSignature.numerator",
-      "params": [],
-      "return": "Object"
+      "event": "transport.timeSignature.numerator"
     }, {
+      "result": "Number",
       "method": "transport.timeSignature.numerator.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.timeSignature.numerator.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.numerator.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.set",
-      "params": ["String"],
-      "return": "void"
+      "params": ["String"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
-      "method": "transport.timeSignature.ticks",
-      "params": [],
-      "return": "Object"
+      "event": "transport.timeSignature.ticks"
     }, {
+      "result": "Number",
       "method": "transport.timeSignature.ticks.get",
-      "params": [],
-      "return": "Number"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.inc",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "boolean",
       "method": "transport.timeSignature.ticks.isSubscribed",
-      "params": [],
-      "return": "boolean"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.markInterested",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.set",
-      "params": ["Number"],
-      "return": "void"
+      "params": ["Number"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.setIsSubscribed",
-      "params": ["boolean"],
-      "return": "void"
+      "params": ["boolean"]
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.subscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.ticks.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.timeSignature.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.toggleLatchAutomationWriteMode",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.togglePlay",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.toggleWriteArrangerAutomation",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.toggleWriteClipLauncherAutomation",
-      "params": [],
-      "return": "void"
+      "params": []
     }, {
+      "result": "void",
       "method": "transport.unsubscribe",
-      "params": [],
-      "return": "void"
+      "params": []
     }],
     "events": [{
       "event": "transport.automationWriteMode"
@@ -2006,5 +1954,5 @@
     }, {
       "event": "transport.timeSignature.ticks"
     }]
-  }
+  }]
 }

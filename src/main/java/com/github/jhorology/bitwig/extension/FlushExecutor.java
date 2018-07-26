@@ -11,16 +11,23 @@ import com.google.common.eventbus.Subscribe;
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
 public class FlushExecutor implements Executor {
+    private static final int IDLE = 0;
+    private static final int REQUESTED = 1;
+    private static final int WAITING = 2;
+    private static final int SHUTDOWN = 3;
+    private static final int QUEUE_SIZE = 64;
+    
     private Queue<Runnable> tasks;
     private AbstractExtension extension;
-    private Logger LOG;
-    private boolean requested;
+    private Logger log;
+    private int state = IDLE;
     
     @Subscribe
     public void onInit(InitEvent e) {
-        LOG = Logger.getLogger(FlushExecutor.class);
-        tasks = new ArrayBlockingQueue<>(64);
+        log = Logger.getLogger(FlushExecutor.class);
+        tasks = new ArrayBlockingQueue<>(QUEUE_SIZE);
         extension = e.getExtension();
+        state = IDLE;
     }
     
     @Subscribe
@@ -30,8 +37,11 @@ public class FlushExecutor implements Executor {
     
     @Subscribe
     public void onExit(ExitEvent e) {
-        runAllQueuedTasks();
-        tasks.clear();
+        // runAllQueuedTasks();
+        synchronized(this) {
+            tasks.clear();
+            state = SHUTDOWN;
+        }
     }
     
     /**
@@ -41,17 +51,22 @@ public class FlushExecutor implements Executor {
     @Override
     public synchronized void execute(Runnable command) {
         tasks.add(command);
-        // TODO
-        // is this safe?
-        // maybe not callable from other than control surface session thread.
-        if (!requested) {
+        if (state == IDLE) {
+            // TODO
+            // is this safe?
+            // maybe not callable from other than control surface session thread.
             extension.getHost().requestFlush();
-            requested = true;
+            state = REQUESTED;
+        }
+        if (Logger.isWarnEnabled()) {
+            if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
+                log.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
+            }
         }
     }
 
     private synchronized void runAllQueuedTasks() {
-        requested = false;
+        if (state != REQUESTED) return;
         Runnable task = tasks.poll();
         while(task != null) {
             ExecutionContext.init(extension);
@@ -61,9 +76,14 @@ public class FlushExecutor implements Executor {
             } finally {
                 if (context.isNextTickRequested()) {
                     final ControllerHost host = context.getHost();
-                    task = tasks.peek();
-                    if (task != null) {
-                        host.scheduleTask(() -> host.requestFlush(), 0L);
+                    long waitMillis = context.getNextTickMillis();
+                    if (waitMillis > 0) {
+                        state = WAITING;
+                        host.scheduleTask(() -> {
+                                host.requestFlush();
+                                state = REQUESTED;
+                            },
+                            waitMillis);
                     }
                     task = null;
                 } else {
@@ -72,5 +92,6 @@ public class FlushExecutor implements Executor {
                 ExecutionContext.destroy();
             }
         }
+        if (state != WAITING) state = IDLE;
     }
 }

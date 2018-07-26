@@ -24,8 +24,6 @@ package com.github.jhorology.bitwig.rpc;
 
 import org.java_websocket.WebSocket;
 
-import com.github.jhorology.bitwig.websocket.protocol.Notification;
-
 /**
  * An interface for RPC event model.
  */

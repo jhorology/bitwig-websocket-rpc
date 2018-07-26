@@ -22,21 +22,23 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
-import com.bitwig.extension.callback.StringValueChangedCallback;
-import com.bitwig.extension.controller.api.Value;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bitwig.extension.callback.StringValueChangedCallback;
+import com.bitwig.extension.controller.api.Value;
+
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.java_websocket.WebSocket;
 
+import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
- * An imnplementation class for the ore RPC methods of Rpc interface.
+ * An imnplementation of the core RPC methods.
  */
 public class RpcImpl implements Rpc {
     /**
@@ -76,7 +78,16 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public void nextTick() {
-        RequestContext.getContext().nextTick();
+        nextTick(0);
+    }
+    
+    /**
+     * wait for next tick to gurantee value integrity of concurrency.
+     * @param millis
+     */
+    @Override
+    public void nextTick(long millis) {
+        RequestContext.getContext().nextTick(millis);
     }
     
     /**
@@ -98,7 +109,7 @@ public class RpcImpl implements Rpc {
     public String echo(String message) {
         return message;
     }
-
+    
     /**
      * broadcast message to all remote connections.
      * @param message
@@ -118,27 +129,26 @@ public class RpcImpl implements Rpc {
         return registry.report();
     }
 
-    private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lamda) {
+    private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
         return Stream.of(eventNames)
-            .map(s -> acceptEvent(s, lamda))
+            .map(s -> acceptEvent(s, lambda))
             .collect(Collectors.toMap(ImmutablePair::getLeft, ImmutablePair::getRight));
     }
-
-    private RpcEvent getEvent(String eventName) {
+    
+    private ImmutablePair<String, String> acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
         RequestContext context = RequestContext.getContext();
         RpcRegistry registry = context.getRpcRegistry();
+        WebSocket client = context.getConnection();
         RpcEvent event = registry.getRpcEvent(eventName);
-        return event;
-    }
-
-    private ImmutablePair<String, String> acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lamda) {
-        RpcEvent event = getEvent(eventName);
         if (event == null) {
             return new ImmutablePair<>(eventName, ERROR_EVENT_NOT_FOUND);
         }
-        WebSocket client = RequestContext.getContext()
-            .getConnection();
-        lamda.accept(event, client);
-        return new ImmutablePair<>(eventName, OK);
+        try {
+            lambda.accept(event, client);
+            return new ImmutablePair<>(eventName, OK);
+        } catch (RpcException ex) {
+            Logger.getLogger(RpcImpl.class).error(ex);
+            return new ImmutablePair<>(eventName, ERROR_INTERNAL_ERROR);
+        }
     }
 }

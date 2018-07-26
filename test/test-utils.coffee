@@ -56,10 +56,10 @@ wsConnect = ->
       ws.onopen = undefined
       ws.onerror = undefined
       clearTimeout timer
-    ws.onopen = (err) ->
+    ws.onopen = ->
       clear()
       resolve ws
-    ws.onerror = () ->
+    ws.onerror = (err) ->
       clear()
       reject err
     timer = setTimeout ->
@@ -73,8 +73,8 @@ wsClose = (ws) ->
     return resolve() unless ws
     timer = undefined
     clear = () ->
-      ws.onclose = null
-      ws.onerror = null
+      ws.onclose = undefined
+      ws.onerror = undefined
       clearTimeout timer
     ws.onclose = ->
       clear()
@@ -92,8 +92,8 @@ _sendAndResponse = (ws, req, assertError, notify) ->
   return new Promise (resolve, reject) ->
     timer = undefined
     clear = () ->
-      ws.onmessage = null
-      ws.onerror = null
+      ws.onmessage = undefined
+      ws.onerror = undefined
       clearTimeout timer
     ws.onmessage = (message) ->
       console.info "# <-- #{message}" if $.printMessage

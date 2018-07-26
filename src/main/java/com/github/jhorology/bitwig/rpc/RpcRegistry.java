@@ -28,10 +28,10 @@ import java.util.List;
  * An interface for RPC registry model.
  */
 public interface RpcRegistry {
-    
     /**
-     * push notification message to subscriber(s) of this event.
-     * @param name the event name.
+     * Get an interface for RPC method model.
+     * @param name the method name.
+     * @param paramTypes the parameter types
      */
     RpcMethod getRpcMethod(String name, List<RpcParamType> paramTypes);
     

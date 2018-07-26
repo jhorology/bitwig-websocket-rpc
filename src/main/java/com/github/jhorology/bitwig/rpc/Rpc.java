@@ -22,9 +22,10 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+import java.util.Map;
+
 import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.Value;
-import java.util.Map;
 
 /**
  * An interface for core RPC methods.
@@ -33,6 +34,7 @@ import java.util.Map;
 public interface Rpc {
     public static final String OK = "ok";
     public static final String ERROR_EVENT_NOT_FOUND = "Event not found";
+    public static final String ERROR_INTERNAL_ERROR = "Internal Error";
     
     /**
      * Add the remote connection to subscriber list of each event.
@@ -61,6 +63,12 @@ public interface Rpc {
      * wait for next tick to gurantee value integrity of concurrency.
      */
     void nextTick();
+    
+    /**
+     * wait for next tick to gurantee value integrity of concurrency.
+     * @param millis
+     */
+    void nextTick(long millis);
 
     /**
      * just return back message to remote connection.

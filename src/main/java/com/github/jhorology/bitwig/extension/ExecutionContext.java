@@ -38,6 +38,7 @@ public class ExecutionContext {
     private AbstractExtension extension;
     private final Map<String, Object> values;
     private boolean nextTick;
+    private long nextTickMillis;
     
     /**
      * initialize the context
@@ -105,9 +106,11 @@ public class ExecutionContext {
     
     /**
      * gurantee to execute next command in next tick.
+     * @param millis
      */
-    public void nextTick() {
+    public void nextTick(long millis) {
         nextTick = true;
+        nextTickMillis = millis;
     }
     
     /**
@@ -116,6 +119,14 @@ public class ExecutionContext {
      */
     public boolean isNextTickRequested() {
         return nextTick;
+    }
+    
+    /**
+     * nextTick() method was called in this context or not.
+     * @return
+     */
+    public long getNextTickMillis() {
+        return nextTickMillis;
     }
     
     /**

@@ -9,7 +9,7 @@
   "scripts": {
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
-    "report": "coffee report-spec.coffee",
+    "report": "coffee report.coffee",
     "coffeelint": "coffeelint -f coffeelint.json test/",
     "build-test": "browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/test-suite.js"
   },
@@ -35,7 +35,6 @@
     "mocha": "^5.2.0",
     "nyan": "^1.1.0",
     "rpc-websockets": "^4.2.6",
-    "simple-websocket": "^7.0.2",
     "underscore": "^1.9.1"
   }
 }

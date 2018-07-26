@@ -22,6 +22,9 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+import com.bitwig.extension.Extension;
+import com.bitwig.extension.ExtensionDefinition;
+import com.bitwig.extension.api.Host;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +45,7 @@ import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
+import java.util.Date;
 
 public class ReflectionRegistry
     implements RpcRegistry,SubscriberExceptionHandler {
@@ -52,6 +56,8 @@ public class ReflectionRegistry
     private final Map<String, ModuleHolder<?>> modules;
     private final EventBus pushEventBus;
 
+    private Extension extension;
+    
     public ReflectionRegistry() {
         log = Logger.getLogger(ReflectionRegistry.class);
         modules = new ConcurrentHashMap<>();
@@ -60,6 +66,7 @@ public class ReflectionRegistry
 
     @Subscribe
     public void onInit(InitEvent e) {
+        extension = e.getExtension();
     }
 
     @Subscribe
@@ -122,60 +129,27 @@ public class ReflectionRegistry
     /**
      * return a report object of this registry.
      * @return An object for expression of this registry.
-     * <pre>{@code
-     *   {
-     *       "<modeulName>": {
-     *         "methods": [
-     *           "Number <modeulName>.test.sum(Number, Number)",
-     *            ...
-     *         ],
-     *         "events": [
-     *           "<modeulName>.test.event1",
-     *         ],
-     *       },
-     *       ...
-     *   }
-     * }</pre>
      */
     @Override
-    public Map<String, Map<String, List<Map<String,Object>>>> report() {
-        return modules.keySet().stream()
-            .sorted()
-            .map(key -> modules.get(key))
-            .collect(HashMap::new, (r, m) -> {
-                    Map<String, List<Map<String, Object>>> module = new HashMap<>();
-                    module.put("methods", m.getMethods()
-                               .keySet().stream().sorted()
-                               .map(key -> m.getMethods().get(key))
-                               .map(m1 -> {
-                                       Map<String, Object> method = new HashMap<>();
-                                       method.put("method", m1.getAbsoluteName());
-                                       method.put("params", m1.getRpcParamTypes()
-                                                  .stream()
-                                                  .map(t -> t.getExpression()).
-                                                  collect(Collectors.toList()));
-                                       method.put("return", m1.getRpcReturnType().getExpression());
-                                       return method;
-                                   })
-                               .collect(Collectors.toList()));
-                    module.put("events",  m.getEvents()
-                               .keySet().stream().sorted()
-                               .map(key -> m.getEvents().get(key))
-                               .map(e -> {
-                                       Map<String, Object> event = new HashMap<>();
-                                       event.put("event", e.getAbsoluteName());
-                                       return event;
-                                   })
-                               .collect(Collectors.toList()));
-                    r.put(m.getModuleName(), module);
-                }, Map::putAll);
+    public Object report() {
+        Map<String, Object> report = new HashMap<>();
+        report.put("reportedOn", new Date());
+        report.put("host", reportHost());
+        report.put("extension", reportExtension());
+        report.put("modules", reportModules());
+        return report;
     }
-
+    
+    /**
+     * Handler for exceptions thrown by event subscribers.
+     * @param exception
+     * @param context
+     */
     @Override
     public void handleException(Throwable exception, SubscriberExceptionContext context) {
         log.error( "push event handling error. event:" +  context.getEvent().toString(), exception);
     }
-
+    
     public <T> void register(String moduleName, Class<T> interfaceType, T module)
         throws IllegalAccessException {
         modules.put(moduleName,
@@ -194,6 +168,49 @@ public class ReflectionRegistry
         if (module != null) {
             module.setModuleInstance(moduleInstance);
         }
+    }
+
+    /**
+     * create a report object for Host.
+     * @return 
+     */
+    private Object reportHost() {
+        Map<String,Object> report = new HashMap<>();
+        Host host = extension.getHost();
+        report.put("apiVersion", host.getHostApiVersion());
+        report.put("product", host.getHostProduct());
+        report.put("vendor", host.getHostVendor());
+        report.put("version", host.getHostVersion());
+        report.put("platformType", host.getPlatformType().name());
+        return report;
+    }
+    
+    /**
+     * create a report object for Extension.
+     * @return 
+     */
+    private Object reportExtension() {
+        Map<String,Object> report = new HashMap<>();
+        ExtensionDefinition def = extension.getExtensionDefinition();
+        report.put("name", def.getName());
+        report.put("author", def.getAuthor());
+        report.put("version", def.getVersion());
+        report.put("requiredApiVersion", def.getRequiredAPIVersion());
+        return report;
+    }
+    
+    /**
+     * create a report object for list of modules of this class.
+     * @return 
+     */
+    private Object reportModules() {
+        List<Object> list = modules.keySet()
+            .stream()
+            .sorted()
+            .map(key -> modules.get(key))
+            .map(m-> m.report())
+            .collect(Collectors.toList());
+        return list;
     }
 
     private ModuleHolder<?> getModule(String moduleName) {

@@ -25,7 +25,7 @@ package com.github.jhorology.bitwig.extension;
 import java.util.concurrent.Executor;
 
 /**
- * Executor class that is used to execute task aasynchronously in the 'Control Surface Session' thread.
+ * Executor class that is used to execute task asynchronously in the 'Control Surface Session' thread.
  */
 @Deprecated
 public class ControlSurfaceSessionExecutor implements Executor {
@@ -44,8 +44,8 @@ public class ControlSurfaceSessionExecutor implements Executor {
      */
     @Override
     public synchronized void execute(Runnable command) {
-        // This is not Safe
-        // easy to see ConcurrentModificationException
+        // This is not Safe!
+        // easy to see crash on ConcurrentModificationException
         extension.getHost().scheduleTask(() -> {
                 ExecutionContext.init(extension);
                 try {

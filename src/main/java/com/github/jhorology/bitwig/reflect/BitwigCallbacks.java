@@ -22,12 +22,15 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.lang.reflect.ParameterizedType;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
@@ -58,17 +61,17 @@ import com.bitwig.extension.callback.SysexMidiDataReceivedCallback;
 import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * A utility class for creating all known callbacks of Bitwig API.
+ */
 public class BitwigCallbacks {
     // TODO
     // which is better?
     // convert multiple paramers to named parameter or not.
     private static final boolean PREFER_NAMED_PARAMS = true;
-    
-    // All knwon Subinterfaces of ValueChangedCallback
+
+    // All knwown Subinterfaces of ValueChangedCallback
     private static final Map<Class<?>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new HashMap<>();
     static {
         CALLBACK_FACTORY.put(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback);
@@ -82,7 +85,7 @@ public class BitwigCallbacks {
     }
 
     /**
-     * create a new callback for 'addValueObserber' method from the instance of Value interface.
+     * create a new optimunm callback for 'addValueObserber' of specified instance of Value intreface.
      * All Konwn Subinterfaces of ValueChangedCallback:
      * <pre>{@code
      *   BooleanValueChangedCallback
@@ -95,10 +98,13 @@ public class BitwigCallbacks {
      *   StringArrayValueChangedCallback
      * }</pre>
      * @param value the instance of Value interface.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    public static ValueChangedCallback newValueChangedCallback(Value<? extends ValueChangedCallback>value, Consumer<Object> lamda) {
+    public static ValueChangedCallback newValueChangedCallback(Value<? extends ValueChangedCallback>value, Consumer<Object> lambda) {
+        // TODO
+        // I'm sure that there is more smarter ways...
+        // couldn't find the rules from API.
         Class<?> callbackType = Stream.of(value.getClass().getMethods())
             .filter(m -> "addValueObserver".equals(m.getName()))
             .map(m -> m.getParameterTypes())
@@ -106,7 +112,7 @@ public class BitwigCallbacks {
             .map(t -> t[0])
             .filter(t -> !ValueChangedCallback.class.equals(t))
             .findFirst().orElse(null);
-        
+
         if (callbackType == null) {
             throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type ["
                                                     + value.getClass()
@@ -118,281 +124,288 @@ public class BitwigCallbacks {
                                                     + callbackType
                                                     + "].");
         }
-        return factory.apply(lamda);
+        return factory.apply(lambda);
     }
-    
+
     /**
      * create new BooleanValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static BooleanValueChangedCallback newBooleanValueChangedCallback(Consumer<Object> lamda) {
+    public static BooleanValueChangedCallback newBooleanValueChangedCallback(Consumer<Object> lambda) {
         return (boolean value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new ClipLauncherSlotBankPlaybackStateChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ClipLauncherSlotBankPlaybackStateChangedCallback newClipLauncherSlotBankPlaybackStateChangedCallback(Consumer<Object> lamda) {
+    public static ClipLauncherSlotBankPlaybackStateChangedCallback newClipLauncherSlotBankPlaybackStateChangedCallback(Consumer<Object> lambda) {
         return (int slotIndex, int playbackState, boolean isQueued) -> {
-            lamda.accept(createParams(new String[] {"slotIndex", "playbackState", "isQueued"},
-                                      new Object[] { slotIndex,   playbackState,   isQueued}));
+            lambda.accept(createParams(new String[] {"slotIndex", "playbackState", "isQueued"},
+                                       new Object[] { slotIndex,   playbackState,   isQueued}));
         };
     }
 
     /**
      * create new ColorValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ColorValueChangedCallback newColorValueChangedCallback(Consumer<Object> lamda) {
+    public static ColorValueChangedCallback newColorValueChangedCallback(Consumer<Object> lambda) {
         return (float red, float green, float blue) -> {
-            lamda.accept(createParams(new String[] {"red", "green", "blue"},
-                                      new Object[] {red,    green,   blue}));
+            lambda.accept(createParams(new String[] {"red", "green", "blue"},
+                                       new Object[] {red,    green,   blue}));
         };
     }
 
     /**
      * create new ConnectionEstablishedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ConnectionEstablishedCallback newConnectionEstablishedCallback(Consumer<Object> lamda) {
+    public static ConnectionEstablishedCallback newConnectionEstablishedCallback(Consumer<Object> lambda) {
         return (RemoteConnection rc) -> {
-            lamda.accept(rc);
+            lambda.accept(rc);
         };
     }
 
     /**
      * create new DataReceivedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DataReceivedCallback newDataReceivedCallback(Consumer<Object> lamda) {
+    public static DataReceivedCallback newDataReceivedCallback(Consumer<Object> lambda) {
         return (byte[] bytes) -> {
-            lamda.accept(bytes);
+            lambda.accept(bytes);
         };
     }
 
     /**
      * create new DirectParameterDisplayedValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterDisplayedValueChangedCallback newDirectParameterDisplayedValueChangedCallback(Consumer<Object> lamda) {
+    public static DirectParameterDisplayedValueChangedCallback newDirectParameterDisplayedValueChangedCallback(Consumer<Object> lambda) {
         return (String id, String value) -> {
-            lamda.accept(createParams(new String[] {"id", "value"},
-                                      new Object[] { id,   value}));
+            lambda.accept(createParams(new String[] {"id", "value"},
+                                       new Object[] { id,   value}));
         };
     }
 
     /**
      * create new DirectParameterNameChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterNameChangedCallback newDirectParameterNameChangedCallback(Consumer<Object> lamda) {
+    public static DirectParameterNameChangedCallback newDirectParameterNameChangedCallback(Consumer<Object> lambda) {
         return (String id, String name) -> {
-            lamda.accept(createParams(new String[] {"id", "name"},
-                                      new Object[] { id,   name}));
+            lambda.accept(createParams(new String[] {"id", "name"},
+                                       new Object[] { id,   name}));
         };
     }
 
     /**
      * create new DirectParameterNormalizedValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterNormalizedValueChangedCallback newDirectParameterNormalizedValueChangedCallback(Consumer<Object> lamda) {
+    public static DirectParameterNormalizedValueChangedCallback newDirectParameterNormalizedValueChangedCallback(Consumer<Object> lambda) {
         return (String id, double normalizedValue) -> {
-            lamda.accept(createParams(new String[] {"id", "normalizedValue"},
-                                      new Object[] { id,   normalizedValue}));
+            lambda.accept(createParams(new String[] {"id", "normalizedValue"},
+                                       new Object[] { id,   normalizedValue}));
         };
     }
 
     /**
      * create new DoubleValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DoubleValueChangedCallback newDoubleValueChangedCallback(Consumer<Object> lamda) {
+    public static DoubleValueChangedCallback newDoubleValueChangedCallback(Consumer<Object> lambda) {
         return (double value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new EnumValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static EnumValueChangedCallback newEnumValueChangedCallback(Consumer<Object> lamda) {
+    public static EnumValueChangedCallback newEnumValueChangedCallback(Consumer<Object> lambda) {
         return (String value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new FloatValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static FloatValueChangedCallback newFLoatValueChangedCallback(Consumer<Object> lamda) {
+    public static FloatValueChangedCallback newFLoatValueChangedCallback(Consumer<Object> lambda) {
         return (float value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new IndexedBooleanValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedBooleanValueChangedCallback newIndexedBooleanValueChangedCallback(Consumer<Object> lamda) {
+    public static IndexedBooleanValueChangedCallback newIndexedBooleanValueChangedCallback(Consumer<Object> lambda) {
         return (int index, boolean value) -> {
-            lamda.accept(createParams(new String[] {"index", "value"},
-                                      new Object[] { index,   value}));
+            lambda.accept(createParams(new String[] {"index", "value"},
+                                       new Object[] { index,   value}));
         };
     }
 
     /**
      * create new IndexedColorValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedColorValueChangedCallback newIndexedColorValueChangedCallback(Consumer<Object> lamda) {
+    public static IndexedColorValueChangedCallback newIndexedColorValueChangedCallback(Consumer<Object> lambda) {
         return (int index, float red, float green, float blue) -> {
-            lamda.accept(createParams(new String[] {"index", "red", "green", "blue"},
-                                      new Object[] { index,   red,   green,   blue}));
+            lambda.accept(createParams(new String[] {"index", "red", "green", "blue"},
+                                       new Object[] { index,   red,   green,   blue}));
         };
     }
 
     /**
      * create new IndexedStringValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedStringValueChangedCallback newIndexedStringValueChangedCallback(Consumer<Object> lamda) {
+    public static IndexedStringValueChangedCallback newIndexedStringValueChangedCallback(Consumer<Object> lambda) {
         return (int index, String value) -> {
-            lamda.accept(createParams(new String[] {"index", "value"},
-                                      new Object[] { index,   value}));
+            lambda.accept(createParams(new String[] {"index", "value"},
+                                       new Object[] { index,   value}));
         };
     }
 
     /**
      * create new IntegerValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IntegerValueChangedCallback newIntegerValueChangedCallback(Consumer<Object> lamda) {
+    public static IntegerValueChangedCallback newIntegerValueChangedCallback(Consumer<Object> lambda) {
         return (int value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new NoArgsCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static NoArgsCallback newNoArgsCallback(Consumer<Object> lamda) {
+    public static NoArgsCallback newNoArgsCallback(Consumer<Object> lambda) {
         return () -> {
-            lamda.accept(null);
+            lambda.accept(null);
         };
     }
 
     /**
      * create new NotePlaybackCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static NotePlaybackCallback newNotePlaybackCallback(Consumer<Object> lamda) {
+    public static NotePlaybackCallback newNotePlaybackCallback(Consumer<Object> lambda) {
         return (boolean isNoteOn, int key, float velocity) -> {
-            lamda.accept(createParams(new String[] {"isNoteOn", "key", "velocity"},
-                                      new Object[] { isNoteOn,   key,   velocity}));
+            lambda.accept(createParams(new String[] {"isNoteOn", "key", "velocity"},
+                                       new Object[] { isNoteOn,   key,   velocity}));
         };
     }
 
     /**
      * create new ObjectValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static <T> ObjectValueChangedCallback<T> newObjectValueChangedCallback(Consumer<Object> lamda) {
+    public static <T> ObjectValueChangedCallback<T> newObjectValueChangedCallback(Consumer<Object> lambda) {
         return (T value) -> {
-            lamda.accept(value);
+            lambda.accept(value);
         };
     }
 
     /**
      * create new ShortMidiDataReceivedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ShortMidiDataReceivedCallback newShortMidiDataReceivedCallback(Consumer<Object> lamda) {
+    public static ShortMidiDataReceivedCallback newShortMidiDataReceivedCallback(Consumer<Object> lambda) {
         return (int statusByte, int data1, int data2) -> {
-            lamda.accept(createParams(new String[] {"statusByte", "data1", "data2"},
-                                      new Object[] { statusByte,   data1,   data2}));
+            lambda.accept(createParams(new String[] {"statusByte", "data1", "data2"},
+                                       new Object[] { statusByte,   data1,   data2}));
         };
     }
 
     /**
      * create new ShortMidiMessageReceivedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ShortMidiMessageReceivedCallback newShortMidiMessageReceivedCallback(Consumer<Object> lamda) {
+    public static ShortMidiMessageReceivedCallback newShortMidiMessageReceivedCallback(Consumer<Object> lambda) {
         return (ShortMidiMessage value) -> {
-            lamda.accept(value);
+            lambda.accept(value);
         };
     }
 
     /**
      * create new StepDataChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StepDataChangedCallback newStepDataChangedCallback(Consumer<Object> lamda) {
+    public static StepDataChangedCallback newStepDataChangedCallback(Consumer<Object> lambda) {
         return (int x, int y, int state) -> {
-            lamda.accept(createParams(new String[] {"x", "y", "state"},
-                                      new Object[] { x,   y,   state}));
+            lambda.accept(createParams(new String[] {"x", "y", "state"},
+                                       new Object[] { x,   y,   state}));
         };
     }
 
     /**
      * create new StringArrayValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StringArrayValueChangedCallback newStringArrayValueChangedCallback(Consumer<Object> lamda) {
+    public static StringArrayValueChangedCallback newStringArrayValueChangedCallback(Consumer<Object> lambda) {
         return (String[] value) -> {
-            lamda.accept(value);
+            lambda.accept(value);
         };
     }
 
     /**
      * create new StringValueChangedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StringValueChangedCallback newStringValueChangedCallback(Consumer<Object> lamda) {
+    public static StringValueChangedCallback newStringValueChangedCallback(Consumer<Object> lambda) {
         return (String value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
     /**
      * create new SysexMidiDataReceivedCallback.
-     * @param lamda the lamda consumer to observe the callback parameter(s).
+     * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static SysexMidiDataReceivedCallback newSysexMidiDataReceivedCallback(Consumer<Object> lamda) {
+    public static SysexMidiDataReceivedCallback newSysexMidiDataReceivedCallback(Consumer<Object> lambda) {
         return (String value) -> {
-            lamda.accept(value);
+            lambda.accept(createParams(new String[] {"value"},
+                                       new Object[] { value}));
         };
     }
 
@@ -402,7 +415,7 @@ public class BitwigCallbacks {
      * @param values
      */
     private static Object createParams(final String[] names, final Object[] values) {
-        if (PREFER_NAMED_PARAMS) {
+        if (PREFER_NAMED_PARAMS && values.length > 1) {
             return IntStream.range(0, values.length)
                 .collect(HashMap::new,(m,i) -> m.put(names[i], values[i]), Map::putAll);
         }

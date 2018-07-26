@@ -10,6 +10,7 @@ import com.google.common.eventbus.EventBus;
 
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import java.util.stream.Collectors;
 
 class ModuleHolder<T> {
     // Logger
@@ -50,7 +51,8 @@ class ModuleHolder<T> {
      * @param interfaceType
      * @param moduleInstance
      */
-    ModuleHolder(String moduleName, Class<T> interfaceType, T moduleInstance, EventBus pushEventBus) {
+    ModuleHolder(String moduleName, Class<T> interfaceType, T moduleInstance,
+            EventBus pushEventBus) {
         this.moduleName = moduleName;
         this.interfaceType = interfaceType;
         this.events = new HashMap<>();
@@ -89,11 +91,56 @@ class ModuleHolder<T> {
         this.moduleInstance = moduleInstance;
     }
     
+    /**
+     * cleanup this instance.
+     */
     void clear() {
-        methods.clear();
+        events.values().stream().forEach(EventHolder::clear);
         events.clear();
+        methods.values().stream().forEach(MethodHolder::clear);
+        methods.clear();
     }
 
+    /**
+     * create a report object for this class.
+     * @return 
+     */
+    Object report() {
+        Map<String, List<Object>> report = new HashMap<>();
+        report.put("methods", reportMethods());
+        report.put("events", reportEvents());
+        return report;
+    }
+    
+    /**
+     * create a report object for list of methods of this class.
+     * @return 
+     */
+    private List<Object> reportMethods() {
+        List<Object> list = methods.keySet()
+            .stream()
+            .sorted()
+            .map(key -> methods.get(key))
+            .map(mh -> mh.report())
+            .collect(Collectors.toList());
+       return list;
+    }
+    
+    /**
+     * create a report object for list of events of ModuleHolder.
+     * @return 
+     */
+    private List<Object> reportEvents() {
+        List<Object> list = events.keySet()
+            .stream()
+            .sorted()
+            .map(key -> events.get(key))
+            .map(eh -> eh.report())
+            .collect(Collectors.toList());
+        return list;
+    }
+
+    
     protected void registerMethod(Method method) {
         registerMethod(method, "", null);
     }
@@ -133,10 +180,9 @@ class ModuleHolder<T> {
             }
             // TODO
             if (mh.getParamTypes().length != 0) {
-                // throw new UnsupportedOperationException("Not support Yet. '" + key + "' method that positions midle of chain could not have parameter(s).");
                 if (Logger.isWarnEnabled()) {
                     LOG.warn("Failed to register [" + moduleName
-                             + "." + key + "] method. The method that positions midle of chain could not have parameters." );
+                             + "." + key + "] method. The method that positions middle of chain could not have parameters." );
                 }
             }
             for(Method m : methods) {
