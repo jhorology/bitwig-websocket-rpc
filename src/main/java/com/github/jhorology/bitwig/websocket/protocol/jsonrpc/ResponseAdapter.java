@@ -37,7 +37,9 @@ public class ResponseAdapter implements JsonSerializer<Response> {
         JsonObject json = new JsonObject();
         json.addProperty("jsonrpc", src.getJsonrpc());
         JsonElement result;
-        if (src.getResult() != null) {
+        if (src.getResult() == null && src.getError() == null) {
+            json.add("result", JsonNull.INSTANCE);
+        } else if (src.getResult() != null) {
             try {
                 result = context.serialize(src.getResult());
                 json.add("result", result);

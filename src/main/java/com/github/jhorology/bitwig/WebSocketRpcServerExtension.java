@@ -23,7 +23,15 @@
 package com.github.jhorology.bitwig;
 
 
+import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.Arranger;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.DocumentState;
+import com.bitwig.extension.controller.api.Groove;
+import com.bitwig.extension.controller.api.Mixer;
+import com.bitwig.extension.controller.api.NotificationSettings;
+import com.bitwig.extension.controller.api.Preferences;
+import com.bitwig.extension.controller.api.Project;
 import com.bitwig.extension.controller.api.Transport;
 
 import com.github.jhorology.bitwig.extension.AbstractExtension;
@@ -34,7 +42,6 @@ import com.github.jhorology.bitwig.rpc.test.Test;
 import com.github.jhorology.bitwig.rpc.test.TestImpl;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
-import java.util.function.Supplier;
 
 /**
  * Bitwig Studio extension to support RPC over WebSocket.
@@ -54,12 +61,12 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
      */
     @Override
     protected Object[] createModules() throws Exception {
-        Transport transport = getHost().createTransport();
         // transport.isPlaying().markInterested();
         ReflectionRegistry registry = new ReflectionRegistry();
         registry.register("test", Test.class, new TestImpl());
         registry.register("rpc", Rpc.class, new RpcImpl());
-        registry.register("transport", Transport.class, transport);
+        registry.register("transport", Transport.class, getHost().createTransport());
+        registry.register("application", Application.class, getHost().createApplication());
         return new Object[] {
             registry,
             new WebSocketRpcServer(8887, Protocols.newJsonRpc20(), registry)

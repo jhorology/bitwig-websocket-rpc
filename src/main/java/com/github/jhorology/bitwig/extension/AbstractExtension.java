@@ -33,6 +33,8 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * An abstract bass class that is used to trigger extension events.
@@ -44,7 +46,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private FlushEvent flushEvent;
     private Executor asyncExecutor;
     private Executor flushExecutor;
-    private Stack<Object> modules;
+    private Stack<Object> extensionModules;
     private Logger log;
 
     /**
@@ -55,7 +57,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     protected AbstractExtension(ControllerExtensionDefinition definition, ControllerHost host) {
         super(definition, host);
-        Logger.init(host, Logger.TRACE);
     }
 
     /**
@@ -86,26 +87,37 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     @Override
     public void init() {
+        Logger.init(getHost(), Logger.TRACE);
         log = Logger.getLogger(AbstractExtension.class);
+        log.trace("Start initialization.");
         eventBus = new EventBus(this);
         asyncExecutor = new ControlSurfaceSessionExecutor(this);
         flushExecutor = new FlushExecutor();
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
-        modules = new Stack<>();
-        
+        extensionModules = new Stack<>();
+        // register internal core module first
+        register(new Logger());
         register(flushExecutor);
         try {
-            Object[] providedModules = createModules();
-            if (providedModules != null && providedModules.length > 0) {
-                Stream.of(providedModules).forEach(m -> register(m));
+            Object[] modules = createModules();
+            if (modules != null && modules.length > 0) {
+                Stream.of(modules).forEach(m -> register(m));
             }
+            eventBus.post(initEvent);
+            log.trace("Extension has been initialized.");
         } catch (Exception ex) {
             log.error(ex);
         }
-        // trigger synchronous event
-        eventBus.post(initEvent);
+    }
+    
+    private String createStackTraceString(Throwable ex) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        ex.printStackTrace(pw);
+        pw.flush();
+        return sw.toString();
     }
 
     /**
@@ -117,10 +129,10 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         eventBus.post(exitEvent);
         
         // unregister modules
-        while(!modules.empty()) {
-            eventBus.unregister(modules.pop());
+        while(!extensionModules.empty()) {
+            eventBus.unregister(extensionModules.pop());
         }
-        modules.clear();
+        extensionModules.clear();
     }
 
     /**
@@ -140,7 +152,9 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     @Override
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
-        log.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
+        if (log != null) {
+            log.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
+        }
     }
 
     /**
@@ -149,6 +163,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     protected void register(Object module) {
         eventBus.register(module);
-        modules.push(module);
+        extensionModules.push(module);
     }
 }

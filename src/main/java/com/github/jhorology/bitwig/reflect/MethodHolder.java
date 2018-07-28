@@ -22,15 +22,21 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+// jvm
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+// provided dependenices
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
+// source
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 
@@ -38,38 +44,61 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
  *
  */
 public class MethodHolder implements RpcMethod {
-    private final ModuleHolder<?> module;
+    protected final ModuleHolder<?> owner;
+    
     private final Method method;
-    protected final MethodHolder parentChain;
+    private final MethodHolder parentChain;
     
     private final MethodIdentifier identifier;
+    private final Type[] internalParamTypes;
     private final Type[] paramTypes;
+    private final RpcParamType[] internalRpcParamTypes;
+    private final RpcParamType[] rpcParamTypes;
+    private final Class<?> returnType;
+    private final RpcParamType rpcReturnType;
     private final boolean staticMethod;
-    private final boolean subscribable;
     private final boolean varargs;
-    private String name;
-    private String absoluteName;
+    private final String simpleName;
+    private final String name;
+    private final String absoluteName;
     
     protected boolean havingChildChain;
     // cache the return value of method;
     protected Object returnValue;
+    private String error;
 
-    MethodHolder(ModuleHolder<?> module, Method method) {
-        this(module, method, null);
+    MethodHolder(ModuleHolder<?> owner, Method method) {
+        this(owner, method, null);
     }
     
-    MethodHolder(ModuleHolder<?> module, Method method, MethodHolder parantChain) {
-        this.module = module;
+    MethodHolder(ModuleHolder<?> owner, Method method, MethodHolder parantChain) {
+        this.owner = owner;
         this.method = method;
         this.parentChain = parantChain;
-        if (parantChain != null) {
+        this.internalParamTypes = method.getGenericParameterTypes();
+        this.internalRpcParamTypes = Stream.of(internalParamTypes)
+            .map(ReflectUtils::rpcParamTypeOf)
+            .toArray(size -> new RpcParamType[size]);
+        
+        // add parentChain method's parameters getParamTypes()
+        this.staticMethod = Modifier.isStatic(method.getModifiers());
+        this.varargs = ReflectUtils.isVarargs(internalParamTypes);
+        this.simpleName = method.getName();
+        this.returnType = method.getReturnType();
+        this.rpcReturnType = ReflectUtils.rpcParamTypeOf(this.returnType);
+        if (parantChain == null) {
+            this.name = simpleName;
+            this.absoluteName = owner.getModuleName() + "." + simpleName;
+            this.paramTypes = this.internalParamTypes;
+            this.rpcParamTypes = this.internalRpcParamTypes;
+        } else {
+            this.name = parantChain.getName() + "." + this.simpleName;
+            this.absoluteName = parantChain.getAbsoluteName() + "." + this.simpleName;
+            this.paramTypes =  ArrayUtils.addAll(parentChain.getParamTypes(), internalParamTypes);
+            this.rpcParamTypes =  ArrayUtils.addAll(parentChain.getRpcParamTypes(), internalRpcParamTypes);
             parantChain.setHavingChildChain(true);
         }
-        this.paramTypes = method.getGenericParameterTypes();
-        this.identifier = new MethodIdentifier(getName(), paramTypes);
-        this.staticMethod = Modifier.isStatic(method.getModifiers());
-        this.subscribable = ReflectUtils.isBitwigSubscribable(method);
-        this.varargs = ReflectUtils.isVarargs(paramTypes);
+        this.identifier = new MethodIdentifier(getName(), rpcParamTypes);
     }
 
     MethodIdentifier getIdentifier() {
@@ -86,7 +115,7 @@ public class MethodHolder implements RpcMethod {
      * @retuen
      */
     String getSimpleName() {
-        return method.getName();
+        return simpleName;
     }
 
     /**
@@ -94,14 +123,6 @@ public class MethodHolder implements RpcMethod {
      * @retuen
      */
     String getName() {
-        if (name == null) {
-            StringBuilder sb = new StringBuilder(getSimpleName());
-            if (getParentChain() != null) {
-                sb.insert(0, ".");
-                sb.insert(0, getParentChain().getName());
-            }
-            name = sb.toString();
-        }
         return name;
     }
     
@@ -110,16 +131,6 @@ public class MethodHolder implements RpcMethod {
      * @retuen
      */
     String getAbsoluteName() {
-        if (absoluteName == null) {
-            StringBuilder sb = new StringBuilder(getSimpleName());
-            sb.insert(0, ".");
-            if (getParentChain() != null) {
-                sb.insert(0, getParentChain().getAbsoluteName());
-            } else {
-                sb.insert(0, module.getModuleName());
-            }
-            absoluteName =sb.toString();
-        }
         return absoluteName;
     }
     
@@ -127,57 +138,96 @@ public class MethodHolder implements RpcMethod {
      * return a expression of this method.<be>
      * @retuen
      */
-    List<RpcParamType> getRpcParamTypes() {
-        return identifier.getRpcParamTypes();
+    RpcParamType[] getRpcParamTypes() {
+        return rpcParamTypes;
     }
-    
+
     /**
      * return a expression of this method.<be>
      * @retuen
      */
     RpcParamType getRpcReturnType() {
-        return ReflectUtils
-            .rpcParamTypeOf(method.getGenericReturnType());
+        return rpcReturnType;
     }
     
     /**
-     * return a expression of this method.<be>
+     * return a RPC method expression.<be>
+     * @param withReturnType
      * @retuen
      */
-    String getMethodExpression() {
-        StringBuilder sb = new StringBuilder
-            (getRpcReturnType().getExpression());
-        sb.append(" ");
-        sb.append(getAbsoluteName());
+    String getExpression(boolean withReturnType) {
+        StringBuilder sb = new StringBuilder();
+        if (withReturnType) {
+            sb.append(rpcReturnType.getExpression());
+            sb.append(" ");
+        }
+        if (parentChain != null) {
+            sb.append(parentChain.getExpression(false));
+            sb.append(".");
+            sb.append(simpleName);
+        } else {
+            sb.append(absoluteName);
+        }
         sb.append("(");
-        sb.append(getRpcParamTypes().stream()
+        sb.append(Stream.of(internalRpcParamTypes)
                   .map(t -> t.getExpression())
                   .collect(Collectors.joining(", ")));
         sb.append(")");
         return sb.toString();
     }
 
+    String getError() {
+        return error;
+    }
+    
+    void setError(String error) {
+        this.error = error;
+    }
+    
+    void setError(Throwable ex, String defaultMessage) {
+        String errorMessage = ex.getMessage();
+        if (StringUtils.isEmpty(errorMessage)) {
+            errorMessage = defaultMessage;
+        }
+        this.error = errorMessage;
+    }
+    
     protected void setHavingChildChain(boolean havingChildChain) {
         this.havingChildChain = havingChildChain;
     }
+    
+    protected boolean hasChildChain() {
+        return havingChildChain;
+    }
 
-    protected Object getReturnValue() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    protected Object getReturnValue(Object[] params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         // TODO
-        // is caching OK ?
-        // support parentChain having parameters.
+        // need do something with ObjectProxy
         if (returnValue == null) {
-            returnValue = invoke(ReflectUtils.EMPTY_ARRAY_OF_OBJECT);
+            returnValue = invoke(params);
         }
         return returnValue;
     }
     
-    protected Object getMethodInstance() throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    protected Object getMethodInstance(Object[] params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (parentChain != null) {
-            return parentChain.getReturnValue();
+            // RPC call with parameter [a,b,c].
+            // need to reduce real parent method's parameter [a, b]
+            //   application.foobar(a, b).foobar(c)
+            Object[] parentMethodParams = ArrayUtils.subarray(params, 0, params.length - internalParamTypes.length);
+            return parentChain.getReturnValue(parentMethodParams);
         }
-        return module.getModuleInstance();
+        return owner.getModuleInstance();
     }
-    
+
+    /**
+     * retuan a parameter types of this method.<br>
+     * this return values maybe not same as real method's parameter types.
+     *  below case:
+     *     foobar.getFoobar(a, b).doFoobar(c)
+     *  return parameter types as [a,b,c]
+     * @return
+     */
     @Override
     public Type[] getParamTypes() {
         return paramTypes;
@@ -185,6 +235,17 @@ public class MethodHolder implements RpcMethod {
 
     @Override
     public Object invoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
+        if (params == null) {
+            params = ReflectUtils.EMPTY_ARRAY;
+        }
+        if (parentChain != null) {
+            // RPC call with parameter [a,b,c].
+            // need to reduce real method's parameter [c]
+            //   application.foobar(a, b).foobar(c)
+            Object[] thisMethodParams = ArrayUtils.subarray(params, params.length - internalParamTypes.length, params.length);
+            returnValue = internalInvoke(thisMethodParams);
+            return returnValue;
+        }
         returnValue = internalInvoke(params);
         return returnValue;
     }
@@ -192,25 +253,17 @@ public class MethodHolder implements RpcMethod {
     protected Object internalInvoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
         Object ret;
         if (staticMethod) {
-            if (params == null || params.length == 0) {
-                ret = method.invoke(null);
+            if (varargs) {
+                ret = method.invoke(null, new Object[] {params});
             } else {
-                if (varargs) {
-                    ret = method.invoke(null, new Object[] {params});
-                } else {
-                    ret = method.invoke(null, params);
-                }
+                ret = method.invoke(null, params);
             }
         } else {
-            Object target = getMethodInstance();
-            if (params == null || params.length == 0) {
-                ret = method.invoke(target);
+            Object target = getMethodInstance(params);
+            if (varargs) {
+                ret = method.invoke(target, new Object[] {params});
             } else {
-                if (varargs) {
-                    ret = method.invoke(target, new Object[] {params});
-                } else {
-                    ret = method.invoke(target, params);
-                }
+                ret = method.invoke(target, params);
             }
         }
         return ret;
@@ -227,14 +280,14 @@ public class MethodHolder implements RpcMethod {
      * @param eh
      * @return 
      */
-    Object report() {
+    Object reportRpcMethod() {
         Map<String, Object> report = new LinkedHashMap<>();
-        report.put("method", getAbsoluteName());
-        report.put("params", getRpcParamTypes()
-                   .stream()
-                   .map(t -> t.getExpression()).
-                   collect(Collectors.toList()));
-        report.put("result", getRpcReturnType().getExpression());
+        report.put("method", absoluteName);
+        report.put("params", Stream.of(rpcParamTypes)
+                   .map(t -> t.getExpression())
+                   .collect(Collectors.toList()));
+        report.put("result", rpcReturnType.getExpression());
+        report.put("expression", getExpression(true));
         return report;
     }
 }

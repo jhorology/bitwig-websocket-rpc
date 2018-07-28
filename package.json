@@ -10,6 +10,7 @@
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
     "report": "coffee report.coffee",
+    "console": "coffee log-console.coffee",
     "coffeelint": "coffeelint -f coffeelint.json test/",
     "build-test": "browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/test-suite.js"
   },
@@ -30,6 +31,7 @@
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
     "coffeescript": "^2.3.1",
+    "colors": "^1.3.1",
     "isomorphic-ws": "^4.0.1",
     "js-beautify": "^1.7.5",
     "mocha": "^5.2.0",

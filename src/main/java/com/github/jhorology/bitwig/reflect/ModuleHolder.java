@@ -1,21 +1,49 @@
+/*
+ * Copyright (c) 2018 Masafumi Fujimaru
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.github.jhorology.bitwig.reflect;
 
+// jvm
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
-import java.lang.reflect.Method;
-
-import com.google.common.eventbus.EventBus;
-
-import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.rpc.RpcParamType;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
+
+// dependencies
+import org.java_websocket.WebSocket;
+
+// source
+import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.rpc.RpcParamType;
+import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
 class ModuleHolder<T> {
     // Logger
     private static final Logger LOG = Logger.getLogger(ModuleHolder.class);
+
+    protected final ReflectionRegistry owner;
     
     /**
      * the name of this module.
@@ -32,38 +60,56 @@ class ModuleHolder<T> {
      */
     protected T moduleInstance;
 
-    protected final EventBus pushEventBus;
-    
     protected final Map<MethodIdentifier, MethodHolder> methods;
     protected final Map<String, EventHolder> events;
-
+    
     /**
      * Constructor
+     * @param owner
      * @param moduleName
      * @param interfaceType
      */
-    ModuleHolder(String moduleName, Class<T> interfaceType, EventBus pushEventBus) {
-        this(moduleName, interfaceType, null, pushEventBus);
+    ModuleHolder(ReflectionRegistry owner, String moduleName,
+                 Class<T> interfaceType) {
+        this(owner, moduleName, interfaceType, null);
     }
     
     /**
      * Constructor
+     * @param owner
      * @param moduleName
      * @param interfaceType
      * @param moduleInstance
      */
-    ModuleHolder(String moduleName, Class<T> interfaceType, T moduleInstance,
-            EventBus pushEventBus) {
+    ModuleHolder(ReflectionRegistry owner, String moduleName,
+                 Class<T> interfaceType, T moduleInstance) {
+        this.owner = owner;
         this.moduleName = moduleName;
         this.interfaceType = interfaceType;
         this.events = new HashMap<>();
         this.methods = new HashMap<>();
         this.moduleInstance = moduleInstance;
-        this.pushEventBus = pushEventBus;
+    }
+
+    /**
+     * initialize this instance.
+     */
+    void init() {
         Arrays.stream(interfaceType.getMethods())
             .forEach(m -> registerMethod(m));
     }
+    
+    /**
+     * cleanup this instance.
+     */
+    void clear() {
+        events.values().stream().forEach(EventHolder::clear);
+        events.clear();
+        methods.values().stream().forEach(MethodHolder::clear);
+        methods.clear();
+    }
 
+    
     String getModuleName() {
         return moduleName;
     }
@@ -76,7 +122,7 @@ class ModuleHolder<T> {
         return events;
     }
 
-    MethodHolder getMethod(String name, List<RpcParamType> paramTypes) {
+    MethodHolder getMethod(String name, RpcParamType[] paramTypes) {
         return methods.get(new MethodIdentifier(name, paramTypes));
     }
 
@@ -92,16 +138,19 @@ class ModuleHolder<T> {
         this.moduleInstance = moduleInstance;
     }
     
-    /**
-     * cleanup this instance.
-     */
-    void clear() {
-        events.values().stream().forEach(EventHolder::clear);
-        events.clear();
-        methods.values().stream().forEach(MethodHolder::clear);
-        methods.clear();
+    PushModel getPushModel() {
+        return owner.getPushModel();
     }
 
+    /**
+     * clean up a client that has been disconnected.
+     * @param client remote connextion.
+     */
+    void disconnect(WebSocket client) {
+        events.values().stream()
+            .forEach(e -> e.disconnect(client));
+    }
+    
     /**
      * create a report object for this class.
      * @return 
@@ -123,7 +172,7 @@ class ModuleHolder<T> {
             .stream()
             .sorted()
             .map(key -> methods.get(key))
-            .map(mh -> mh.report())
+            .map(mh -> mh.reportRpcMethod())
             .collect(Collectors.toList());
        return list;
     }
@@ -137,57 +186,46 @@ class ModuleHolder<T> {
             .stream()
             .sorted()
             .map(key -> events.get(key))
-            .map(eh -> eh.report())
+            .map(eh -> eh.reportRpcEvent())
             .collect(Collectors.toList());
         return list;
     }
-
     
     protected void registerMethod(Method method) {
         registerMethod(method, "", null);
     }
     
     private void registerMethod(Method method, String prefix, MethodHolder parentChain) {
-        // exclude addXxxxxObserver methods
-        if (ReflectUtils.hasAnyCallbackParameter(method)) {
-            if (false && Logger.isWarnEnabled()) {
-                LOG.warn("Ignore registering [" + moduleName + "."
-                         + prefix + method.getName() + "] method that has callback paramater.");
-            }
-            return;
-        }
-        if (ReflectUtils.isDeprecated(method)) {
-            if (false && Logger.isWarnEnabled()) {
-                LOG.warn("Ignore registering deprecated [" + moduleName + "."
-                         + prefix + method.getName() + "] method.");
-            }
+        // exclude method that is not usable for RPC
+        if (!ReflectUtils.isUsableForRpcMethod(method)) {
             return;
         }
         // method's return type is inherited from Value interface.
-        boolean isEvent = ReflectUtils.isBitwigEvent(method);
+        boolean isEvent = ReflectUtils.isUsableForRpcEvent(method);
         MethodHolder mh = isEvent
-            ? new EventHolder(this, method, parentChain, pushEventBus)
+            ? new EventHolder(this, method, parentChain)
             : new MethodHolder(this, method, parentChain);
         String key = prefix + method.getName();
         methods.put(mh.getIdentifier(), mh);
         if (isEvent) {
             events.put(key, (EventHolder)mh);
         }
+        // TODO  Protocol can serialize returnType or not?
         Class<?> returnType = method.getReturnType();
         // register method recursively
         if (ReflectUtils.isBitwigAPI(returnType)) {
-            Method[] methods = returnType.getMethods();
-            if (methods.length == 0) {
+            Method[] methodsOfReturnType = returnType.getMethods();
+            if (methodsOfReturnType.length == 0) {
                 return;
             }
             // TODO
-            if (mh.getParamTypes().length != 0) {
-                if (Logger.isWarnEnabled()) {
-                    LOG.warn("Failed to register [" + moduleName
-                             + "." + key + "] method. The method that positions middle of chain could not have parameters." );
+            if (ReflectUtils.hasAnyObjectOrArrayParameter(method)) {
+                if (Logger.isDebugEnabled()) {
+                    LOG.warn("[" + moduleName
+                             + "." + key + "] has chain methods, However, it also has object or array parameters." );
                 }
             }
-            for(Method m : methods) {
+            for(Method m : methodsOfReturnType) {
                 registerMethod(m, key + ".", mh);
             }
         }

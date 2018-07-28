@@ -19,7 +19,6 @@ describe 'Transport Module', ->
   before ->
     wsConnect().then (conn) ->
       ws = conn
-      @
   after ->
     wsClose ws
     

@@ -22,19 +22,24 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+// jvm
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+// bitwig api
 import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.Value;
 
+// provided dependencies
 import org.apache.commons.lang3.tuple.ImmutablePair;
+
+// dependencies
 import org.java_websocket.WebSocket;
 
+// source
 import com.github.jhorology.bitwig.extension.Logger;
-import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
@@ -96,8 +101,9 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Value<StringValueChangedCallback> log() {
-        // TODO
-        return null;
+        Logger log = Logger.getLogger("rpc.log");
+        log.info("Hello!");
+        return log;
     }
     
     /**

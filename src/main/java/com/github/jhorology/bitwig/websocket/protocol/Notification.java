@@ -12,7 +12,6 @@ public class Notification {
 
     /**
      * construct a notification message.
-     * @return
      */
     public Notification() {
     }
@@ -21,7 +20,6 @@ public class Notification {
      * construct a notification message with message and parameters.
      * @param notification
      * @param params
-     * @return
      */
     public Notification(String notification, Object params) {
         this.notification = notification;

@@ -71,8 +71,9 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 }
             }
 
-            if (rpcMethod == null)
+            if (rpcMethod == null) {
                 throw new JsonRpcException(ErrorEnum.METHOD_NOT_FOUND, "'" + req.getMethod() + "' method not found.");
+            }
             req.setRpcMethod(rpcMethod);
             
             if (params != null) {
@@ -96,9 +97,9 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         return req;
     }
 
-    private List<RpcParamType> toRpcParamTypes(final JsonElement json) {
+    private RpcParamType[] toRpcParamTypes(final JsonElement json) {
         if (json == null) {
-            return Collections.emptyList();
+            return new RpcParamType[0];
         }
         // array paramters "params":[1,2,3]
         if (json.isJsonArray()) {
@@ -106,13 +107,13 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty array.");
             return StreamSupport.stream(json.getAsJsonArray().spliterator(), false)
                 .map(e -> paramItemTypeOf(e))
-                .collect(Collectors.toList());
+                .toArray(size -> new RpcParamType[size]);
         }
         // named paramters "params":{"left":1, "right":2}
         if(json.isJsonObject()) {
             if (json.getAsJsonObject().entrySet().isEmpty())
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
-            return  Arrays.asList(new RpcParamType[] {RpcParamType.OBJECT});
+            return  new RpcParamType[] {RpcParamType.OBJECT};
         }
         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported type of 'params' property.");
     }
@@ -124,7 +125,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         if (json.isJsonArray()) {
             final JsonArray ja = json.getAsJsonArray();
             if (ja.size() == 0) {
-                return RpcParamType.ARRAY_OF_OBJECT;
+                return RpcParamType.OBJECT_ARRAY;
             }
             // exclude doble nested array
             StreamSupport.stream(ja.spliterator(), false).forEach(e -> {
@@ -135,16 +136,16 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 ? primitiveParamTypeOf(ja.get(0).getAsJsonPrimitive())
                 : RpcParamType.OBJECT;
             if (ja.size() == 1) {
-                return firstParamType.toArrayType();
+                return firstParamType.getArrayType();
             }
             boolean allMatch = StreamSupport.stream(ja.spliterator(), false)
                 .skip(1)
                 .map(e -> e.isJsonPrimitive() ? primitiveParamTypeOf(e.getAsJsonPrimitive()) : RpcParamType.OBJECT)
                 .allMatch(e -> e == firstParamType);
             if (allMatch) {
-                return firstParamType.toArrayType();
+                return firstParamType.getArrayType();
             }
-            return RpcParamType.ARRAY_OF_OBJECT;
+            return RpcParamType.OBJECT_ARRAY;
         }
         return RpcParamType.OBJECT;
     }

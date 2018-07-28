@@ -22,40 +22,49 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+// jvm
 import java.util.List;
+
+// dependencies
+import org.java_websocket.WebSocket;
+
+// source
+import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
 /**
  * An interface for RPC registry model.
  */
 public interface RpcRegistry {
     /**
+     * Register a interface of server-sent push model to use for trigger event.
+     * @param pushModel
+     */
+    void registerPushModel(PushModel pushModel);
+    
+    /**
      * Get an interface for RPC method model.
      * @param name the method name.
      * @param paramTypes the parameter types
+     * @return 
      */
-    RpcMethod getRpcMethod(String name, List<RpcParamType> paramTypes);
+    RpcMethod getRpcMethod(String name, RpcParamType[] paramTypes);
     
     /**
      * Get an interface for RPC event model.
      * @param name the event name.
+     * @return 
      */
     RpcEvent getRpcEvent(String name);
+    
+    /**
+     * clean up a client that has been disconnected.
+     * @param client remote connextion.
+     */
+    void disconnect(WebSocket client);
     
     /**
      * report all registered methods and evnnts.
      * @return
      */
     Object report();
-
-    /**
-     * subscribe push event bus.
-     * @param subscriber
-     */
-    void subscribePushEvent(Object subscriber);
-    
-    /**
-     * unsubscribe push event bus.
-     * @param subscriber
-     */
-    void unsubscribePushEvent(Object subscriber);
 }

@@ -22,89 +22,136 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+// jvm
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Queue;
 import java.util.function.Consumer;
 
+// bitwig api
+import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.StringValue;
+import com.bitwig.extension.controller.api.Value;
+
+// provided dependencies
+import com.google.common.eventbus.Subscribe;
 
 /**
  * A simple logging class for Controller Script Console. 
  */
-public class Logger {
+public class Logger implements Value<StringValueChangedCallback>, StringValue {
+    
+    /**
+     * severity level of debug
+     */
+    public static final int DEBUG = 0;
     
     /**
      * severity level of trace
      */
-    public static final int TRACE = 0;
+    public static final int TRACE = 1;
     
     /**
      * severity level of info
      */
-    public static final int INFO = 1;
+    public static final int INFO = 2;
     
     /**
      * severity level of warning
      */
-    public static final int WARN = 2;
+    public static final int WARN = 3;
     /**
      * severity level of error
      */
-    public static final int ERROR = 3;
+    public static final int ERROR = 4;
     
-    private static final String[] SEVERITIES = {"T","I","W","E"};
+    private static final String[] SEVERITIES = {"D", "T", "I", "W", "E"};
     private static final int COLUMN_SIZE = 94;
     private static final String DELIMITER = "|";
     private static final String INDENT_PREFIX = " > ";
     private static final int INDENTED_COLUMN_SIZE = COLUMN_SIZE - INDENT_PREFIX.length();
-    private static final String EXTENSION_THREAD_NAME = "Control Surface Session";
-    
+    private static final int TAIL_QUEUE_SIZE = 4;
+
     private static ControllerHost host;
     private static int level;
-    private static Consumer<String> std;
-    private static Consumer<String> err;
-    private static Thread extensionThread;
-    private Class<?> clazz;
+    private static Thread controlSurfaceSession;
+    private static List<StringValueChangedCallback> subscribers;
+    private static boolean subscribed;
+    private static Queue<String> tailMessages;
+    private String category;
     
-    private Logger() {
+    Logger() {
     }
 
     private Logger(Class<?> clazz) {
-        this.clazz = clazz;
+        this(clazz.getSimpleName());
+    }
+    
+    private Logger(String category) {
+        this.category = category;
     }
 
     /**
      * get a logger instance.
      * @param clazz
-     * @return 
+     * @return Logger
      */
     public static Logger getLogger(Class<?> clazz) {
         return new Logger(clazz);
     }
+    
+    /**
+     * get a logger instance.
+     * @param category
+     * @return Logger
+     */
+    public static Logger getLogger(String category) {
+        return new Logger(category);
+    }
 
     /**
-     * initialize the logger.
+     * initialize logger.
      * @param host
-     * @param level 
+     * @param level
      */
     static void init(ControllerHost host, int level) {
         Logger.host = host;
         Logger.level = level;
-        // is this safe?
-        // maybe not callable from other than extension thread.
-        std = (s) -> {host.println(s);};
-        err = (s) -> {host.errorln(s);};
-        String currentThreadName = Thread.currentThread().getName();
-        if (EXTENSION_THREAD_NAME.equals(currentThreadName)) {
-            extensionThread = Thread.currentThread();
-        }
+        Logger.controlSurfaceSession = Thread.currentThread();
+        Logger.subscribers = new ArrayList<>();
+        Logger.tailMessages = new ArrayDeque<>(TAIL_QUEUE_SIZE);
+        Logger.reentrant = false;
     }
     
+    /**
+     * called on extension's end-of-lifecycle.
+     * @param e
+     */
+    @Subscribe
+    static void onExit(ExitEvent e) {
+        subscribers.clear();
+        tailMessages.clear();
+        host = null;
+        controlSurfaceSession = null;
+    }
+    
+    /**
+     * Is debug logging currently enabled?
+     * @return 
+     */
+    public static boolean isDebugEnabled() {
+        return level <= DEBUG;
+    }
+
     /**
      * Is trace logging currently enabled?
      * @return 
@@ -130,12 +177,43 @@ public class Logger {
     }
     
     /**
+     * Logs a debug message.
+     * @param msg
+     */
+    public void debug(String msg) {
+        if (level <= DEBUG) {
+            internalLog(DEBUG, msg, null);
+        }
+    }
+    
+    /**
+     * Logs a debug message.
+     * @param ex
+     */
+    public void debug(Throwable ex) {
+        if (level <= DEBUG) {
+            internalLog(DEBUG, null, ex);
+        }
+    }
+    
+    /**
+     * Logs a debug message.
+     * @param msg
+     * @param ex
+     */
+    public void debug(String msg, Throwable ex) {
+        if (level <= DEBUG) {
+            internalLog(DEBUG, null, ex);
+        }
+    }
+    
+    /**
      * Logs a trace message.
      * @param msg
      */
     public void trace(String msg) {
         if (level <= TRACE) {
-            log(formatLog(TRACE, msg), std);
+            internalLog(TRACE, msg, null);
         }
     }
     
@@ -145,7 +223,7 @@ public class Logger {
      */
     public void info(String msg) {
         if (level <= INFO) {
-            log(formatLog(INFO, msg), std);
+            internalLog(INFO, msg, null);
         }
     }
     
@@ -155,7 +233,18 @@ public class Logger {
      */
     public void warn(String msg) {
         if (level <= WARN) {
-            log(formatLog(WARN, msg), err);
+            internalLog(WARN, msg, null);
+        }
+    }
+    
+    /**
+     * Logs a warning message with exception.
+     * @param msg
+     * @param ex
+     */
+    public void warn(String msg, Throwable ex) {
+        if (level <= WARN) {
+            internalLog(WARN, msg, ex);
         }
     }
 
@@ -164,25 +253,219 @@ public class Logger {
      * @param msg
      */
     public void error(String msg) {
-        log(formatLog(ERROR, msg), err);
+        if (level <= ERROR) {
+            internalLog(ERROR, msg, null);
+        }
     }
     
     /**
      * Logs an error message with exception.
      * @param msg
+     * @param ex
      */
     public void error(String msg, Throwable ex) {
-        error(msg + "\n" + createStackTraceString(ex));
+        if (level <= ERROR) {
+            internalLog(ERROR, msg, ex);
+        }
     }
 
     /**
      * Logs an exception.
-     * @param msg
+     * @param ex
      */
     public void error(Throwable ex) {
-        error(createStackTraceString(ex));
+        if (level <= ERROR) {
+            internalLog(ERROR, null, ex);
+        }
+    }
+    
+    /**
+     * Logs a message.
+     * @param severity
+     * @param msg
+     */
+    public void log(int severity, String msg) {
+        if (level <= severity) {
+            internalLog(severity, msg, null);
+        }
+    }
+    /**
+     * Logs a message with exception.
+     * @param severity
+     * @param msg
+     * @param ex
+     */
+    public void log(int severity, String msg, Throwable ex) {
+        if (level <= severity) {
+            internalLog(severity, msg, ex);
+        }
+    }
+    
+
+    /**
+     * An implementation of Value#markInterested
+     */
+    @Override
+    public void markInterested() {
+        subscribe();
     }
 
+    /**
+     * An implementation of Value#addValueObserver
+     * @param callback
+     */
+    @Override
+    public void addValueObserver(StringValueChangedCallback callback) {
+        subscribers.add(callback);
+    }
+
+    /**
+     * An implementation of Subscribable#isSubscibed
+     * @return
+     */
+    @Override
+    public boolean isSubscribed() {
+        return subscribed;
+    }
+
+    /**
+     * An implementation of Subscribable#setIsSubscibe
+     * @param subscribed
+     */
+    @Override
+    @SuppressWarnings("static-access")
+    public void setIsSubscribed(boolean subscribed) {
+        this.subscribed = subscribed;
+        // to knows tail messages
+        if (subscribed) {
+            // to let subscribers to know tail messages.
+            triggerValueChanged();
+        }
+    }
+
+    /**
+     * An implementation of Subscribable#subscibe
+     */
+    @Override
+    public void subscribe() {
+        setIsSubscribed(true);
+    }
+
+    /**
+     * An implementation of Subscribable#unsubscibe
+     */
+    @Override
+    public void unsubscribe() {
+        setIsSubscribed(false);
+    }
+
+    /**
+     * An implementation of StringValue#get
+     * @return last log message
+     */
+    @Override
+    public String get() {
+        return tailMessages.peek();
+    }
+
+    /**
+     * An implementation of StringValue#getLimited
+     * @param length
+     * @return trimed last log message
+     */
+    @Override
+    public String getLimited(int length) {
+        String message = get();
+        if (message != null && message.length() > length) {
+            return message.substring(0, length);
+        }
+        return message;
+    }
+
+    /**
+     * Logs a message with exception.
+     * @param severity
+     * @param msg
+     * @param ex
+     */
+    private void internalLog(int severity, String msg, Throwable ex) {
+        String logMessage = formatLog(severity, msg, ex);
+        // TODO maybe not thread safe.
+        if (severity < WARN) {
+            outputScriptConsole(logMessage, (s) -> host.println(s));
+        } else {
+            outputScriptConsole(logMessage, (s) -> host.errorln(s));
+        }
+        
+        // trigger RPC event.
+        // only support within control surface session,
+        // 'cause need to consider too many things...
+        if (Thread.currentThread() == controlSurfaceSession) {
+            triggerValueChanged(logMessage);
+        }
+    }
+    
+    private void triggerValueChanged() {
+        triggerValueChanged(null);
+    }
+
+    private static boolean reentrant;
+    private void triggerValueChanged(String message) {
+        // for debug
+        if (reentrant) {
+            return;
+        }
+        reentrant = true;
+        try {
+            while(tailMessages.size() >= TAIL_QUEUE_SIZE) {
+                tailMessages.remove();
+            }
+            if (message != null) {
+                tailMessages.add(message);
+            }
+            if (subscribed && !subscribers.isEmpty() && !tailMessages.isEmpty()) {
+                String logMessage = tailMessages.poll();
+                while(logMessage != null) {
+                    final String msg = logMessage;
+                    subscribers.stream()
+                        .forEach((s)-> s.valueChanged(msg));
+                    logMessage = tailMessages.poll();
+                }
+            }
+        } finally {
+            reentrant = false;
+        }
+    }
+    
+    private String formatLog(int severity, String msg, Throwable ex) {
+        StringBuilder sb = new StringBuilder();
+        String date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME);
+        if (date.length() < 12) {
+            date = (date + "            ").substring(0, 12);
+        }
+        sb.append(date);
+        sb.append(DELIMITER);
+        sb.append(SEVERITIES[severity]);
+        sb.append(DELIMITER);
+        // only add a thread name when call from other than "Control Surface Session" therad.
+        if (controlSurfaceSession != Thread.currentThread()) {
+            sb.append(Thread.currentThread().getName());
+            sb.append(DELIMITER);
+        }
+        sb.append(category);
+        sb.append(DELIMITER);
+        if (msg != null) {
+            sb.append(msg);
+            if (ex != null) {
+                sb.append("\n");
+            }
+        }
+        if (ex != null) {
+            sb.append(createStackTraceString(ex));
+        }
+        return sb.toString();
+    }
+    
     private String createStackTraceString(Throwable ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -190,54 +473,31 @@ public class Logger {
         pw.flush();
         return sw.toString();
     }
-    
-    private String formatLog(int severity, String msg) {
-        StringBuilder sb = new StringBuilder();
-        sb.append((LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME) + "   ").substring(0, 12));
-        sb.append(DELIMITER);
-        sb.append(SEVERITIES[severity]);
-        sb.append(DELIMITER);
-        sb.append(clazz.getSimpleName());
-        sb.append(DELIMITER);
-        // only add a thread name when call from other than "Control Surface Session" therad.
-        if (extensionThread != Thread.currentThread()) {
-            sb.append(Thread.currentThread().getName());
-            sb.append(DELIMITER);
-        }
-        sb.append(msg);
-        return sb.toString();
-    }
 
-    private void log(String msg, Consumer<String> out) {
+    private void outputScriptConsole(String msg, Consumer<String> out) {
         BufferedReader br = new BufferedReader(new StringReader(msg));
-        boolean isFirstLine = true;
+        String firstLine;
         try {
-            String str = br.readLine();
-            while(str != null) {
-                while (str != null) {
-                    if (isFirstLine) {
-                        if (str.length() > COLUMN_SIZE) {
-                            out.accept(str.substring(0, COLUMN_SIZE));
-                            isFirstLine = false;
-                            str = str.substring(COLUMN_SIZE);
-                        } else {
-                            out.accept(str);
-                            isFirstLine = false;
-                            break;
-                        }
-                    } else {
-                        if (str.length() > INDENTED_COLUMN_SIZE) {
-                            out.accept(INDENT_PREFIX + str.substring(0, INDENTED_COLUMN_SIZE));
-                            str = str.substring(INDENTED_COLUMN_SIZE);
-                        } else {
-                            out.accept(INDENT_PREFIX + str);
-                            break;
-                        }
-                    }
-                }
-                str = br.readLine();
-            }
+            firstLine = br.readLine();
         } catch (IOException ex) {
+            // never happend.
+            firstLine = ex.getMessage();
         }
+        if (firstLine.length() > COLUMN_SIZE) {
+            out.accept(firstLine.substring(0, COLUMN_SIZE));
+            firstLine = firstLine.substring(COLUMN_SIZE);
+            outputLineFollowing(firstLine, out);
+        } else {
+            out.accept(firstLine);
+        }
+        br.lines().forEach(l -> outputLineFollowing(l, out));
+    }
+    
+    private void outputLineFollowing(String line, Consumer<String> out) {
+        while (line.length() > INDENTED_COLUMN_SIZE) {
+            out.accept(INDENT_PREFIX + line.substring(0, INDENTED_COLUMN_SIZE));
+            line = line.substring(INDENTED_COLUMN_SIZE);
+        }
+        out.accept(INDENT_PREFIX + line);
     }
 }

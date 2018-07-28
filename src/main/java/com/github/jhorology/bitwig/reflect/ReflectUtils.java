@@ -22,17 +22,23 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
+// jvm
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
+// bitwig api
 import com.bitwig.extension.callback.Callback;
+import com.bitwig.extension.controller.api.ObjectProxy;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.extension.Logger;
 
+// source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 
 /**
@@ -42,12 +48,18 @@ public class ReflectUtils {
     /**
      * empty array of Object.
      */
-    public static final Object[] EMPTY_ARRAY_OF_OBJECT = {};
+    public static final Object[] EMPTY_ARRAY = {};
     
-    private static List<Method> METHODS_OF_SUBSCRIBABLE = Arrays.asList(Subscribable.class.getMethods());
-    private static List<Method> METHODS_OF_VALUE = Arrays.asList(Value.class.getMethods());
-    
-
+    private static final List<Method> BLACK_LISTED_METHODS;
+    static {
+        BLACK_LISTED_METHODS = new ArrayList<>();
+        // ObjectProxy, not controllable from remote.
+        BLACK_LISTED_METHODS.addAll(Arrays.asList(ObjectProxy.class.getMethods()));
+        // ObjectProxy extends Subscribable
+        // but, Subbscirbable member is OK
+        BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
+    }
+        
     /**
      * return a sloppy type of java strict type.
      * @param t paramter type.
@@ -68,18 +80,18 @@ public class ReflectUtils {
                 Class<?> cc = c.getComponentType();
                 if (cc.isPrimitive()) {
                     if (cc.equals(boolean.class)) {
-                        return RpcParamType.ARRAY_OF_BOOLEAN;
+                        return RpcParamType.BOOLEAN_ARRAY;
                     } else {
-                        return RpcParamType.ARRAY_OF_NUMBER;
+                        return RpcParamType.NUMBER_ARRAY;
                     }
                 } else if (Boolean.class.isAssignableFrom(cc)) {
-                    return RpcParamType.ARRAY_OF_BOOLEAN;
+                    return RpcParamType.BOOLEAN_ARRAY;
                 } else if (Number.class.isAssignableFrom(cc)) {
-                    return RpcParamType.ARRAY_OF_NUMBER;
+                    return RpcParamType.NUMBER_ARRAY;
                 } else if (String.class.isAssignableFrom(cc)) {
-                    return RpcParamType.ARRAY_OF_STRING;
+                    return RpcParamType.STRING_ARRAY;
                 } else {
-                    return RpcParamType.ARRAY_OF_OBJECT;
+                    return RpcParamType.OBJECT_ARRAY;
                 }
             } else if (Boolean.class.isAssignableFrom(c)) {
                 return RpcParamType.BOOLEAN;
@@ -89,7 +101,7 @@ public class ReflectUtils {
                 return RpcParamType.STRING;
             }
         } else if (t instanceof GenericArrayType) {
-            return RpcParamType.ARRAY_OF_OBJECT;
+            return RpcParamType.OBJECT_ARRAY;
         }
         return RpcParamType.OBJECT;
     };
@@ -101,6 +113,27 @@ public class ReflectUtils {
                 || t instanceof GenericArrayType;
         }
         return false;
+    }
+    
+    /**
+     * convert to varargs type if aveilable
+     * [Number, Number, Number] -> [Namber[]]
+     * @param rpcParamTypes
+     * @return
+     */
+    public static RpcParamType[] toVarargs(RpcParamType[] rpcParamTypes) {
+        if (rpcParamTypes.length >= 1) {
+            final RpcParamType expectedType = rpcParamTypes[0];
+            if(!expectedType.isArray()) {
+                boolean allSameType = Stream.of(rpcParamTypes)
+                    .allMatch(t -> (t == expectedType));
+                if (allSameType) {
+                    RpcParamType arrayType = expectedType.getArrayType();
+                    return new RpcParamType[] {arrayType};
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -132,24 +165,6 @@ public class ReflectUtils {
     }
 
     /**
-     * Return value of method is implemented Subscribable interface or not ?
-     * @param method
-     * @return
-     */
-    public static boolean isBitwigSubscribable(Method method) {
-        return isBitwigSubscribable(method.getReturnType());
-    }
-    
-    /**
-     * Specified type is implemented Subscribable interface or not ?
-     * @param type
-     * @return
-     */
-    public static boolean isBitwigSubscribable(Class<?> type) {
-        return Subscribable.class.isAssignableFrom(type);
-    }
-    
-    /**
      * Return value of method is implemented Value interface or not ?
      * it mean having addValueObserver method or not.
      * @param method
@@ -169,41 +184,28 @@ public class ReflectUtils {
     }
 
     /**
-     * Return value of method can be treated as RPC event or not ?
-     * @param method
-     * @return
-     */
-    public static boolean isBitwigEvent(Method method) {
-        return isBitwigEvent(method.getReturnType());
-    }
-    
-    /**
-     * Specified type can be treated as RPC event or not ? <br>
-     * abstract public interface Value extends Subscribable
-     * @param type
-     * @return
-     */
-    public static boolean isBitwigEvent(Class<?> type) {
-        return isBitwigValue(type);
-    }
-
-    /**
-     * return method is member of Subscribable interface or not.
-     * @param method
-     * @return
-     */
-    public static boolean isMemberOfSubscribable(Method method) {
-        return METHODS_OF_SUBSCRIBABLE.contains(method);
-    }
-
-    /**
      * Method has any paramater of Callback or not.
      * @param method
      * @return
      */
     public static boolean hasAnyCallbackParameter(Method method) {
-        return Stream.of(method.getParameterTypes())
+        Class<?>[] types = method.getParameterTypes();
+        if (types.length == 0) return false;
+        return Stream.of(types)
             .anyMatch(Callback.class::isAssignableFrom);
+    }
+
+    /**
+     * Method has any paramater of OBJECT or ARRAY.
+     * @param method
+     * @return
+     */
+    public static boolean hasAnyObjectOrArrayParameter(Method method) {
+        Type [] types = method.getGenericParameterTypes();
+        if (types.length == 0) return false;
+        return Stream.of(types)
+            .map(c -> rpcParamTypeOf(c))
+            .anyMatch(t -> (t == RpcParamType.OBJECT || t.isArray()));
     }
 
     /**
@@ -214,4 +216,32 @@ public class ReflectUtils {
     public static boolean isDeprecated(Method method) {
         return method.getAnnotation(Deprecated.class) != null;
     }
+
+    /**
+     * return method is usable for RPC not.
+     * @param method
+     * @return
+     */
+    public static boolean isUsableForRpcMethod(Method method) {
+        return !isDeprecated(method)
+            && !hasAnyCallbackParameter(method)
+            && !BLACK_LISTED_METHODS.contains(method);
+    };
+    
+    /**
+     * return method is usable for RPC event not.
+     * @param method
+     * @return
+     */
+    public static boolean isUsableForRpcEvent(Method method) {
+        // is method return type implemented Value interface
+        if (isBitwigValue(method)) {
+            // but some 'addValueObserver' are deprecated.
+            return !Stream.of(method.getReturnType().getMethods())
+                .filter(m -> "addValueObserver".equals(m.getName()))
+                .anyMatch(ReflectUtils::isDeprecated);
+            // TODO but it's not annotated.
+        }
+        return false;
+    };
 }

@@ -11,15 +11,9 @@ class MethodIdentifier implements Comparable<MethodIdentifier> {
     private final String name;
     private final List<RpcParamType> rpcParamTypes;
     
-    MethodIdentifier(String name, Type[] paramTypes) {
-        this(name, Arrays.stream(paramTypes)
-             .map(ReflectUtils::rpcParamTypeOf)
-             .collect(Collectors.toList()));
-    }
-    
-    MethodIdentifier(String name, List<RpcParamType> rpcParamTypes) {
+    MethodIdentifier(String name, RpcParamType[] rpcParamTypes) {
         this.name = name;
-        this.rpcParamTypes = rpcParamTypes;
+        this.rpcParamTypes = Arrays.asList(rpcParamTypes);
     }
 
     String getName() {

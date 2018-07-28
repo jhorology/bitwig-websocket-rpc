@@ -2,10 +2,10 @@ package com.github.jhorology.bitwig.extension;
 
 import com.bitwig.extension.controller.api.ControllerHost;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executor;
 
 import com.google.common.eventbus.Subscribe;
+import java.util.ArrayDeque;
 
 /**
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.
@@ -16,17 +16,18 @@ public class FlushExecutor implements Executor {
     private static final int WAITING = 2;
     private static final int SHUTDOWN = 3;
     private static final int QUEUE_SIZE = 64;
-    
+
+    private Thread controlSurfaceSession;
     private Queue<Runnable> tasks;
     private AbstractExtension extension;
     private Logger log;
     private int state = IDLE;
-    
     @Subscribe
     public void onInit(InitEvent e) {
         log = Logger.getLogger(FlushExecutor.class);
-        tasks = new ArrayBlockingQueue<>(QUEUE_SIZE);
+        tasks = new ArrayDeque<>(QUEUE_SIZE);
         extension = e.getExtension();
+        controlSurfaceSession = Thread.currentThread();
         state = IDLE;
     }
     
@@ -51,7 +52,22 @@ public class FlushExecutor implements Executor {
     @Override
     public synchronized void execute(Runnable command) {
         tasks.add(command);
-        if (state != WAITING) {
+        // after 'exit' was called, 'flush'is no more called from host.
+        if (state == SHUTDOWN) {
+            // to aveilable to execute event that triggerd from another module's onExit.
+            if (Thread.currentThread() == controlSurfaceSession) {
+                Runnable task = tasks.poll();
+                while(task != null) {
+                    ExecutionContext.init(extension);
+                    try {
+                        task.run();
+                    } finally {
+                        ExecutionContext.destroy();
+                        task = tasks.poll();
+                    }
+                }
+            }
+        } else if (state != WAITING) {
             // TODO
             // is this safe?
             // maybe not callable from other than control surface session thread.

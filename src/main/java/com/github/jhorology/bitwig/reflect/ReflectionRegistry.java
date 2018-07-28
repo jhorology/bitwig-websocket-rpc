@@ -22,23 +22,26 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-import com.bitwig.extension.Extension;
-import com.bitwig.extension.ExtensionDefinition;
-import com.bitwig.extension.api.Host;
-import java.util.Arrays;
+// jvm
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.SubscriberExceptionContext;
-import com.google.common.eventbus.SubscriberExceptionHandler;
+// bitwig api
+import com.bitwig.extension.ExtensionDefinition;
+import com.bitwig.extension.api.Host;
 
+// provided dependencies
+import com.google.common.eventbus.Subscribe;
+
+// dependencies
+import org.java_websocket.WebSocket;
+
+// source
+import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
@@ -46,68 +49,95 @@ import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
+import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
-public class ReflectionRegistry
-    implements RpcRegistry,SubscriberExceptionHandler {
+public class ReflectionRegistry implements RpcRegistry {
 
-    private final Logger log;
+    private Logger log;
 
     // server sent evnt bus.
-    private final Map<String, ModuleHolder<?>> modules;
-    private final EventBus pushEventBus;
+    private final List<ModuleHolder<?>> preInitModules;
+    private Map<String, ModuleHolder<?>> modules;
 
-    private Extension extension;
-    
+    private PushModel pushModel;
+    private AbstractExtension extension;
+    private boolean initialized;
+
     public ReflectionRegistry() {
-        log = Logger.getLogger(ReflectionRegistry.class);
-        modules = new ConcurrentHashMap<>();
-        pushEventBus = new EventBus(this);
+        preInitModules = new ArrayList<>();
     }
 
     @Subscribe
     public void onInit(InitEvent e) {
+        log = Logger.getLogger(ReflectionRegistry.class);
         extension = e.getExtension();
+        modules = new LinkedHashMap<>();
+        initialized = true;
+        preInitModules.stream().forEach(m -> {
+                m.init();
+                modules.put(m.getModuleName(), m);
+            });
+        preInitModules.clear();
     }
 
     @Subscribe
     public void onExit(ExitEvent e) {
+        preInitModules.clear();
         if (modules != null) {
             modules.values().forEach(ModuleHolder::clear);
             modules.clear();
         }
     }
 
+    /**
+     * Register a interface of server-sent push model to use for trigger event.
+     * @param pushModel
+     */
     @Override
-    public RpcMethod getRpcMethod(String name, List<RpcParamType> paramTypes) {
-        ImmutablePair<String, String> pair = parseName(name);
+    public void registerPushModel(PushModel pushModel) {
+        // should manage as List
+        this.pushModel = pushModel;
+    }
+
+    /**
+     * Get an interface for RPC method model.
+     * @param name the method name.
+     * @param paramTypes the parameter types
+     * @return
+     */
+    @Override
+    public RpcMethod getRpcMethod(String name, RpcParamType[] paramTypes) {
+        String[] pair = parseName(name);
         if (pair == null) {
             return null;
         }
-        String moduleName = pair.getLeft();
-        String methodName = pair.getRight();
+        String moduleName = pair[0];
+        String methodName = pair[1];
         ModuleHolder<?> module = getModule(moduleName);
         if (module == null) {
             return null;
         }
         RpcMethod method = module.getMethod(methodName, paramTypes);
         // try matching varargs
-        if (method == null && paramTypes.size() >=1) {
-            final RpcParamType expectedType = paramTypes.get(0);
-            if(!expectedType.isArray()
-               && paramTypes.stream()
-               .allMatch(t -> (t == expectedType))) {
-                RpcParamType arrayType = expectedType.toArrayType();
-                method = module.getMethod(methodName, Arrays.asList(new RpcParamType[] {arrayType}));
+        if (method == null) {
+            RpcParamType[] varargsTypes = ReflectUtils.toVarargs(paramTypes);
+            if (varargsTypes != null) {
+                method = module.getMethod(methodName, varargsTypes);
             }
         }
         return method;
     }
 
+    /**
+     * Get an interface for RPC event model.
+     * @param name the event name.
+     * @return
+     */
     @Override
     public RpcEvent getRpcEvent(String name) {
-        ImmutablePair<String, String> pair = parseName(name);
-        String moduleName = pair.getLeft();
-        String eventName = pair.getRight();
+        String[] pair = parseName(name);
+        String moduleName = pair[0];
+        String eventName = pair[1];
         ModuleHolder<?> module;
         module = getModule(moduleName);
         if (module == null) {
@@ -116,14 +146,14 @@ public class ReflectionRegistry
         return module.getEvent(eventName);
     }
 
+    /**
+     * clean up a client that has been disconnected.
+     * @param client remote connextion.
+     */
     @Override
-    public void subscribePushEvent(Object object) {
-        pushEventBus.register(object);
-    }
-
-    @Override
-    public void unsubscribePushEvent(Object object) {
-        pushEventBus.unregister(object);
+    public void disconnect(WebSocket client) {
+        modules.values().stream()
+            .forEach(m -> m.disconnect(client));
     }
 
     /**
@@ -139,40 +169,40 @@ public class ReflectionRegistry
         report.put("modules", reportModules());
         return report;
     }
-    
-    /**
-     * Handler for exceptions thrown by event subscribers.
-     * @param exception
-     * @param context
-     */
-    @Override
-    public void handleException(Throwable exception, SubscriberExceptionContext context) {
-        log.error( "push event handling error. event:" +  context.getEvent().toString(), exception);
-    }
-    
-    public <T> void register(String moduleName, Class<T> interfaceType, T module)
-        throws IllegalAccessException {
-        modules.put(moduleName,
-                    new ModuleHolder<>(moduleName, interfaceType, module, pushEventBus));
+
+    public <T> void register(String moduleName, Class<T> interfaceType, T target) {
+        ModuleHolder<T> module = new ModuleHolder<>(this, moduleName, interfaceType, target);
+        if (!initialized) {
+            preInitModules.add(module);
+        } else {
+            module.init();
+            modules.put(moduleName, module);
+        }
     }
 
-    public <T> void register(String moduleName, Class<T> interfaceType)
-        throws IllegalAccessException {
-        modules.put(moduleName,
-                    new ModuleHolder<>(moduleName, interfaceType, pushEventBus));
+    public <T> void register(String moduleName, Class<T> interfaceType) {
+        register(moduleName, interfaceType, null);
     }
 
+    @SuppressWarnings("unchecked")
     public <T> void setModuleInstance(String moduleName, Class<T> interfaceType, T moduleInstance) {
-        @SuppressWarnings("unchecked")
-            ModuleHolder<T> module = (ModuleHolder<T>) modules.get(moduleName);
+        ModuleHolder<T> module = (ModuleHolder<T>) modules.get(moduleName);
         if (module != null) {
             module.setModuleInstance(moduleInstance);
         }
     }
 
     /**
+     * Get a interface of server-sent push model for triger event.
+     * @return
+     */
+    PushModel getPushModel() {
+        return pushModel;
+    }
+
+    /**
      * create a report object for Host.
-     * @return 
+     * @return
      */
     private Object reportHost() {
         Map<String,Object> report = new LinkedHashMap<>();
@@ -184,10 +214,10 @@ public class ReflectionRegistry
         report.put("platformType", host.getPlatformType().name());
         return report;
     }
-    
+
     /**
      * create a report object for Extension.
-     * @return 
+     * @return
      */
     private Object reportExtension() {
         Map<String,Object> report = new LinkedHashMap<>();
@@ -198,16 +228,14 @@ public class ReflectionRegistry
         report.put("requiredApiVersion", def.getRequiredAPIVersion());
         return report;
     }
-    
+
     /**
      * create a report object for list of modules of this class.
-     * @return 
+     * @return
      */
     private Object reportModules() {
-        List<Object> list = modules.keySet()
+        List<Object> list = modules.values()
             .stream()
-            .sorted()
-            .map(key -> modules.get(key))
             .map(m-> m.report())
             .collect(Collectors.toList());
         return list;
@@ -222,12 +250,15 @@ public class ReflectionRegistry
         return module;
     }
 
-    private ImmutablePair<String, String> parseName(String name) {
+    private String[] parseName(String name) {
         int index = name.indexOf('.');
         if (index < 1 || index > (name.length() - 1)) {
             log.warn("name should be formatted as \"[moduleName].[method or event name]\".");
             return null;
         }
-        return new ImmutablePair<>(name.substring(0, index), name.substring(index + 1));
+        return new String[] {
+            name.substring(0, index),
+            name.substring(index + 1)
+        };
     }
 }

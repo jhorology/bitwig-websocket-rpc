@@ -44,6 +44,13 @@ public class ExecutionContext {
      * initialize the context
      */
     static void init(AbstractExtension extension) {
+        // for debug
+        // checking re-entrant context
+        if (instance != null) {
+            RuntimeException ex = new RuntimeException("re-entrant context,");
+            Logger.getLogger(ExecutionContext.class).error(ex);
+            throw ex;
+        }
         instance = new ExecutionContext(extension);
     }
 

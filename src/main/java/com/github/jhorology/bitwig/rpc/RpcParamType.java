@@ -27,54 +27,59 @@ package com.github.jhorology.bitwig.rpc;
  */
 public enum RpcParamType {
     /**
-     * identify void type.
+     * lazy identifire of void type.
      */
-    VOID("void"),
+    VOID("void", false, null),
     
     /**
-     * identify bool.
+     * lazy identifire of bool type.
      */
-    BOOLEAN("boolean"),
+    BOOLEAN("boolean", false, null),
     
     /**
-     * identify number.
+     * lazy identifire of number type.
      */
-    NUMBER("Number"),
+    NUMBER("Number", false, null),
     
     /**
-     * identify string.
+     * lazy identifire of string type.
      */
-    STRING("String"),
+    STRING("String", false, null),
     
     /**
-     * identify object.
+     * lazy identifire of object type.
      */
-    OBJECT("Object"),
+    OBJECT("Object", false, null),
     
     /**
-     * identify array of bool values.
+     * lazy identifire of array of BOOLEANs type.
      */
-    ARRAY_OF_BOOLEAN("boolean[]"),
+    BOOLEAN_ARRAY("boolean[]", true, BOOLEAN),
     
     /**
-     * identify array of numbers.
+     * lazy identifire of array of NUMBERs type.
      */
-    ARRAY_OF_NUMBER("Number[]"),
+    NUMBER_ARRAY("Number[]", true, NUMBER),
     
     /**
-     * identify array of strings.
+     * lazy identifire of array of STRINGs type.
      */
-    ARRAY_OF_STRING("String[]"),
+    STRING_ARRAY("String[]", true, STRING),
     
     /**
-     * identify array of objects.
+     * lazy identifire of array of OBJECTs type.
      */
-    ARRAY_OF_OBJECT("Object[]");
+    OBJECT_ARRAY("Object[]", true, OBJECT);
 
-    private String expression;
-
-    private RpcParamType(String expression) {
+    private final String expression;
+    private final boolean array;
+    private RpcParamType componentType;
+    private RpcParamType arrayType;
+    
+    private RpcParamType(String expression, boolean array, RpcParamType componentType) {
         this.expression = expression;
+        this.array = array;
+        this.componentType = componentType;
     }
 
     /**
@@ -89,20 +94,23 @@ public enum RpcParamType {
      * return a component type of this enum value if this enum is array type, 
      * @return
      */
-    public RpcParamType arrayTypeOf() {
-        return isArray()
-            ? RpcParamType.valueOf(this.name().substring(9))
-            : null;
+    public RpcParamType getComponentType() {
+        return componentType;
     }
 
     /**
      * return a array type of this enum value if this enum is component type, 
      * @return
      */
-    public RpcParamType toArrayType() {
-        return this != VOID && !isArray()
-            ? RpcParamType.valueOf("ARRAY_OF_" + this.name())
-            : null;
+    public RpcParamType getArrayType() {
+        if (array || this == VOID) {
+            return null;
+        }
+        if (arrayType != null) {
+            return arrayType;
+        }
+        arrayType = RpcParamType.valueOf(this.name() + "_ARRAY");
+        return arrayType;
     }
 
     /**
@@ -110,6 +118,6 @@ public enum RpcParamType {
      * @return
      */
     public boolean isArray() {
-        return this.name().startsWith("ARRAY_OF_");
+        return array;
     }
 };

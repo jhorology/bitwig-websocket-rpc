@@ -63,23 +63,21 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
         server = e.getWebSocketServer();
         registry = e.getRpcRegistry();
         if (this instanceof PushModel) {
-            registry.subscribePushEvent(this);
+            registry.registerPushModel((PushModel)this);
         }
         onStart();
     }
 
     @Subscribe
     public final void onStop(StopEvent e) {
-        if (this instanceof PushModel) {
-            registry.unsubscribePushEvent(this);
-        }
         onStop();
     }
 
     @Subscribe
     public void onOpen(OpenEvent e) {
         if (Logger.isTraceEnabled()) {
-            log.trace("new connection. remoteAddress:" + remoteAddress(e.getConnection()) +
+            log.trace("new connection. conn:" + e.getConnection() +
+                      "\nremoteAddress:" + remoteAddress(e.getConnection()) +
                       "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
         }
         onOpen(e.getConnection(), e.getHandshake());
@@ -89,10 +87,13 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     public void onColse(CloseEvent e) {
         if (Logger.isTraceEnabled()) {
             WebSocket conn = e.getConnection();
-            log.trace("connection closed. remoteAddress:" + remoteAddress(e.getConnection()) +
+            log.trace("connection closed. conn:" + e.getConnection() +
                       "\ncode:" + e.getCode() +
                       "\nreason:" + e.getReason() +
                       "\nremote:" + e.isRemote());
+        }
+        if (this instanceof PushModel) {
+            registry.disconnect(e.getConnection());
         }
         onClose(e.getConnection(), e.getCode(), e.getReason(), e.isRemote());
     }

@@ -22,17 +22,15 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-import java.lang.reflect.Type;
+// jvm
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.lang.reflect.ParameterizedType;
 import java.util.stream.Stream;
 
+// bitwig api
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.callback.BooleanValueChangedCallback;
 import com.bitwig.extension.callback.ClipLauncherSlotBankPlaybackStateChangedCallback;
