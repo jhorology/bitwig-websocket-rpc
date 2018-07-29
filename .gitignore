@@ -14,3 +14,4 @@ node_modules/
 .project
 .settings/
 nbaction.xml
+rpc-implementation-spec.json

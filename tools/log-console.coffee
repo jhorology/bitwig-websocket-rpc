@@ -11,12 +11,12 @@ $ =
     E: 'red'     # error
 
 ws = new WebSocket($.url)
-error = undefined;
+error = undefined
 event = 'rpc.log'
-connected = undefined;
+connected = undefined
 
 ws.on 'open', ->
-  connected = true;
+  connected = true
   ws.subscribe(event)
   ws.on event, (log) ->
     console.info logFormat log
