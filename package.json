@@ -11,6 +11,7 @@
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
     "report": "coffee tools/report.coffee",
     "console": "coffee tools/log-console.coffee",
+    "monitor": "coffee tools/event-monitor.coffee",
     "coffeelint": "coffeelint -f coffeelint.json test/ tools/",
     "build-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js"
   },

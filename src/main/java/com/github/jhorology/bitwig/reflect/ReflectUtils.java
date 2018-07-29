@@ -34,9 +34,9 @@ import java.util.stream.Stream;
 // bitwig api
 import com.bitwig.extension.callback.Callback;
 import com.bitwig.extension.controller.api.ObjectProxy;
+import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
-import com.github.jhorology.bitwig.extension.Logger;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
@@ -44,22 +44,34 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
 /**
  * utility class
  */
+@SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
     /**
      * empty array of Object.
      */
     public static final Object[] EMPTY_ARRAY = {};
-    
+    public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
     private static final List<Method> BLACK_LISTED_METHODS;
+    private static final List<Method> BLACK_LISTED_EVENTS;
     static {
         BLACK_LISTED_METHODS = new ArrayList<>();
-        // ObjectProxy, not controllable from remote.
-        BLACK_LISTED_METHODS.addAll(Arrays.asList(ObjectProxy.class.getMethods()));
-        // ObjectProxy extends Subscribable
-        // but, Subbscirbable member is OK
-        BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
+        BLACK_LISTED_EVENTS = new ArrayList<>();
+        try {
+            // public interface Value<? extends ValueChangedCallback> extneds Subscribable
+            // public interface ObjectProxy extends Subscribable
+            
+            // ObjectProxy, not controllable from remote.
+            BLACK_LISTED_METHODS.addAll(Arrays.asList(ObjectProxy.class.getMethods()));
+            // ObjectProxy extends Subscribable
+            // but, Subbscirbable member is OK
+            BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
+            // markInterested is probably same as Subscribable#subscibe()
+            BLACK_LISTED_METHODS.add(Value.class.getMethod("markInterested", EMPTY_CLASS_ARRAY));
+
+        } catch (Exception ex) {
+        }
     }
-        
+    
     /**
      * return a sloppy type of java strict type.
      * @param t paramter type.
@@ -156,7 +168,7 @@ public class ReflectUtils {
     }
     
     /**
-     * return interface type is Bitwig Extension API or not.
+     * Specified interfaceType is Bitwig Extension API or not.
      * @param interfaceType
      * @return
      */
@@ -165,7 +177,7 @@ public class ReflectUtils {
     }
 
     /**
-     * Return value of method is implemented Value interface or not ?
+     * Return value of spcified method is implemented Value interface or not ?
      * it mean having addValueObserver method or not.
      * @param method
      * @return
@@ -175,14 +187,32 @@ public class ReflectUtils {
     }
     
     /**
-     * Return value of method is implemented Value interface or not ?
-     * @param type
+     * Specifid interfaceType is implemented Value interface or not ?
+     * @param interfaceType
      * @return
      */
-    public static boolean isBitwigValue(Class<?> type) {
-        return Value.class.isAssignableFrom(type);
+    public static boolean isBitwigValue(Class<?> interfaceType) {
+        return Value.class.isAssignableFrom(interfaceType);
     }
 
+    /**
+     * Return value of specified method is implemented Prameter interface or not ?
+     * @param method
+     * @return
+     */
+    public static boolean isBitwigParameter(Method method) {
+        return isBitwigParameter(method.getReturnType());
+    }
+    
+    /**
+     * Secified interfaceType is implemented Prameter interface or not ?
+     * @param interfaceType
+     * @return
+     */
+    public static boolean isBitwigParameter(Class<?> interfaceType) {
+        return Parameter.class.isAssignableFrom(interfaceType);
+    }
+    
     /**
      * Method has any paramater of Callback or not.
      * @param method
@@ -216,6 +246,31 @@ public class ReflectUtils {
     public static boolean isDeprecated(Method method) {
         return method.getAnnotation(Deprecated.class) != null;
     }
+    
+    /**
+     * return class is depricated or not.
+     * @param clazz
+     * @return
+     */
+    public static boolean isDeprecated(Class<?> clazz) {
+        return clazz.getAnnotation(Deprecated.class) != null;
+    }
+    
+    /**
+     * Retun specified method is core module factory or not.
+     *  it's should be managed as RPC module.
+     * @param method
+     * @return
+     */
+    public static boolean isModuleFactory(Method method) {
+        // TODO
+        // need to investigate core modules that can be instantiated at only within init.
+        //
+        // this is enough for now.
+        return method.getName().startsWith("create")
+            && !isBitwigValue(method.getReturnType())
+            && isBitwigAPI(method.getReturnType());
+    }
 
     /**
      * return method is usable for RPC not.
@@ -224,6 +279,7 @@ public class ReflectUtils {
      */
     public static boolean isUsableForRpcMethod(Method method) {
         return !isDeprecated(method)
+            && !isModuleFactory(method)
             && !hasAnyCallbackParameter(method)
             && !BLACK_LISTED_METHODS.contains(method);
     };
@@ -235,12 +291,15 @@ public class ReflectUtils {
      */
     public static boolean isUsableForRpcEvent(Method method) {
         // is method return type implemented Value interface
-        if (isBitwigValue(method)) {
+        // except Parameter interface:
+        //
+        // This has been deprecated since API version 2: Use value().addValueObserver(callback) instead
+        //
+        if (isBitwigValue(method) && !isBitwigParameter(method)) {
             // but some 'addValueObserver' are deprecated.
             return !Stream.of(method.getReturnType().getMethods())
                 .filter(m -> "addValueObserver".equals(m.getName()))
                 .anyMatch(ReflectUtils::isDeprecated);
-            // TODO but it's not annotated.
         }
         return false;
     };

@@ -68,18 +68,24 @@ public class EventHolder extends MethodHolder implements RpcEvent {
 
     @Override
     public void subscribe(WebSocket client) {
+        if (getError() != null) {
+            throw new RpcException(getError());
+        }
         boolean alreadySubscribed = clients.contains(client);
         if (!alreadySubscribed) {
             clients.add(client);
             syncSubscribedState();
-            if (Logger.isTraceEnabled())  {
-                log.trace("[" + getAbsoluteName() + "] event has been subscribed by " + client(client));
+            if (Logger.isDebugEnabled())  {
+                log.debug("[" + getAbsoluteName() + "] event has been subscribed by " + client(client));
             }
         }
     }
     
     @Override
     public void subscribeOnce(WebSocket client) {
+        if (getError() != null) {
+            throw new RpcException(getError());
+        }
         boolean alreadySubscribed = clients.contains(client);
         if (!alreadySubscribed) {
             clients.add(client);
@@ -95,6 +101,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
 
     @Override
     public void unsubscribe(WebSocket client) {
+        if (getError() != null) {
+            throw new RpcException(getError());
+        }
         boolean removed = clients.remove(client);
         if (removed) {
             triggerOnceClients.remove(client);
@@ -200,8 +209,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     }
 
     private void traceSubscribedStatus(Subscribable subscribable) {
-        if (Logger.isTraceEnabled()) {
-            log.trace("Event[" + getAbsoluteName() + "] Subscribed status was changed. state:" + subscribable.isSubscribed());
+        if (Logger.isDebugEnabled()) {
+            log.debug("Event[" + getAbsoluteName() + "] Subscribed status was changed. state:" + subscribable.isSubscribed());
         }
     }
     

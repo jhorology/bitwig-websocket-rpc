@@ -46,7 +46,7 @@ import com.bitwig.extension.controller.api.Value;
 import com.google.common.eventbus.Subscribe;
 
 /**
- * A simple logging class for Controller Script Console. 
+ * A simple logging class for Controller Script Console with supporting Bitwig Value intreface model.
  */
 public class Logger implements Value<StringValueChangedCallback>, StringValue {
     
@@ -79,7 +79,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
     private static final String DELIMITER = "|";
     private static final String INDENT_PREFIX = " > ";
     private static final int INDENTED_COLUMN_SIZE = COLUMN_SIZE - INDENT_PREFIX.length();
-    private static final int TAIL_QUEUE_SIZE = 4;
+    private static final int TAIL_QUEUE_SIZE = 24;
 
     private static ControllerHost host;
     private static int level;
@@ -87,11 +87,16 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
     private static List<StringValueChangedCallback> subscribers;
     private static boolean subscribed;
     private static Queue<String> tailMessages;
+    private static boolean reentrantLock;
+
     private String category;
-    
+
+    /**
+     * Constructor for event subscription.
+     */
     Logger() {
     }
-
+    
     private Logger(Class<?> clazz) {
         this(clazz.getSimpleName());
     }
@@ -129,11 +134,11 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
         Logger.controlSurfaceSession = Thread.currentThread();
         Logger.subscribers = new ArrayList<>();
         Logger.tailMessages = new ArrayDeque<>(TAIL_QUEUE_SIZE);
-        Logger.reentrant = false;
+        Logger.reentrantLock = false;
     }
     
     /**
-     * called on extension's end-of-lifecycle.
+     * this method called at extension's end-of-lifecycle.
      * @param e
      */
     @Subscribe
@@ -247,7 +252,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
             internalLog(WARN, msg, ex);
         }
     }
-
+    
     /**
      * Logs an error message.
      * @param msg
@@ -300,7 +305,6 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
             internalLog(severity, msg, ex);
         }
     }
-    
 
     /**
      * An implementation of Value#markInterested
@@ -397,7 +401,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
             outputScriptConsole(logMessage, (s) -> host.errorln(s));
         }
         
-        // trigger RPC event.
+        // trigger value changed event.
         // only support within control surface session,
         // 'cause need to consider too many things...
         if (Thread.currentThread() == controlSurfaceSession) {
@@ -409,13 +413,13 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
         triggerValueChanged(null);
     }
 
-    private static boolean reentrant;
     private void triggerValueChanged(String message) {
-        // for debug
-        if (reentrant) {
+        // Logger function will be called within observer's valueChanged method.
+        // this is a enough locking way for single thread execution.
+        if (reentrantLock) {
             return;
         }
-        reentrant = true;
+        reentrantLock = true;
         try {
             while(tailMessages.size() >= TAIL_QUEUE_SIZE) {
                 tailMessages.remove();
@@ -433,7 +437,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
                 }
             }
         } finally {
-            reentrant = false;
+            reentrantLock = false;
         }
     }
     

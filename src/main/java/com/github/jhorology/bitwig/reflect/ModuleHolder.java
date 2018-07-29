@@ -192,12 +192,17 @@ class ModuleHolder<T> {
     }
     
     protected void registerMethod(Method method) {
-        registerMethod(method, "", null);
+        registerMethod(method, "", null, 0);
     }
     
-    private void registerMethod(Method method, String prefix, MethodHolder parentChain) {
+    private void registerMethod(Method method, String prefix, MethodHolder parentChain, int chainDepth) {
         // exclude method that is not usable for RPC
         if (!ReflectUtils.isUsableForRpcMethod(method)) {
+            return;
+        }
+        if (chainDepth > 5) {
+            LOG.error("\n##!!! Method chain depth are too long. Something is wrong!!"
+                      + "\nmethod:" + prefix + "."+ method.getName());
             return;
         }
         // method's return type is inherited from Value interface.
@@ -213,20 +218,20 @@ class ModuleHolder<T> {
         // TODO  Protocol can serialize returnType or not?
         Class<?> returnType = method.getReturnType();
         // register method recursively
-        if (ReflectUtils.isBitwigAPI(returnType)) {
+        if (ReflectUtils.isBitwigAPI(returnType) && !ReflectUtils.isDeprecated(returnType)) {
             Method[] methodsOfReturnType = returnType.getMethods();
             if (methodsOfReturnType.length == 0) {
                 return;
             }
             // TODO
             if (ReflectUtils.hasAnyObjectOrArrayParameter(method)) {
-                if (Logger.isDebugEnabled()) {
+                if (Logger.isWarnEnabled()) {
                     LOG.warn("[" + moduleName
                              + "." + key + "] has chain methods, However, it also has object or array parameters." );
                 }
             }
             for(Method m : methodsOfReturnType) {
-                registerMethod(m, key + ".", mh);
+                registerMethod(m, key + ".", mh, chainDepth + 1);
             }
         }
     }

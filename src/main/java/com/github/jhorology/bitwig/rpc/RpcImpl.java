@@ -33,7 +33,7 @@ import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.StringUtils;
 
 // dependencies
 import org.java_websocket.WebSocket;
@@ -138,23 +138,33 @@ public class RpcImpl implements Rpc {
     private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
         return Stream.of(eventNames)
             .map(s -> acceptEvent(s, lambda))
-            .collect(Collectors.toMap(ImmutablePair::getLeft, ImmutablePair::getRight));
+            .collect(Collectors.toMap(r -> r[0], r -> r[1]));
     }
     
-    private ImmutablePair<String, String> acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
+    private String[] acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
         RequestContext context = RequestContext.getContext();
         RpcRegistry registry = context.getRpcRegistry();
         WebSocket client = context.getConnection();
         RpcEvent event = registry.getRpcEvent(eventName);
         if (event == null) {
-            return new ImmutablePair<>(eventName, ERROR_EVENT_NOT_FOUND);
+            return new String[] {eventName, ERROR_EVENT_NOT_FOUND};
         }
         try {
             lambda.accept(event, client);
-            return new ImmutablePair<>(eventName, OK);
+            return new String[] {eventName, OK};
         } catch (RpcException ex) {
             Logger.getLogger(RpcImpl.class).error(ex);
-            return new ImmutablePair<>(eventName, ERROR_INTERNAL_ERROR);
+            return new String [] {eventName, ex.getMessage()};
+        } catch (Throwable ex) {
+            return new String [] {eventName, error(ex, ERROR_INTERNAL_ERROR)};
         }
+    }
+
+    private static String error(Throwable ex, String defaultMessage) {
+        String errorMessage = ex.getMessage();
+        if (StringUtils.isEmpty(errorMessage)) {
+            errorMessage = defaultMessage;
+        }
+        return errorMessage;
     }
 }
