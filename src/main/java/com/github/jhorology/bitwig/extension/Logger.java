@@ -44,35 +44,37 @@ import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
+import static com.github.jhorology.bitwig.extension.Logger.Severity.*;
 
 /**
  * A simple logging class for Controller Script Console with supporting Bitwig Value intreface model.
  */
 public class Logger implements Value<StringValueChangedCallback>, StringValue {
+    public static enum Severity {
+        /**
+         * severity level of debug
+         */
+        DEBUG,
     
-    /**
-     * severity level of debug
-     */
-    public static final int DEBUG = 0;
+        /**
+         * severity level of trace
+         */
+        TRACE,
     
-    /**
-     * severity level of trace
-     */
-    public static final int TRACE = 1;
+        /**
+         * severity level of info
+         */
+        INFO,
     
-    /**
-     * severity level of info
-     */
-    public static final int INFO = 2;
-    
-    /**
-     * severity level of warning
-     */
-    public static final int WARN = 3;
-    /**
-     * severity level of error
-     */
-    public static final int ERROR = 4;
+        /**
+         * severity level of warning
+         */
+        WARN,
+        /**
+         * severity level of error
+         */
+        ERROR;
+    }
     
     private static final String[] SEVERITIES = {"D", "T", "I", "W", "E"};
     private static final int COLUMN_SIZE = 94;
@@ -82,7 +84,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
     private static final int TAIL_QUEUE_SIZE = 24;
 
     private static ControllerHost host;
-    private static int level;
+    private static Severity level;
     private static Thread controlSurfaceSession;
     private static List<StringValueChangedCallback> subscribers;
     private static boolean subscribed;
@@ -128,13 +130,21 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param host
      * @param level
      */
-    static void init(ControllerHost host, int level) {
+    static void init(ControllerHost host, Severity level) {
         Logger.host = host;
         Logger.level = level;
         Logger.controlSurfaceSession = Thread.currentThread();
         Logger.subscribers = new ArrayList<>();
         Logger.tailMessages = new ArrayDeque<>(TAIL_QUEUE_SIZE);
         Logger.reentrantLock = false;
+    }
+
+    /**
+     * set a severity level of logger.
+     * @param level
+     */
+    static void setLevel(Severity level) {
+        Logger.level = level;
     }
     
     /**
@@ -154,7 +164,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @return 
      */
     public static boolean isDebugEnabled() {
-        return level <= DEBUG;
+        return level.compareTo(DEBUG) <= 0;
     }
 
     /**
@@ -162,7 +172,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @return 
      */
     public static boolean isTraceEnabled() {
-        return level <= TRACE;
+        return level.compareTo(TRACE) <= 0;
     }
     
     /**
@@ -170,7 +180,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @return 
      */
     public static boolean isInfoEnabled() {
-        return level <= INFO;
+        return level.compareTo(INFO) <= 0;
     }
     
     /**
@@ -178,7 +188,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @return 
      */
     public static boolean isWarnEnabled() {
-        return level <= WARN;
+        return level.compareTo(WARN) <= 0;
     }
     
     /**
@@ -186,9 +196,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      */
     public void debug(String msg) {
-        if (level <= DEBUG) {
-            internalLog(DEBUG, msg, null);
-        }
+        internalLog(DEBUG, msg, null);
     }
     
     /**
@@ -196,9 +204,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param ex
      */
     public void debug(Throwable ex) {
-        if (level <= DEBUG) {
-            internalLog(DEBUG, null, ex);
-        }
+        internalLog(DEBUG, null, ex);
     }
     
     /**
@@ -207,9 +213,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param ex
      */
     public void debug(String msg, Throwable ex) {
-        if (level <= DEBUG) {
-            internalLog(DEBUG, null, ex);
-        }
+        internalLog(DEBUG, null, ex);
     }
     
     /**
@@ -217,9 +221,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      */
     public void trace(String msg) {
-        if (level <= TRACE) {
-            internalLog(TRACE, msg, null);
-        }
+        internalLog(TRACE, msg, null);
     }
     
     /**
@@ -227,9 +229,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      */
     public void info(String msg) {
-        if (level <= INFO) {
-            internalLog(INFO, msg, null);
-        }
+        internalLog(INFO, msg, null);
     }
     
     /**
@@ -237,9 +237,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      */
     public void warn(String msg) {
-        if (level <= WARN) {
-            internalLog(WARN, msg, null);
-        }
+        internalLog(WARN, msg, null);
     }
     
     /**
@@ -248,9 +246,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param ex
      */
     public void warn(String msg, Throwable ex) {
-        if (level <= WARN) {
-            internalLog(WARN, msg, ex);
-        }
+        internalLog(WARN, msg, ex);
     }
     
     /**
@@ -258,9 +254,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      */
     public void error(String msg) {
-        if (level <= ERROR) {
-            internalLog(ERROR, msg, null);
-        }
+        internalLog(ERROR, msg, null);
     }
     
     /**
@@ -269,9 +263,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param ex
      */
     public void error(String msg, Throwable ex) {
-        if (level <= ERROR) {
-            internalLog(ERROR, msg, ex);
-        }
+        internalLog(ERROR, msg, ex);
     }
 
     /**
@@ -279,9 +271,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param ex
      */
     public void error(Throwable ex) {
-        if (level <= ERROR) {
-            internalLog(ERROR, null, ex);
-        }
+        internalLog(ERROR, null, ex);
     }
     
     /**
@@ -289,10 +279,8 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param severity
      * @param msg
      */
-    public void log(int severity, String msg) {
-        if (level <= severity) {
-            internalLog(severity, msg, null);
-        }
+    public void log(Severity severity, String msg) {
+        internalLog(severity, msg, null);
     }
     /**
      * Logs a message with exception.
@@ -300,10 +288,8 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      * @param ex
      */
-    public void log(int severity, String msg, Throwable ex) {
-        if (level <= severity) {
-            internalLog(severity, msg, ex);
-        }
+    public void log(Severity severity, String msg, Throwable ex) {
+        internalLog(severity, msg, ex);
     }
 
     /**
@@ -392,13 +378,16 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param msg
      * @param ex
      */
-    private void internalLog(int severity, String msg, Throwable ex) {
+    private void internalLog(Severity severity, String msg, Throwable ex) {
+        if (severity.compareTo(level) < 0) {
+            return;
+        }
         String logMessage = formatLog(severity, msg, ex);
         // TODO maybe not thread safe.
-        if (severity < WARN) {
-            outputScriptConsole(logMessage, (s) -> host.println(s));
-        } else {
+        if (severity.compareTo(WARN) > 0) {
             outputScriptConsole(logMessage, (s) -> host.errorln(s));
+        } else {
+            outputScriptConsole(logMessage, (s) -> host.println(s));
         }
         
         // trigger value changed event.
@@ -441,7 +430,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
         }
     }
     
-    private String formatLog(int severity, String msg, Throwable ex) {
+    private String formatLog(Severity severity, String msg, Throwable ex) {
         StringBuilder sb = new StringBuilder();
         String date = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME);
         if (date.length() < 12) {
@@ -449,7 +438,7 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
         }
         sb.append(date);
         sb.append(DELIMITER);
-        sb.append(SEVERITIES[severity]);
+        sb.append(severity.name().substring(0, 1));
         sb.append(DELIMITER);
         // only add a thread name when call from other than "Control Surface Session" therad.
         if (controlSurfaceSession != Thread.currentThread()) {

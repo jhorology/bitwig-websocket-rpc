@@ -50,20 +50,27 @@ import com.github.jhorology.bitwig.websocket.protocol.PushModel;
  * The return value of method is guranteed to be implemented Value inteface.
  */
 public class EventHolder extends MethodHolder implements RpcEvent {
-    private final Logger log;
+    // late observer binding is not allowed by bitwig.
+    // "This can only be called during driver initialization."
+    private static final boolean AVEILABLE_LATE_BINDING_TO_HOST = false;
+
+    private static final Logger LOG = Logger.getLogger(EventHolder.class);
     
     private final Collection<WebSocket> clients;
     private final Collection<WebSocket> triggerOnceClients;
+    private boolean bindedToHost;
+    
     EventHolder(ModuleHolder<?> owner, Method method) {
         this(owner, method, null);
     }
     
     EventHolder(ModuleHolder<?> owner, Method method, MethodHolder parantChain) {
         super(owner, method, parantChain);
-        log = Logger.getLogger(EventHolder.class);
         clients = new LinkedList<>();
         triggerOnceClients = new ArrayList<>();
-        subscribeHostEvent();
+        if (!AVEILABLE_LATE_BINDING_TO_HOST) {
+            syncSubscribedState();
+        }
     }
 
     @Override
@@ -76,7 +83,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             clients.add(client);
             syncSubscribedState();
             if (Logger.isDebugEnabled())  {
-                log.debug("[" + getAbsoluteName() + "] event has been subscribed by " + client(client));
+                LOG.debug("[" + getAbsoluteName() + "] event has been subscribed by " + client(client));
             }
         }
     }
@@ -94,7 +101,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             }
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
-                log.trace("[" + getAbsoluteName() + "] event has been subscribed once by " + client(client));
+                LOG.trace("[" + getAbsoluteName() + "] event has been subscribed once by " + client(client));
             }
         }
     }
@@ -109,7 +116,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
-                log.trace("[" + getAbsoluteName() + "] event has been unsubscribed by " + client(client));
+                LOG.trace("[" + getAbsoluteName() + "] event has been unsubscribed by " + client(client));
             }
         }
     }
@@ -134,7 +141,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
-                log.trace("subscriber of [" + getAbsoluteName() + "] event has been disconnected. client:" + client(client));
+                LOG.trace("subscriber of [" + getAbsoluteName() + "] event has been disconnected. client:" + client(client));
             }
         }
     }
@@ -163,27 +170,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         return report;
     }
 
-    @SuppressWarnings({"UseSpecificCatch", "unchecked"})
-    private void subscribeHostEvent() {
-        try {
-            // TODO
-            Value valueObject =
-                (Value)getReturnValue(ReflectUtils.EMPTY_ARRAY);
-            ValueChangedCallback callback =
-                BitwigCallbacks.newValueChangedCallback(valueObject, params -> post(params));
-            valueObject.addValueObserver(callback);
-            syncSubscribedState();
-            if (Logger.isDebugEnabled()) {
-                log.debug("Event[" + getAbsoluteName() + "] Succeed registering observer.");
-            }
-        } catch (Exception ex) {
-            setError(ex, "Fialed registering observer.");
-            if (Logger.isWarnEnabled()) {
-                log.warn("Event[" + getAbsoluteName() + "] Failed registering observer.", ex);
-            }
-        }
-    }
-    
     /**
      * Sync state of event subscription between RPC and Bitwig Studio.
      */
@@ -192,25 +178,44 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         try {
             // get cached return value.
             // TODO
-            Subscribable subscribable = (Subscribable)getReturnValue(ReflectUtils.EMPTY_ARRAY);
-            if (clients.isEmpty() && subscribable.isSubscribed()) {
-                subscribable.unsubscribe();
-                traceSubscribedStatus(subscribable);
-                return;
+            @SuppressWarnings("unchecked")
+            Value<ValueChangedCallback> value = (Value<ValueChangedCallback>)getReturnValue(ReflectUtils.EMPTY_ARRAY);
+            
+            // I think late binding observer are probably better for host performance.
+            if (!bindedToHost) {
+                ValueChangedCallback callback =
+                    BitwigCallbacks.newValueChangedCallback(value, params -> post(params));
+                value.addValueObserver(callback);
+                bindedToHost = true;
             }
-            if (!clients.isEmpty() && !subscribable.isSubscribed()) {
-                subscribable.subscribe();
-                traceSubscribedStatus(subscribable);
+            if (bindedToHost) {
+                if (clients.isEmpty()) {
+                    // why API doesn't have removeXXXObserver
+                    // if (bindedToHost) {
+                    //     // remove observer
+                    //     hostBinded = false;
+                    // }
+                    if (value.isSubscribed()) {
+                        value.unsubscribe();
+                        traceSubscribedStatus(value);
+                    }
+                    return;
+                }
+            
+                if (!value.isSubscribed()) {
+                    value.subscribe();
+                    traceSubscribedStatus(value);
+                }
             }
         } catch (Exception ex) {
-            setError(ex, "Fialed syncing subscribe state.");
+            setError(ex, "Fialed syncing subscribed state.");
             throw new RpcException(ex);
         }
     }
 
     private void traceSubscribedStatus(Subscribable subscribable) {
         if (Logger.isDebugEnabled()) {
-            log.debug("Event[" + getAbsoluteName() + "] Subscribed status was changed. state:" + subscribable.isSubscribed());
+            LOG.debug("Event[" + getAbsoluteName() + "] Subscribed status was changed. state:" + subscribable.isSubscribed());
         }
     }
     

@@ -70,7 +70,7 @@ public class BitwigCallbacks {
     private static final boolean PREFER_NAMED_PARAMS = true;
 
     // All knwown Subinterfaces of ValueChangedCallback
-    private static final Map<Class<?>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new HashMap<>();
+    private static final Map<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new HashMap<>();
     static {
         CALLBACK_FACTORY.put(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback);
         CALLBACK_FACTORY.put(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback);
@@ -95,20 +95,23 @@ public class BitwigCallbacks {
      *     StringValueChangedCallback
      *   StringArrayValueChangedCallback
      * }</pre>
+     * @param <T>
      * @param value the instance of Value interface.
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    public static ValueChangedCallback newValueChangedCallback(Value<? extends ValueChangedCallback>value, Consumer<Object> lambda) {
+    @SuppressWarnings("unchecked")
+    public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
         // TODO
         // I'm sure that there is more smarter ways...
         // couldn't find the rules from API.
-        Class<?> callbackType = Stream.of(value.getClass().getMethods())
+        Class<? extends ValueChangedCallback> callbackType = Stream.of(value.getClass().getMethods())
             .filter(m -> "addValueObserver".equals(m.getName()))
             .map(m -> m.getParameterTypes())
             .filter(t -> t.length == 1)
             .map(t -> t[0])
             .filter(t -> !ValueChangedCallback.class.equals(t))
+            .map(t -> (Class<? extends ValueChangedCallback>)t)
             .findFirst().orElse(null);
 
         if (callbackType == null) {
@@ -122,7 +125,7 @@ public class BitwigCallbacks {
                                                     + callbackType
                                                     + "].");
         }
-        return factory.apply(lambda);
+        return (T)factory.apply(lambda);
     }
 
     /**

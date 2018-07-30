@@ -34,6 +34,9 @@ class Subscriber
     @e = @event.padEnd maxLength
   subscribe: () ->
     @ws.subscribe @event
-    @ws.on @event, @onNotify
+      .then =>
+        @ws.on @event, @onNotify
+      .catch (err) =>
+        console.info err
   onNotify: (params) =>
     console.info "[#{@e}]", params

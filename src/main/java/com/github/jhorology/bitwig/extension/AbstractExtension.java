@@ -22,19 +22,25 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+// jvm
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Stack;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
+// bitwig api
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
+// provided dependencies
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+
+// source
+import com.github.jhorology.bitwig.extension.Logger.Severity;
 
 /**
  * An abstract bass class that is used to trigger extension events.
@@ -62,6 +68,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     /**
      * create events subscriber modules.
      * @return 
+     * @throws java.lang.Exception 
      */
     protected abstract Object[] createModules() throws Exception;
 
@@ -87,7 +94,12 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      */
     @Override
     public void init() {
-        Logger.init(getHost(), Logger.TRACE);
+        ControllerHost host = getHost();
+        // always return intial value at this time.
+        Severity logLevel =
+            BitwigUtils.getPreferenceAsEnum(host, "Log Level", "Debug",
+                                            Severity.DEBUG, Logger::setLevel);
+        Logger.init(getHost(), logLevel);
         log = Logger.getLogger(AbstractExtension.class);
         log.trace("Start initialization.");
         eventBus = new EventBus(this);

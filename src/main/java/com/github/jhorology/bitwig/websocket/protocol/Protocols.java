@@ -21,16 +21,40 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package com.github.jhorology.bitwig.websocket.protocol;
+
+// source
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.JsonRpcProtocolHandler;
 
 /**
  * A factory class for creating RPC protocol handler.
  */
-public interface Protocols {
+public enum Protocols {
+    JSONRPC20("JSON-RPC 2.0");
+
+    private final String displayName;
+    
+    private Protocols(String displayName) {
+        this.displayName = displayName;
+    }
+
     /**
-     * Create the protocol handler for JSON-RPC 2.0.
+     * Get a display name for UI.
+     * @return 
      */
-    public static AbstractProtocolHandler newJsonRpc20() {
-        return new JsonRpcProtocolHandler();
+    public String getDisplayName() {
+        return displayName;
+    }
+    
+    /**
+     * Create new specidied protocol handler.
+     * @param protocol
+     * @return 
+     */
+    public static AbstractProtocolHandler newProtocolHandler(Protocols protocol) {
+        switch(protocol) {
+        case JSONRPC20:
+            return new JsonRpcProtocolHandler();
+        }
+        return null;
     }
 }

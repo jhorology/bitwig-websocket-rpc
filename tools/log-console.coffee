@@ -18,12 +18,19 @@ connected = undefined
 ws.on 'open', ->
   connected = true
   ws.subscribe(event)
-  ws.on event, (log) ->
-    console.info logFormat log
+    .then () ->
+      ws.on event, (log) ->
+        console.info logFormat log
+    .catch (err) ->
+      error = err
+      ws.close()
+      
   ws.on 'error', (err) ->
     error = err
     ws.close() if connected
+    
   ws.on 'close', ->
+    connected = false
     if (error)
       console.error error
 

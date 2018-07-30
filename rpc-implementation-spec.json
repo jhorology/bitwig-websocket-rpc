@@ -1,5 +1,5 @@
 {
-  "reportedOn": "Jul 29, 2018 8:59:00 PM",
+  "reportedOn": "Jul 30, 2018 4:22:13 AM",
   "host": {
     "apiVersion": 7,
     "product": "Bitwig Studio",
@@ -7995,6 +7995,164 @@
       "event": "cursorDevice.sampleName"
     }, {
       "event": "cursorDevice.slotNames"
+    }]
+  }, {
+    "name": "deviceBrowser",
+    "methods": [{
+      "method": "deviceBrowser.activateSession",
+      "params": ["Object"],
+      "result": "void",
+      "expression": "void deviceBrowser.activateSession(Object)"
+    }, {
+      "method": "deviceBrowser.cancelBrowsing",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.cancelBrowsing()"
+    }, {
+      "method": "deviceBrowser.commitSelectedResult",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.commitSelectedResult()"
+    }, {
+      "method": "deviceBrowser.getClipSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getClipSession()"
+    }, {
+      "method": "deviceBrowser.getDeviceSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getDeviceSession()"
+    }, {
+      "method": "deviceBrowser.getMultiSampleSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getMultiSampleSession()"
+    }, {
+      "method": "deviceBrowser.getMusicSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getMusicSession()"
+    }, {
+      "method": "deviceBrowser.getPresetSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getPresetSession()"
+    }, {
+      "method": "deviceBrowser.getSampleSession",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.getSampleSession()"
+    }, {
+      "method": "deviceBrowser.isSubscribed",
+      "params": [],
+      "result": "boolean",
+      "expression": "boolean deviceBrowser.isSubscribed()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.isWindowMinimized()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.get",
+      "params": [],
+      "result": "boolean",
+      "expression": "boolean deviceBrowser.isWindowMinimized().get()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.isSubscribed",
+      "params": [],
+      "result": "boolean",
+      "expression": "boolean deviceBrowser.isWindowMinimized().isSubscribed()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.set",
+      "params": ["boolean"],
+      "result": "void",
+      "expression": "void deviceBrowser.isWindowMinimized().set(boolean)"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.setIsSubscribed",
+      "params": ["boolean"],
+      "result": "void",
+      "expression": "void deviceBrowser.isWindowMinimized().setIsSubscribed(boolean)"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.subscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.isWindowMinimized().subscribe()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.toggle",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.isWindowMinimized().toggle()"
+    }, {
+      "method": "deviceBrowser.isWindowMinimized.unsubscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.isWindowMinimized().unsubscribe()"
+    }, {
+      "method": "deviceBrowser.setIsSubscribed",
+      "params": ["boolean"],
+      "result": "void",
+      "expression": "void deviceBrowser.setIsSubscribed(boolean)"
+    }, {
+      "method": "deviceBrowser.shouldAudition",
+      "params": [],
+      "result": "Object",
+      "expression": "Object deviceBrowser.shouldAudition()"
+    }, {
+      "method": "deviceBrowser.shouldAudition.get",
+      "params": [],
+      "result": "boolean",
+      "expression": "boolean deviceBrowser.shouldAudition().get()"
+    }, {
+      "method": "deviceBrowser.shouldAudition.isSubscribed",
+      "params": [],
+      "result": "boolean",
+      "expression": "boolean deviceBrowser.shouldAudition().isSubscribed()"
+    }, {
+      "method": "deviceBrowser.shouldAudition.set",
+      "params": ["boolean"],
+      "result": "void",
+      "expression": "void deviceBrowser.shouldAudition().set(boolean)"
+    }, {
+      "method": "deviceBrowser.shouldAudition.setIsSubscribed",
+      "params": ["boolean"],
+      "result": "void",
+      "expression": "void deviceBrowser.shouldAudition().setIsSubscribed(boolean)"
+    }, {
+      "method": "deviceBrowser.shouldAudition.subscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.shouldAudition().subscribe()"
+    }, {
+      "method": "deviceBrowser.shouldAudition.toggle",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.shouldAudition().toggle()"
+    }, {
+      "method": "deviceBrowser.shouldAudition.unsubscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.shouldAudition().unsubscribe()"
+    }, {
+      "method": "deviceBrowser.startBrowsing",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.startBrowsing()"
+    }, {
+      "method": "deviceBrowser.subscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.subscribe()"
+    }, {
+      "method": "deviceBrowser.unsubscribe",
+      "params": [],
+      "result": "void",
+      "expression": "void deviceBrowser.unsubscribe()"
+    }],
+    "events": [{
+      "event": "deviceBrowser.isWindowMinimized"
+    }, {
+      "event": "deviceBrowser.shouldAudition"
     }]
   }]
 }
