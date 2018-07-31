@@ -28,6 +28,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 // bitwig api
+import com.bitwig.extension.callback.EnumValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Preferences;
 import com.bitwig.extension.controller.api.SettableEnumValue;
@@ -48,7 +49,7 @@ public class BitwigUtils {
     public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
                                                             String label, String category,
                                                             T initialValue) {
-        return getPreferenceValue(host, label, category, null, initialValue, null);
+        return getPreferenceAsEnum(host, label, category, null, initialValue, null);
     }
     /**
      * Get a prefrence value as enum.
@@ -65,7 +66,7 @@ public class BitwigUtils {
                                                             String label, String category,
                                                             Function<T, String> mapper,
                                                             T initialValue) {
-        return getPreferenceValue(host, label, category, mapper, initialValue, null);
+        return getPreferenceAsEnum(host, label, category, mapper, initialValue, null);
     }
     
     /**
@@ -82,7 +83,7 @@ public class BitwigUtils {
                                                             String label, String category,
                                                             T initialValue,
                                                             Consumer<T> onChange) {
-        return getPreferenceValue(host, label, category, null, initialValue, onChange);
+        return getPreferenceAsEnum(host, label, category, null, initialValue, onChange);
     }
     
     /**
@@ -97,11 +98,11 @@ public class BitwigUtils {
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
      */
-    public static <T extends Enum<T>> T getPreferenceValue(ControllerHost host,
-                                                           String label, String category,
-                                                           Function<T, String> mapper,
-                                                           T initialValue,
-                                                           Consumer<T> onChange) {
+    public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
+                                                            String label, String category,
+                                                            Function<T, String> mapper,
+                                                            T initialValue,
+                                                            Consumer<T> onChange) {
         Preferences pref = host.getPreferences();
         Class<T> enumClass = initialValue.getDeclaringClass();
         T[] values = enumClass.getEnumConstants();
@@ -119,15 +120,15 @@ public class BitwigUtils {
         SettableEnumValue value =
             pref.getEnumSetting(label, category, strValues, initialValue.name());
         if (onChange != null) {
-            value.addValueObserver((String v) -> {
-                    if (mapper == null) {
-                        onChange.accept(T.valueOf(enumClass, v));
-                        return;
-                    }
-                    T enumValue = Stream.of(values)
-                        .filter(e -> mapper.apply(e).equals(v))
-                        .findFirst().orElse(initialValue);
-                });
+            EnumValueChangedCallback callback = mapper == null
+                ? (String v) -> onChange.accept(T.valueOf(enumClass, v))
+                : (String v) -> {
+                T enumValue = Stream.of(values)
+                .filter(e -> mapper.apply(e).equals(v))
+                .findFirst().orElse(initialValue);
+                onChange.accept(enumValue);
+            };
+            value.addValueObserver(callback);
         }
         String strValue = value.get();
         return T.valueOf(enumClass, strValue);

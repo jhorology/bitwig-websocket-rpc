@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
+// bitwig api
+import com.bitwig.extension.controller.api.ControllerHost;
+
 // dependencies
 import org.java_websocket.WebSocket;
 
@@ -140,6 +143,14 @@ class ModuleHolder<T> {
     
     PushModel getPushModel() {
         return owner.getPushModel();
+    }
+    
+    /**
+     * Get an interface of ControllerHost.
+     * @return
+     */
+    ControllerHost getHost() {
+        return owner.getHost();
     }
 
     /**

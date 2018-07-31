@@ -23,51 +23,51 @@
 package com.github.jhorology.bitwig.rpc;
 
 /**
- * RPC paramater type enum that is uses for lazy matching parameters.
+ * RPC paramater type enum that is used for lazy matching parameters.
  */
 public enum RpcParamType {
     /**
-     * lazy identifire of void type.
+     * lazy identifier  of void type.
      */
     VOID("void", false, null),
     
     /**
-     * lazy identifire of bool type.
+     * lazy identifier  of bool type.
      */
     BOOLEAN("boolean", false, null),
     
     /**
-     * lazy identifire of number type.
+     * lazy identifier  of number type.
      */
     NUMBER("Number", false, null),
     
     /**
-     * lazy identifire of string type.
+     * lazy identifier  of string type.
      */
     STRING("String", false, null),
     
     /**
-     * lazy identifire of object type.
+     * lazy identifier  of object type.
      */
     OBJECT("Object", false, null),
     
     /**
-     * lazy identifire of array of BOOLEANs type.
+     * lazy identifier  of array of BOOLEANs type.
      */
     BOOLEAN_ARRAY("boolean[]", true, BOOLEAN),
     
     /**
-     * lazy identifire of array of NUMBERs type.
+     * lazy identifier  of array of NUMBERs type.
      */
     NUMBER_ARRAY("Number[]", true, NUMBER),
     
     /**
-     * lazy identifire of array of STRINGs type.
+     * lazy identifier  of array of STRINGs type.
      */
     STRING_ARRAY("String[]", true, STRING),
     
     /**
-     * lazy identifire of array of OBJECTs type.
+     * lazy identifier  of array of OBJECTs type.
      */
     OBJECT_ARRAY("Object[]", true, OBJECT);
 

@@ -16,8 +16,8 @@ maxLength = Math.max(maxLength, event.length) for event in events
 ws.on 'open', ->
   connected = true
   for event in events
-    s = new Subscriber(ws, event)
-    s.subscribe()
+    new Subscriber ws, event
+      .subscribe()
   ws.on 'error', (err) ->
     error = err
     ws.close() if connected
@@ -33,10 +33,10 @@ class Subscriber
   constructor: (@ws, @event) ->
     @e = @event.padEnd maxLength
   subscribe: () ->
+    @ws.on @event, @onNotify
     @ws.subscribe @event
-      .then =>
-        @ws.on @event, @onNotify
+      .then (result) => 
       .catch (err) =>
-        console.info err
+        console.info "[#{@e}] subscribe error:", err
   onNotify: (params) =>
     console.info "[#{@e}]", params

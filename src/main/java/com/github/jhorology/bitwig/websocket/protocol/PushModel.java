@@ -28,13 +28,19 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
 
 /**
- * An interface of Server-Sent event model.
+ * An interface of Server-Sent push model.
  */
 public interface PushModel {
     /**
      * send a notification to clients.
      * @param nitification
-     * @param server
+     * @param client
+     */
+    void push(Notification notification, WebSocket client);
+    
+    /**
+     * send a notification to clients.
+     * @param nitification
      * @param clients
      */
     void push(Notification notification, Collection<WebSocket> clients);
@@ -42,7 +48,6 @@ public interface PushModel {
     /**
      * send a notification to all clients.
      * @param nitification
-     * @param server
      */
     void broadcast(Notification notification);
 }

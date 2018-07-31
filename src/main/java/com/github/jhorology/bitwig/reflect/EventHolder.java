@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -44,9 +44,10 @@ import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcException;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
+import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
- * An RPC event holder class.<br>
+ * A RPC event holder class.<br>
  * The return value of method is guranteed to be implemented Value inteface.
  */
 public class EventHolder extends MethodHolder implements RpcEvent {
@@ -54,16 +55,24 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     // "This can only be called during driver initialization."
     private static final boolean AVEILABLE_LATE_BINDING_TO_HOST = false;
 
+    // gurantee the posting current value on 'subscibe' is called.
+    private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
+    private static final long WAIT_HOST_TRIGGER_ON_SUBSCRIBE = 150L;
+
     private static final Logger LOG = Logger.getLogger(EventHolder.class);
-    
+
     private final Collection<WebSocket> clients;
     private final Collection<WebSocket> triggerOnceClients;
+    // observer is binded to host?
     private boolean bindedToHost;
-    
+    private boolean hostTriggerd;
+    // the last reported value from host
+    private Object lastReportedParams;
+
     EventHolder(ModuleHolder<?> owner, Method method) {
         this(owner, method, null);
     }
-    
+
     EventHolder(ModuleHolder<?> owner, Method method, MethodHolder parantChain) {
         super(owner, method, parantChain);
         clients = new LinkedList<>();
@@ -78,30 +87,41 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (getError() != null) {
             throw new RpcException(getError());
         }
-        boolean alreadySubscribed = clients.contains(client);
-        if (!alreadySubscribed) {
+        if (!clients.contains(client)) {
             clients.add(client);
-            syncSubscribedState();
+            if (syncSubscribedState()) {
+                // if subscribed() was called, it's meaning first client of subscribers list.
+                // subscribe() may trigger callback, but it's only for the value that has changed since last reported.
+                // so need to notify current value to the client if host not trigger callback.
+                notifyCurrentValueIfHostNotTriggerd(client);
+            } else {
+                // should send a current value to the client comming after the first one.
+                notifyCurrentValue();
+            }
             if (Logger.isDebugEnabled())  {
-                LOG.debug("[" + getAbsoluteName() + "] event has been subscribed by " + client(client));
+                LOG.debug("[" + absoluteName + "] event has been subscribed by " + client(client));
             }
         }
     }
-    
+
     @Override
     public void subscribeOnce(WebSocket client) {
         if (getError() != null) {
             throw new RpcException(getError());
         }
-        boolean alreadySubscribed = clients.contains(client);
-        if (!alreadySubscribed) {
+        if (!clients.contains(client)) {
             clients.add(client);
             if (!triggerOnceClients.contains(client)) {
                 triggerOnceClients.add(client);
             }
-            syncSubscribedState();
+            if (syncSubscribedState()) {
+                // if subscribed() was called
+                notifyCurrentValueIfHostNotTriggerd(client);
+            } else {
+                notifyCurrentValue();
+            }
             if (Logger.isTraceEnabled())  {
-                LOG.trace("[" + getAbsoluteName() + "] event has been subscribed once by " + client(client));
+                LOG.trace("[" + absoluteName + "] event has been subscribed once by " + client(client));
             }
         }
     }
@@ -111,27 +131,43 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (getError() != null) {
             throw new RpcException(getError());
         }
-        boolean removed = clients.remove(client);
-        if (removed) {
+        if (clients.remove(client)) {
             triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
-                LOG.trace("[" + getAbsoluteName() + "] event has been unsubscribed by " + client(client));
+                LOG.trace("[" + absoluteName + "] event has been unsubscribed by " + client(client));
             }
         }
     }
-    
+
     @Override
     public void post(Object params) {
+        hostTriggerd = true;
+        lastReportedParams = params;
         if (!clients.isEmpty()) {
             PushModel pushModel = owner.getPushModel();
             if (pushModel != null) {
-                Notification notification = new Notification(getAbsoluteName(), params);
+                Notification notification = new Notification(absoluteName, params);
                 pushModel.push(notification, clients);
             }
             triggerOnceClients.stream().forEach(e -> clients.remove(e));
             triggerOnceClients.clear();
             syncSubscribedState();
+        }
+    }
+    
+    private void post(Object params, WebSocket client) {
+        if (clients.contains(client)) {
+            PushModel pushModel = owner.getPushModel();
+            if (pushModel != null) {
+                Notification notification = new Notification(absoluteName, params);
+                pushModel.push(notification, client);
+            }
+            if (triggerOnceClients.remove(client)) {
+                if (clients.remove(client)) {
+                    syncSubscribedState();
+                }
+            }
         }
     }
 
@@ -141,7 +177,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
-                LOG.trace("subscriber of [" + getAbsoluteName() + "] event has been disconnected. client:" + client(client));
+                LOG.trace("subscriber of [" + absoluteName + "] event has been disconnected. client:" + client(client));
             }
         }
     }
@@ -155,15 +191,15 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         clients.clear();
         triggerOnceClients.clear();
     }
-    
+
     /**
      * create a report object for this class.
      * @param eh
-     * @return 
+     * @return
      */
     Object reportRpcEvent() {
         Map<String, Object> report = new LinkedHashMap<>();
-        report.put("event", getAbsoluteName());
+        report.put("event", absoluteName);
         if (getError() != null) {
             report.put("error", getError());
         }
@@ -171,54 +207,75 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     }
 
     /**
-     * Sync state of event subscription between RPC and Bitwig Studio.
+     * post current value to client.
      */
-    @SuppressWarnings("UseSpecificCatch")
-    private void syncSubscribedState() {
+    private void notifyCurrentValueIfHostNotTriggerd(WebSocket client) {
+        if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
+            hostTriggerd = false;
+            PushModel pushModel = owner.getPushModel();
+            owner.getHost().scheduleTask(() -> {
+                    if (hostTriggerd ||
+                        lastReportedParams == null) {
+                        return;
+                    }
+                    post(lastReportedParams, client);
+                },
+                WAIT_HOST_TRIGGER_ON_SUBSCRIBE);
+        }
+    }
+
+    /**
+     * post current value to client.
+     */
+    private void notifyCurrentValue() {
+        // do not post message directly in here.
+        // 'cause message should be sent after Request/Reponse sequence.
+        if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
+            if (lastReportedParams != null) {
+                RequestContext.getContext()
+                    .addNotification(new Notification(absoluteName, lastReportedParams));
+            }
+        }
+    }
+
+    /**
+     * Sync state of event subscription between RPC and Bitwig Studio.
+     * @return state will change to subscribed
+     */
+    @SuppressWarnings({"UseSpecificCatch", "unchecked"})
+    private boolean syncSubscribedState() {
         try {
             // get cached return value.
             // TODO
-            @SuppressWarnings("unchecked")
-            Value<ValueChangedCallback> value = (Value<ValueChangedCallback>)getReturnValue(ReflectUtils.EMPTY_ARRAY);
-            
+            Value value = (Value)getReturnValue(ReflectUtils.EMPTY_ARRAY);
             // I think late binding observer are probably better for host performance.
             if (!bindedToHost) {
+                lastReportedParams = null;
                 ValueChangedCallback callback =
                     BitwigCallbacks.newValueChangedCallback(value, params -> post(params));
+                // addValueObserver raise callback calls even after call unsubscribe()
                 value.addValueObserver(callback);
                 bindedToHost = true;
+                value.unsubscribe();
+                return false;
             }
             if (bindedToHost) {
-                if (clients.isEmpty()) {
-                    // why API doesn't have removeXXXObserver
-                    // if (bindedToHost) {
-                    //     // remove observer
-                    //     hostBinded = false;
-                    // }
-                    if (value.isSubscribed()) {
-                        value.unsubscribe();
-                        traceSubscribedStatus(value);
-                    }
-                    return;
+                if (clients.isEmpty() && value.isSubscribed()) {
+                    value.unsubscribe();
+                    return false;
                 }
-            
-                if (!value.isSubscribed()) {
+                if (!clients.isEmpty() && !value.isSubscribed()) {
                     value.subscribe();
-                    traceSubscribedStatus(value);
+                    return true;
                 }
             }
         } catch (Exception ex) {
             setError(ex, "Fialed syncing subscribed state.");
             throw new RpcException(ex);
         }
+        return false;
     }
 
-    private void traceSubscribedStatus(Subscribable subscribable) {
-        if (Logger.isDebugEnabled()) {
-            LOG.debug("Event[" + getAbsoluteName() + "] Subscribed status was changed. state:" + subscribable.isSubscribed());
-        }
-    }
-    
     private String client(WebSocket client) {
         if (client == null) {
             return null;

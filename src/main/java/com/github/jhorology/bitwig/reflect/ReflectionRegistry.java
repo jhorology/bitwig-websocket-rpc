@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.api.Host;
+import com.bitwig.extension.controller.api.ControllerHost;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
@@ -198,6 +199,14 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     PushModel getPushModel() {
         return pushModel;
+    }
+    
+    /**
+     * Get an interface of ControllerHost.
+     * @return
+     */
+    ControllerHost getHost() {
+        return extension.getHost();
     }
 
     /**

@@ -95,6 +95,11 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     }
     
     @Override
+    public void push(Notification notification, WebSocket client) {
+        send(gson.toJson(notification), client);
+    }
+    
+    @Override
     public void push(Notification notification, Collection<WebSocket> clients) {
         push(gson.toJson(notification), clients);
     }

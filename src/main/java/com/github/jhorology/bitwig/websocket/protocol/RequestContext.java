@@ -22,8 +22,14 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol;
 
+// jvm
+import java.util.ArrayList;
+import java.util.List;
+
+// dependencies
 import org.java_websocket.WebSocket;
 
+// source
 import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 
@@ -35,6 +41,7 @@ public class RequestContext {
     private WebSocket connection;
     private RpcRegistry registry;
     private PushModel pushModel;
+    private List<Notification> notifications;
 
     // private constructor to prevent instantiation of this class
     private RequestContext() {
@@ -89,6 +96,21 @@ public class RequestContext {
         return pushModel;
     }
 
+    /**
+     * Add a server-sent-push Notification message that should be sent after processing this context.
+     * @param notification
+     */
+    public void addNotification(Notification notification) {
+        if (notifications == null) {
+            notifications = new ArrayList<>();
+        }
+        notifications.add(notification);
+    }
+
+    List<Notification> getNotifications() {
+        return notifications;
+    }
+    
     /**
      * gurantee to execute next command in next tick.
      * @param millis

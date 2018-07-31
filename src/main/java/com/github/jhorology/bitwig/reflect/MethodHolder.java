@@ -41,7 +41,7 @@ import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 
 /**
- *
+ * A holder class for invocable method.<br>
  */
 public class MethodHolder implements RpcMethod {
     protected final ModuleHolder<?> owner;
@@ -58,9 +58,9 @@ public class MethodHolder implements RpcMethod {
     private final RpcParamType rpcReturnType;
     private final boolean staticMethod;
     private final boolean varargs;
-    private final String simpleName;
-    private final String name;
-    private final String absoluteName;
+    protected final String simpleName;
+    protected final String name;
+    protected final String absoluteName;
     
     protected boolean havingChildChain;
     // cache the return value of method;
@@ -101,6 +101,40 @@ public class MethodHolder implements RpcMethod {
         this.identifier = new MethodIdentifier(getName(), rpcParamTypes);
     }
 
+    /**
+     * retuan a parameter types of this method.<br>
+     * this return values maybe not same as real method's parameter types.
+     *  below case:
+     *     foobar.getFoobar(a, b).doFoobar(c)
+     *  return parameter types as [a,b,c]
+     * @return
+     */
+    @Override
+    public Type[] getParamTypes() {
+        return paramTypes;
+    }
+
+    /**
+     * Invoke the RPC method.
+     * @params parameter(s) for invoking method.
+     */
+    @Override
+    public Object invoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
+        if (params == null) {
+            params = ReflectUtils.EMPTY_ARRAY;
+        }
+        if (parentChain != null) {
+            // RPC call with parameter [a,b,c].
+            // need to reduce real method's parameter [c]
+            //   application.foobar(a, b).foobar(c)
+            Object[] thisMethodParams = ArrayUtils.subarray(params, params.length - internalParamTypes.length, params.length);
+            returnValue = internalInvoke(thisMethodParams);
+            return returnValue;
+        }
+        returnValue = internalInvoke(params);
+        return returnValue;
+    }
+
     MethodIdentifier getIdentifier() {
         return identifier;
     }
@@ -135,7 +169,7 @@ public class MethodHolder implements RpcMethod {
     }
     
     /**
-     * return a expression of this method.<be>
+     * return a parameter types of this method.<be>
      * @retuen
      */
     RpcParamType[] getRpcParamTypes() {
@@ -143,7 +177,7 @@ public class MethodHolder implements RpcMethod {
     }
 
     /**
-     * return a expression of this method.<be>
+     * return a return type of this method.<be>
      * @retuen
      */
     RpcParamType getRpcReturnType() {
@@ -209,7 +243,7 @@ public class MethodHolder implements RpcMethod {
         return returnValue;
     }
     
-    protected Object getMethodInstance(Object[] params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    protected Object getModuleInstance(Object[] params) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (parentChain != null) {
             // RPC call with parameter [a,b,c].
             // need to reduce real parent method's parameter [a, b]
@@ -218,36 +252,6 @@ public class MethodHolder implements RpcMethod {
             return parentChain.getReturnValue(parentMethodParams);
         }
         return owner.getModuleInstance();
-    }
-
-    /**
-     * retuan a parameter types of this method.<br>
-     * this return values maybe not same as real method's parameter types.
-     *  below case:
-     *     foobar.getFoobar(a, b).doFoobar(c)
-     *  return parameter types as [a,b,c]
-     * @return
-     */
-    @Override
-    public Type[] getParamTypes() {
-        return paramTypes;
-    }
-
-    @Override
-    public Object invoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
-        if (params == null) {
-            params = ReflectUtils.EMPTY_ARRAY;
-        }
-        if (parentChain != null) {
-            // RPC call with parameter [a,b,c].
-            // need to reduce real method's parameter [c]
-            //   application.foobar(a, b).foobar(c)
-            Object[] thisMethodParams = ArrayUtils.subarray(params, params.length - internalParamTypes.length, params.length);
-            returnValue = internalInvoke(thisMethodParams);
-            return returnValue;
-        }
-        returnValue = internalInvoke(params);
-        return returnValue;
     }
 
     protected Object internalInvoke(Object[] params) throws IllegalAccessException, IllegalArgumentException, IllegalArgumentException, InvocationTargetException {
@@ -259,7 +263,7 @@ public class MethodHolder implements RpcMethod {
                 ret = method.invoke(null, params);
             }
         } else {
-            Object target = getMethodInstance(params);
+            Object target = getModuleInstance(params);
             if (varargs) {
                 ret = method.invoke(target, new Object[] {params});
             } else {

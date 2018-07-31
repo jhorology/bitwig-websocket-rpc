@@ -39,6 +39,7 @@ import com.github.jhorology.bitwig.websocket.OpenEvent;
 import com.github.jhorology.bitwig.websocket.StartEvent;
 import com.github.jhorology.bitwig.websocket.StopEvent;
 import com.github.jhorology.bitwig.websocket.TextMessageEvent;
+import java.util.List;
 
 /**
  * An abstract base class of ProtocolHandler.
@@ -57,12 +58,16 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     private Logger log;
     
+    // this instance is implement PushModel interface or not.
+    private boolean pushModel;
+    
     @Subscribe
     public final void onStart(StartEvent e) {
         log = Logger.getLogger(AbstractProtocolHandler.class);
         server = e.getWebSocketServer();
         registry = e.getRpcRegistry();
-        if (this instanceof PushModel) {
+        pushModel = (this instanceof PushModel);
+        if (pushModel) {
             registry.registerPushModel((PushModel)this);
         }
         onStart();
@@ -105,8 +110,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
                       "\n --> " + e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
-                            (this instanceof PushModel) ? (PushModel)this : null);
+                            pushModel ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
+        afterRequest(e.getConnection());
     }
     
     @Subscribe
@@ -116,8 +122,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
                       "\n --> " + e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
-                            (this instanceof PushModel) ? (PushModel)this : null);
+                            pushModel ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
+        afterRequest(e.getConnection());
     }
     
     @Subscribe
@@ -127,18 +134,19 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
         onError(e.getConnection(), e.getException());
     }
 
-    @Subscribe
-    public void onPush(NotificationEvent e) {
-        if (this instanceof PushModel) {
-            PushModel model = (PushModel)this;
-            if (e.getClients() != null) {
-                model.push(e.getNotification(), e.getClients());
-            } else {
-                model.broadcast(e.getNotification());
+    /**
+     *  processing after request/response sequence.
+     */
+    private void afterRequest(WebSocket conn) {
+        if (pushModel) {
+            List<Notification> notifications = RequestContext
+                .getContext().getNotifications();
+            if (notifications != null && !notifications.isEmpty()) {
+                notifications.stream().forEach((n) -> ((PushModel)this).push(n, conn));
             }
         }
     }
-
+    
     private InetSocketAddress remoteAddress(WebSocket conn) {
         return conn != null
             ? conn.getRemoteSocketAddress()

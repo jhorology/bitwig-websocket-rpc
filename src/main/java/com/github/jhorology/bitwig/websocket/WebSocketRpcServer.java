@@ -120,7 +120,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             // <--
             stop();
             // prevent Address in use error on restart extension.
-            waitFor(() -> !running, 1000L);
+            waitFor(() -> !running, 2000L);
             log.info("WebSocket RPC server stopped.");
         } catch (IOException ex) {
             log.error(ex);

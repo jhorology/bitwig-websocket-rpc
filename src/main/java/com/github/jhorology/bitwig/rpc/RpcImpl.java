@@ -46,6 +46,8 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  * An imnplementation of the core RPC methods.
  */
 public class RpcImpl implements Rpc {
+    private static final Logger LOG = Logger.getLogger(RpcImpl.class);
+    
     /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
@@ -153,9 +155,10 @@ public class RpcImpl implements Rpc {
             lambda.accept(event, client);
             return new String[] {eventName, OK};
         } catch (RpcException ex) {
-            Logger.getLogger(RpcImpl.class).error(ex);
+            LOG.error(ex);
             return new String [] {eventName, ex.getMessage()};
         } catch (Throwable ex) {
+            LOG.error(ex);
             return new String [] {eventName, error(ex, ERROR_INTERNAL_ERROR)};
         }
     }

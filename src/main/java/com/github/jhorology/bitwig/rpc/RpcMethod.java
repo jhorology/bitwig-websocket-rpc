@@ -29,13 +29,13 @@ import java.lang.reflect.Type;
  */
 public interface RpcMethod {
     /**
-     * get pararameter(s) of this method.
+     * Get types of pararameter(s) of this method.
      */
     Type[] getParamTypes();
     
     /**
      * Invoke the RPC method.
-     * @params parameter(s) for invocation of method.
+     * @params parameter(s) for invoking method.
      */
     Object invoke(Object[] params) throws Exception;
 }
