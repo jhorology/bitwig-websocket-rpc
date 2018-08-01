@@ -22,6 +22,9 @@
  */
 package com.github.jhorology.bitwig;
 
+// jdk
+import java.net.UnknownHostException;
+
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
@@ -41,7 +44,6 @@ import com.github.jhorology.bitwig.rpc.test.Test;
 import com.github.jhorology.bitwig.rpc.test.TestImpl;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
-import java.net.UnknownHostException;
 
 /**
  * Bitwig Studio extension to support RPC over WebSocket.
@@ -110,7 +112,7 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
         // SettableRangedValue value = host.getPreferences()
         //     .getNumberSetting("Server Port",
         //                       WEBSOCKET_PREF_CATEGORY,
-        //                       80, 9999,1, "",
+        //                       80, 9999, 1, "",
         //                       DEFAULT_WEBSOCKET_PORT);
         // int port = (int)value.get();
         // Protocols protocol =
@@ -119,6 +121,6 @@ public class WebSocketRpcServerExtension extends AbstractExtension {
         //                                     Protocols.JSONRPC20);
         int port = DEFAULT_WEBSOCKET_PORT;
         Protocols protocol = Protocols.JSONRPC20;
-        return new  WebSocketRpcServer(port, Protocols.newProtocolHandler(protocol), registry);
+        return new WebSocketRpcServer(port, Protocols.newProtocolHandler(protocol), registry);
     }
 }

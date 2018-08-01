@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol;
 
-// jvm
+// jdk
 import java.util.ArrayList;
 import java.util.List;
 

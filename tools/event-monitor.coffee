@@ -38,5 +38,5 @@ class Subscriber
       .then (result) => 
       .catch (err) =>
         console.info "[#{@e}] subscribe error:", err
-  onNotify: (params) =>
-    console.info "[#{@e}]", params
+  onNotify: () =>
+    console.info "[#{@e}]", arguments

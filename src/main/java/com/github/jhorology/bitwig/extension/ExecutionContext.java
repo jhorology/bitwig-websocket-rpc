@@ -22,10 +22,11 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+// jdk
 import java.util.Map;
 import java.util.HashMap;
-import java.util.concurrent.Executor;
 
+// bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
@@ -93,22 +94,6 @@ public class ExecutionContext {
      */
     public ControllerHost getHost() {
         return extension.getHost();
-    }
-    
-    /**
-     * get a Executor to run the task from other than 'Control Surface Session' thread.
-     * @return 
-     */
-    public Executor getAsyncExecutor() {
-        return extension.getAsyncExecutor();
-    }
-    
-    /**
-     * get a Executor to run the tasks within "ControllerHost#flush()" method.
-     * @return 
-     */
-    public Executor getFlushExecutor() {
-        return extension.getFlushExecutor();
     }
     
     /**

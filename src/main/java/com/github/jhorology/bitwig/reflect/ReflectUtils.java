@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jvm
+// jdk
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -71,53 +71,39 @@ public class ReflectUtils {
         } catch (Exception ex) {
         }
     }
-    
+
     /**
-     * return a sloppy type of java strict type.
-     * @param t paramter type.
+     * return method is usable for RPC not.
+     * @param method
      * @return
      */
-    public static RpcParamType rpcParamTypeOf(Type t) {
-        if (t instanceof Class) {
-            Class<?> c = (Class)t;
-            if (c.isPrimitive()) {
-                if (c.equals(boolean.class)) {
-                    return RpcParamType.BOOLEAN;
-                } else if (Void.TYPE.equals(c)) {
-                    return RpcParamType.VOID;
-                } else {
-                    return RpcParamType.NUMBER;
-                }
-            } else if (c.isArray()) {
-                Class<?> cc = c.getComponentType();
-                if (cc.isPrimitive()) {
-                    if (cc.equals(boolean.class)) {
-                        return RpcParamType.BOOLEAN_ARRAY;
-                    } else {
-                        return RpcParamType.NUMBER_ARRAY;
-                    }
-                } else if (Boolean.class.isAssignableFrom(cc)) {
-                    return RpcParamType.BOOLEAN_ARRAY;
-                } else if (Number.class.isAssignableFrom(cc)) {
-                    return RpcParamType.NUMBER_ARRAY;
-                } else if (String.class.isAssignableFrom(cc)) {
-                    return RpcParamType.STRING_ARRAY;
-                } else {
-                    return RpcParamType.OBJECT_ARRAY;
-                }
-            } else if (Boolean.class.isAssignableFrom(c)) {
-                return RpcParamType.BOOLEAN;
-            } else if (Number.class.isAssignableFrom(c)) {
-                return RpcParamType.NUMBER;
-            } else if (String.class.isAssignableFrom(c)) {
-                return RpcParamType.STRING;
-            }
-        } else if (t instanceof GenericArrayType) {
-            return RpcParamType.OBJECT_ARRAY;
-        }
-        return RpcParamType.OBJECT;
+    public static boolean isUsableForRpcMethod(Method method) {
+        return !isDeprecated(method)
+            && !isModuleFactory(method)
+            && !hasAnyCallbackParameter(method)
+            && !BLACK_LISTED_METHODS.contains(method);
     };
-
+    
+    /**
+     * return method is usable for RPC event not.
+     * @param method
+     * @return
+     */
+    public static boolean isUsableForRpcEvent(Method method) {
+        // is method return type implemented Value interface
+        // except Parameter interface:
+        //
+        // This has been deprecated since API version 2: Use value().addValueObserver(callback) instead
+        //
+        if (isBitwigValue(method) && !isBitwigParameter(method)) {
+            // but some 'addValueObserver' are deprecated.
+            return !Stream.of(method.getReturnType().getMethods())
+                .filter(m -> "addValueObserver".equals(m.getName()))
+                .anyMatch(ReflectUtils::isDeprecated);
+        }
+        return false;
+    };
+    
     public static boolean isVarargs(Type[] paramTypes) {
         if (paramTypes.length == 1) {
             Type t = paramTypes[0];
@@ -128,7 +114,7 @@ public class ReflectUtils {
     }
     
     /**
-     * convert to varargs type if aveilable
+     * convert to varargs type if available
      * [Number, Number, Number] -> [Namber[]]
      * @param rpcParamTypes
      * @return
@@ -234,7 +220,7 @@ public class ReflectUtils {
         Type [] types = method.getGenericParameterTypes();
         if (types.length == 0) return false;
         return Stream.of(types)
-            .map(c -> rpcParamTypeOf(c))
+            .map(RpcParamType::of)
             .anyMatch(t -> (t == RpcParamType.OBJECT || t.isArray()));
     }
 
@@ -272,35 +258,4 @@ public class ReflectUtils {
             && isBitwigAPI(method.getReturnType());
     }
 
-    /**
-     * return method is usable for RPC not.
-     * @param method
-     * @return
-     */
-    public static boolean isUsableForRpcMethod(Method method) {
-        return !isDeprecated(method)
-            && !isModuleFactory(method)
-            && !hasAnyCallbackParameter(method)
-            && !BLACK_LISTED_METHODS.contains(method);
-    };
-    
-    /**
-     * return method is usable for RPC event not.
-     * @param method
-     * @return
-     */
-    public static boolean isUsableForRpcEvent(Method method) {
-        // is method return type implemented Value interface
-        // except Parameter interface:
-        //
-        // This has been deprecated since API version 2: Use value().addValueObserver(callback) instead
-        //
-        if (isBitwigValue(method) && !isBitwigParameter(method)) {
-            // but some 'addValueObserver' are deprecated.
-            return !Stream.of(method.getReturnType().getMethods())
-                .filter(m -> "addValueObserver".equals(m.getName()))
-                .anyMatch(ReflectUtils::isDeprecated);
-        }
-        return false;
-    };
 }

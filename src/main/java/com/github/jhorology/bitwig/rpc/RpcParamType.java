@@ -22,6 +22,9 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Type;
+
 /**
  * RPC paramater type enum that is used for lazy matching parameters.
  */
@@ -73,7 +76,7 @@ public enum RpcParamType {
 
     private final String expression;
     private final boolean array;
-    private RpcParamType componentType;
+    private final RpcParamType componentType;
     private RpcParamType arrayType;
     
     private RpcParamType(String expression, boolean array, RpcParamType componentType) {
@@ -119,5 +122,51 @@ public enum RpcParamType {
      */
     public boolean isArray() {
         return array;
+    }
+    
+    /**
+     * Return a RpcParamType type that represents the specified type.
+     * @param type strickt java type
+     * @return the enum value of RpcParamType
+     */
+    public static RpcParamType of(Type type) {
+        if (type instanceof Class) {
+            Class<?> c = (Class)type;
+            if (c.isPrimitive()) {
+                if (c.equals(boolean.class)) {
+                    return RpcParamType.BOOLEAN;
+                } else if (Void.TYPE.equals(c)) {
+                    return RpcParamType.VOID;
+                } else {
+                    return RpcParamType.NUMBER;
+                }
+            } else if (c.isArray()) {
+                Class<?> cc = c.getComponentType();
+                if (cc.isPrimitive()) {
+                    if (cc.equals(boolean.class)) {
+                        return RpcParamType.BOOLEAN_ARRAY;
+                    } else {
+                        return RpcParamType.NUMBER_ARRAY;
+                    }
+                } else if (Boolean.class.isAssignableFrom(cc)) {
+                    return RpcParamType.BOOLEAN_ARRAY;
+                } else if (Number.class.isAssignableFrom(cc)) {
+                    return RpcParamType.NUMBER_ARRAY;
+                } else if (String.class.isAssignableFrom(cc)) {
+                    return RpcParamType.STRING_ARRAY;
+                } else {
+                    return RpcParamType.OBJECT_ARRAY;
+                }
+            } else if (Boolean.class.isAssignableFrom(c)) {
+                return RpcParamType.BOOLEAN;
+            } else if (Number.class.isAssignableFrom(c)) {
+                return RpcParamType.NUMBER;
+            } else if (String.class.isAssignableFrom(c)) {
+                return RpcParamType.STRING;
+            }
+        } else if (type instanceof GenericArrayType) {
+            return RpcParamType.OBJECT_ARRAY;
+        }
+        return RpcParamType.OBJECT;
     }
 };

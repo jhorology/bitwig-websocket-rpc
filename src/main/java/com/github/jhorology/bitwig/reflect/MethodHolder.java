@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jvm
+// jdk
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -77,7 +77,7 @@ public class MethodHolder implements RpcMethod {
         this.parentChain = parantChain;
         this.internalParamTypes = method.getGenericParameterTypes();
         this.internalRpcParamTypes = Stream.of(internalParamTypes)
-            .map(ReflectUtils::rpcParamTypeOf)
+            .map(RpcParamType::of)
             .toArray(size -> new RpcParamType[size]);
         
         // add parentChain method's parameters getParamTypes()
@@ -85,7 +85,7 @@ public class MethodHolder implements RpcMethod {
         this.varargs = ReflectUtils.isVarargs(internalParamTypes);
         this.simpleName = method.getName();
         this.returnType = method.getReturnType();
-        this.rpcReturnType = ReflectUtils.rpcParamTypeOf(this.returnType);
+        this.rpcReturnType = RpcParamType.of(this.returnType);
         if (parantChain == null) {
             this.name = simpleName;
             this.absoluteName = owner.getModuleName() + "." + simpleName;

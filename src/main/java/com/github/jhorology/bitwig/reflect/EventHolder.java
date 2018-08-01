@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jvm
+// jdk
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -53,7 +53,7 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 public class EventHolder extends MethodHolder implements RpcEvent {
     // late observer binding is not allowed by bitwig.
     // "This can only be called during driver initialization."
-    private static final boolean AVEILABLE_LATE_BINDING_TO_HOST = false;
+    private static final boolean AVAILABLE_LATE_BINDING_TO_HOST = false;
 
     // gurantee the posting current value on 'subscibe' is called.
     private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
@@ -65,7 +65,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     private final Collection<WebSocket> triggerOnceClients;
     // observer is binded to host?
     private boolean bindedToHost;
-    private boolean hostTriggerd;
+    private boolean hostTriggered;
     // the last reported value from host
     private Object lastReportedParams;
 
@@ -77,7 +77,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         super(owner, method, parantChain);
         clients = new LinkedList<>();
         triggerOnceClients = new ArrayList<>();
-        if (!AVEILABLE_LATE_BINDING_TO_HOST) {
+        if (!AVAILABLE_LATE_BINDING_TO_HOST) {
             syncSubscribedState();
         }
     }
@@ -93,7 +93,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
                 // if subscribed() was called, it's meaning first client of subscribers list.
                 // subscribe() may trigger callback, but it's only for the value that has changed since last reported.
                 // so need to notify current value to the client if host not trigger callback.
-                notifyCurrentValueIfHostNotTriggerd(client);
+                notifyCurrentValueIfHostNotTriggered(client);
             } else {
                 // should send a current value to the client comming after the first one.
                 notifyCurrentValue();
@@ -116,7 +116,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             }
             if (syncSubscribedState()) {
                 // if subscribed() was called
-                notifyCurrentValueIfHostNotTriggerd(client);
+                notifyCurrentValueIfHostNotTriggered(client);
             } else {
                 notifyCurrentValue();
             }
@@ -142,7 +142,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
 
     @Override
     public void post(Object params) {
-        hostTriggerd = true;
+        hostTriggered = true;
         lastReportedParams = params;
         if (!clients.isEmpty()) {
             PushModel pushModel = owner.getPushModel();
@@ -209,12 +209,12 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     /**
      * post current value to client.
      */
-    private void notifyCurrentValueIfHostNotTriggerd(WebSocket client) {
+    private void notifyCurrentValueIfHostNotTriggered(WebSocket client) {
         if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
-            hostTriggerd = false;
+            hostTriggered = false;
             PushModel pushModel = owner.getPushModel();
             owner.getHost().scheduleTask(() -> {
-                    if (hostTriggerd ||
+                    if (hostTriggered ||
                         lastReportedParams == null) {
                         return;
                     }
@@ -229,7 +229,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
      */
     private void notifyCurrentValue() {
         // do not post message directly in here.
-        // 'cause message should be sent after Request/Reponse sequence.
+        // 'cause message should be sent at after Request/Reponse sequence.
         if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
             if (lastReportedParams != null) {
                 RequestContext.getContext()

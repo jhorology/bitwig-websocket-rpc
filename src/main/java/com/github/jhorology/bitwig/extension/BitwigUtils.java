@@ -22,13 +22,12 @@
  */
 package com.github.jhorology.bitwig.extension;
 
-// jvm
+// jdk
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
 // bitwig api
-import com.bitwig.extension.callback.EnumValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Preferences;
 import com.bitwig.extension.controller.api.SettableEnumValue;
@@ -103,10 +102,9 @@ public class BitwigUtils {
                                                             Function<T, String> mapper,
                                                             T initialValue,
                                                             Consumer<T> onChange) {
-        Preferences pref = host.getPreferences();
         Class<T> enumClass = initialValue.getDeclaringClass();
         T[] values = enumClass.getEnumConstants();
-
+        
         // host thrown exception
         // Enum settings should have at least two options.
         if (values.length <= 1) {
@@ -117,20 +115,18 @@ public class BitwigUtils {
             .map(e -> mapper == null ? e.name() : mapper.apply(e))
             .toArray(s -> new String[s]);
         
+        Function<String, T> valueOf = mapper == null
+            ? (s -> T.valueOf(enumClass, s))
+            : (s -> Stream.of(values)
+               .filter(e -> mapper.apply(e).equals(s))
+               .findFirst().orElse(initialValue));
+        
+        Preferences pref = host.getPreferences();
         SettableEnumValue value =
             pref.getEnumSetting(label, category, strValues, initialValue.name());
         if (onChange != null) {
-            EnumValueChangedCallback callback = mapper == null
-                ? (String v) -> onChange.accept(T.valueOf(enumClass, v))
-                : (String v) -> {
-                T enumValue = Stream.of(values)
-                .filter(e -> mapper.apply(e).equals(v))
-                .findFirst().orElse(initialValue);
-                onChange.accept(enumValue);
-            };
-            value.addValueObserver(callback);
+            value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
         }
-        String strValue = value.get();
-        return T.valueOf(enumClass, strValue);
+        return valueOf.apply(value.get());
     }
 }

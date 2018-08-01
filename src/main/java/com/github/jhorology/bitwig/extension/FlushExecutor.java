@@ -54,7 +54,7 @@ public class FlushExecutor implements Executor {
         tasks.add(command);
         // after 'exit' was called, 'flush'is no more called from host.
         if (state == SHUTDOWN) {
-            // to aveilable to execute event that triggerd from another module's onExit.
+            // to available to execute event that triggerd from another module's onExit.
             if (Thread.currentThread() == controlSurfaceSession) {
                 Runnable task = tasks.poll();
                 while(task != null) {

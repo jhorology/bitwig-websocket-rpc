@@ -30,12 +30,15 @@ import java.lang.reflect.Type;
 public interface RpcMethod {
     /**
      * Get types of pararameter(s) of this method.
+     * @return 
      */
     Type[] getParamTypes();
     
     /**
      * Invoke the RPC method.
-     * @params parameter(s) for invoking method.
+     * @param params parameter(s) for invoking method.
+     * @return 
+     * @throws java.lang.Exception 
      */
     Object invoke(Object[] params) throws Exception;
 }

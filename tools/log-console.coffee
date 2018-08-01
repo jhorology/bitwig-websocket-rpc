@@ -19,11 +19,11 @@ ws.on 'open', ->
   connected = true
   ws.subscribe(event)
     .then () ->
-      ws.on event, (log) ->
-        console.info logFormat log
     .catch (err) ->
       error = err
       ws.close()
+  ws.on event, (log) ->
+    console.info logFormat log
       
   ws.on 'error', (err) ->
     error = err

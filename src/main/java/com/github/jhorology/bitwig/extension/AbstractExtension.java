@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.extension;
 
-// jvm
+// jdk
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Stack;
@@ -51,7 +51,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private ExitEvent exitEvent;
     private FlushEvent flushEvent;
     private Executor asyncExecutor;
-    private Executor flushExecutor;
     private Stack<Object> extensionModules;
     private Logger log;
 
@@ -76,19 +75,10 @@ public abstract class AbstractExtension extends ControllerExtension implements S
      * get a Executor to run the task from other than 'Control Surface Session' thread.
      * @return 
      */
-    @Deprecated
     Executor getAsyncExecutor() {
         return asyncExecutor;
     }
     
-    /**
-     * get a Executor to run the tasks within "ControllerHost#flush()" method.
-     * @return 
-     */
-    Executor getFlushExecutor() {
-        return flushExecutor;
-    }
-
     /**
      * This method is called from host(Bitwig Studio) when the extension is being initialized.
      */
@@ -103,15 +93,14 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         log = Logger.getLogger(AbstractExtension.class);
         log.trace("Start initialization.");
         eventBus = new EventBus(this);
-        asyncExecutor = new ControlSurfaceSessionExecutor(this);
-        flushExecutor = new FlushExecutor();
+        asyncExecutor = new FlushExecutor();
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
         extensionModules = new Stack<>();
         // register internal core module first
         register(new Logger());
-        register(flushExecutor);
+        register(asyncExecutor);
         try {
             Object[] modules = createModules();
             if (modules != null && modules.length > 0) {

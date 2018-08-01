@@ -1,7 +1,6 @@
 package com.github.jhorology.bitwig.websocket;
 
 import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
 
 public class CloseEvent extends AbstractWebSocketEvent {
     private final int code;

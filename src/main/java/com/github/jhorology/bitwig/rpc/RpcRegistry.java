@@ -22,9 +22,6 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
-// jvm
-import java.util.List;
-
 // dependencies
 import org.java_websocket.WebSocket;
 

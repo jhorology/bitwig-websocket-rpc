@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jvm
+// jdk
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -167,6 +167,7 @@ public class ReflectionRegistry implements RpcRegistry {
         report.put("reportedOn", new Date());
         report.put("host", reportHost());
         report.put("extension", reportExtension());
+        report.put("system", System.getProperties());
         report.put("modules", reportModules());
         return report;
     }

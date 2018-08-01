@@ -60,16 +60,7 @@ public abstract class AbstractExtensionEvent {
      * get a Executor to run the task from other than 'Control Surface Session' thread.
      * @return 
      */
-    @Deprecated
     public Executor getAsyncExecutor() {
         return extension.getAsyncExecutor();
-    }
-    
-    /**
-     * get a Executor to run the tasks within "ControllerHost#flush()" method.
-     * @return 
-     */
-    public Executor getFlushExecutor() {
-        return extension.getFlushExecutor();
     }
 }

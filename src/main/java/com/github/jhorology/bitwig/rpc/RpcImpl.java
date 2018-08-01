@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
-// jvm
+// jdk
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;

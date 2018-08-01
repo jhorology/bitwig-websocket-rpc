@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jvm
+// jdk
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;

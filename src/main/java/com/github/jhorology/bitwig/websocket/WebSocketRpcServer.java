@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
-// jvm
+// jdk
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -68,10 +68,11 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     }
     
     /**
-     *  Construct a server.
-     *  @param port
-     *  @param protocol
-     *  @param registry
+     * Construct a server.
+     * @param port
+     * @param protocol
+     * @param registry
+     * @throws java.net.UnknownHostException
      */
     public WebSocketRpcServer(int port, ProtocolHandler protocol, RpcRegistry registry) throws UnknownHostException {
         this(new InetSocketAddress(port), protocol, registry);
@@ -97,7 +98,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     public void onInit(InitEvent e) {
         log = Logger.getLogger(WebSocketRpcServer.class);
         // event bus for dispatching events to 'Control Surface Session' thread.
-        eventBus = new AsyncEventBus(e.getFlushExecutor(), this);
+        eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         start();
         log.info("WebSocket RPC server started.");
@@ -122,9 +123,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             // prevent Address in use error on restart extension.
             waitFor(() -> !running, 2000L);
             log.info("WebSocket RPC server stopped.");
-        } catch (IOException ex) {
-            log.error(ex);
-        } catch (InterruptedException ex) {
+        } catch (IOException | InterruptedException ex) {
             log.error(ex);
         } finally {
             eventBus.unregister(this);
@@ -133,6 +132,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
         }
     }
     
+    @SuppressWarnings("SleepWhileInLoop")
     private void waitFor(Supplier<Boolean> lambda, long maxMills) {
         long startTime = System.currentTimeMillis();
         long elapsedTime = 0;
@@ -193,6 +193,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
      *  @param e
      */
     @Subscribe
+    @SuppressWarnings("NonPublicExported")
     public void onFullDrained(FullDrainedEvent e) {
         fullDrained = true;
         log.info("AsyncEventBus has been full drained.");

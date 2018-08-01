@@ -22,7 +22,7 @@
  */
 package com.github.jhorology.bitwig.extension;
 
-// jvm
+// jdk
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.BufferedReader;
