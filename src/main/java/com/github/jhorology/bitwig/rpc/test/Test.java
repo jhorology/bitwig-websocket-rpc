@@ -1,9 +1,7 @@
 package com.github.jhorology.bitwig.rpc.test;
 
-import com.github.jhorology.bitwig.extension.Logger;
-
 /**
- * RPC methods interfaceSimple POJO class for testing JSON deserialization
+ * RPC methods interface for testing
  */
 public interface Test {
     

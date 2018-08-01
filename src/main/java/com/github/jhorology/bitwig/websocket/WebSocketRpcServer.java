@@ -85,7 +85,8 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
      *  @param registry
      */
     public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, RpcRegistry registry) {
-        super(address);
+        // the maximum 4 worker threads is enougn for purpose. 
+        super(address, DECODERS <= 4 ? DECODERS : 4);
         this.protocol = protocol;
         this.registry = registry;
     }
@@ -119,11 +120,11 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             eventBus.post(new FullDrainedEvent());
             waitFor(() -> fullDrained, 500L);
             // <--
-            stop();
+            stop(2000);
             // prevent Address in use error on restart extension.
             waitFor(() -> !running, 2000L);
             log.info("WebSocket RPC server stopped.");
-        } catch (IOException | InterruptedException ex) {
+        } catch (InterruptedException ex) {
             log.error(ex);
         } finally {
             eventBus.unregister(this);

@@ -23,10 +23,8 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 // provided dependencies
 import com.google.common.base.Objects;

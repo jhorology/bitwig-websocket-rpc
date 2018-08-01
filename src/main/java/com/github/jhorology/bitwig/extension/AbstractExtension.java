@@ -23,8 +23,6 @@
 package com.github.jhorology.bitwig.extension;
 
 // jdk
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Stack;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
@@ -55,7 +53,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private Logger log;
 
     /**
-     * Constructor.<br/>
+     * Constructor.
      * Inherited class should call this as super().
      * @param definition
      * @param host
@@ -113,14 +111,6 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         }
     }
     
-    private String createStackTraceString(Throwable ex) {
-        StringWriter sw = new StringWriter();
-        PrintWriter pw = new PrintWriter(sw);
-        ex.printStackTrace(pw);
-        pw.flush();
-        return sw.toString();
-    }
-
     /**
      * This method is called from host at the extension's start of lifecycle.
      */

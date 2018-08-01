@@ -32,7 +32,6 @@ import java.lang.reflect.Method;
 
 // bitwig api
 import com.bitwig.extension.callback.ValueChangedCallback;
-import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Value;
 
 // dependencies
@@ -75,7 +74,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
 
     EventHolder(ModuleHolder<?> owner, Method method, MethodHolder parantChain) {
         super(owner, method, parantChain);
-        clients = new LinkedList<>();
+        // clients = new LinkedList<>();
+        clients = new ArrayList<>();
         triggerOnceClients = new ArrayList<>();
         if (!AVAILABLE_LATE_BINDING_TO_HOST) {
             syncSubscribedState();
@@ -90,9 +90,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (!clients.contains(client)) {
             clients.add(client);
             if (syncSubscribedState()) {
-                // if subscribed() was called, it's meaning first client of subscribers list.
-                // subscribe() may trigger callback, but it's only for the value that has changed since last reported.
-                // so need to notify current value to the client if host not trigger callback.
+                // if Subscribable#subscribed() was called, (it's meaning first client of subscribers list.)
+                // host may trigger callback, but it's only for the value that has changed since last reported.
+                // so need to notify current value to the client if host will not trigger callback.
                 notifyCurrentValueIfHostNotTriggered(client);
             } else {
                 // should send a current value to the client comming after the first one.
@@ -150,9 +150,13 @@ public class EventHolder extends MethodHolder implements RpcEvent {
                 Notification notification = new Notification(absoluteName, params);
                 pushModel.push(notification, clients);
             }
-            triggerOnceClients.stream().forEach(e -> clients.remove(e));
-            triggerOnceClients.clear();
-            syncSubscribedState();
+            if (!triggerOnceClients.isEmpty()) {
+                triggerOnceClients.stream().forEach(e -> clients.remove(e));
+                triggerOnceClients.clear();
+                if (clients.isEmpty()) {
+                    syncSubscribedState();
+                }
+            }
         }
     }
     
