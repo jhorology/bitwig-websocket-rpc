@@ -25,7 +25,6 @@ package com.github.jhorology.bitwig.reflect;
 // jdk
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.lang.reflect.Method;
@@ -50,15 +49,15 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  * The return value of method is guranteed to be implemented Value inteface.
  */
 public class EventHolder extends MethodHolder implements RpcEvent {
+    private static final Logger LOG = Logger.getLogger(EventHolder.class);
+    
+    // TODO make it configurable
     // late observer binding is not allowed by bitwig.
     // "This can only be called during driver initialization."
     private static final boolean AVAILABLE_LATE_BINDING_TO_HOST = false;
-
     // gurantee the posting current value on 'subscibe' is called.
     private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
     private static final long WAIT_HOST_TRIGGER_ON_SUBSCRIBE = 150L;
-
-    private static final Logger LOG = Logger.getLogger(EventHolder.class);
 
     private final Collection<WebSocket> clients;
     private final Collection<WebSocket> triggerOnceClients;
@@ -82,6 +81,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void subscribe(WebSocket client) {
         if (getError() != null) {
@@ -104,6 +106,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void subscribeOnce(WebSocket client) {
         if (getError() != null) {
@@ -126,6 +131,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void unsubscribe(WebSocket client) {
         if (getError() != null) {
@@ -139,41 +147,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             }
         }
     }
-
-    @Override
-    public void post(Object params) {
-        hostTriggered = true;
-        lastReportedParams = params;
-        if (!clients.isEmpty()) {
-            PushModel pushModel = owner.getPushModel();
-            if (pushModel != null) {
-                Notification notification = new Notification(absoluteName, params);
-                pushModel.push(notification, clients);
-            }
-            if (!triggerOnceClients.isEmpty()) {
-                triggerOnceClients.stream().forEach(e -> clients.remove(e));
-                triggerOnceClients.clear();
-                if (clients.isEmpty()) {
-                    syncSubscribedState();
-                }
-            }
-        }
-    }
     
-    private void post(Object params, WebSocket client) {
-        if (clients.contains(client)) {
-            PushModel pushModel = owner.getPushModel();
-            if (pushModel != null) {
-                Notification notification = new Notification(absoluteName, params);
-                pushModel.push(notification, client);
-            }
-            if (triggerOnceClients.remove(client)) {
-                if (clients.remove(client)) {
-                    syncSubscribedState();
-                }
-            }
-        }
-    }
 
     void disconnect(WebSocket client) {
         boolean removed = clients.remove(client);
@@ -211,6 +185,41 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     }
 
     /**
+     * post event to all subscribers.
+     * @param params
+     */
+    protected void onValueChanged(Object params) {
+        hostTriggered = true;
+        lastReportedParams = params;
+        if (!clients.isEmpty() && owner.getPushModel() != null) {
+            owner.getPushModel()
+                .push(new Notification(absoluteName, params), clients);
+            if (!triggerOnceClients.isEmpty()) {
+                triggerOnceClients.stream().forEach(e -> clients.remove(e));
+                triggerOnceClients.clear();
+                if (clients.isEmpty()) {
+                    syncSubscribedState();
+                }
+            }
+        }
+    }
+    
+    /**
+     * post event to specified client.
+     */
+    private void post(Object params, WebSocket client) {
+        if (clients.contains(client) && owner.getPushModel() != null) {
+            owner.getPushModel()
+                .push(new Notification(absoluteName, params), client);
+            if (triggerOnceClients.remove(client)) {
+                if (clients.remove(client)) {
+                    syncSubscribedState();
+                }
+            }
+        }
+    }
+    
+    /**
      * post current value to client.
      */
     private void notifyCurrentValueIfHostNotTriggered(WebSocket client) {
@@ -244,19 +253,18 @@ public class EventHolder extends MethodHolder implements RpcEvent {
 
     /**
      * Sync state of event subscription between RPC and Bitwig Studio.
-     * @return state will change to subscribed
+     * @return host side state will change to subscribed
      */
     @SuppressWarnings({"UseSpecificCatch", "unchecked"})
     private boolean syncSubscribedState() {
         try {
-            // get cached return value.
-            // TODO
+            // TODO support method chain that has parameters
             Value value = (Value)getReturnValue(ReflectUtils.EMPTY_ARRAY);
             // I think late binding observer are probably better for host performance.
             if (!bindedToHost) {
                 lastReportedParams = null;
                 ValueChangedCallback callback =
-                    BitwigCallbacks.newValueChangedCallback(value, params -> post(params));
+                    BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
                 // addValueObserver raise callback calls even after call unsubscribe()
                 value.addValueObserver(callback);
                 bindedToHost = true;

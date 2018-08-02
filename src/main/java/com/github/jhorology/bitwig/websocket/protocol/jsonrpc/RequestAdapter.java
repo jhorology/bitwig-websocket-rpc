@@ -1,10 +1,6 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.google.gson.JsonArray;

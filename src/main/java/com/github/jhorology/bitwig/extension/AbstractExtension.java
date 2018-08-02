@@ -44,6 +44,8 @@ import com.github.jhorology.bitwig.extension.Logger.Severity;
  * An abstract bass class that is used to trigger extension events.
  */
 public abstract class AbstractExtension extends ControllerExtension implements SubscriberExceptionHandler {
+    private static final Logger LOG = Logger.getLogger(AbstractExtension.class);
+
     private EventBus eventBus;
     private InitEvent initEvent;
     private ExitEvent exitEvent;
@@ -88,8 +90,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
             BitwigUtils.getPreferenceAsEnum(host, "Log Level", "Debug",
                                             Severity.DEBUG, Logger::setLevel);
         Logger.init(getHost(), logLevel);
-        log = Logger.getLogger(AbstractExtension.class);
-        log.trace("Start initialization.");
+        LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
         asyncExecutor = new FlushExecutor();
         initEvent = new InitEvent(this);
@@ -105,9 +106,9 @@ public abstract class AbstractExtension extends ControllerExtension implements S
                 Stream.of(modules).forEach(m -> register(m));
             }
             eventBus.post(initEvent);
-            log.trace("Extension has been initialized.");
+            LOG.trace("Extension has been initialized.");
         } catch (Exception ex) {
-            log.error(ex);
+            LOG.error(ex);
         }
     }
     
@@ -144,7 +145,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
         if (log != null) {
-            log.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
+            LOG.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
         }
     }
 

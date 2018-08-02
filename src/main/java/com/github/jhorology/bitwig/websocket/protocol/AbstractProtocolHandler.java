@@ -45,6 +45,7 @@ import java.util.List;
  * An abstract base class of ProtocolHandler.
  */
 public abstract class AbstractProtocolHandler implements ProtocolHandler {
+    private static final Logger LOG = Logger.getLogger(AbstractProtocolHandler.class);
     
     /**
      * an instance of WebSocketServer
@@ -56,14 +57,11 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
      */
     protected RpcRegistry registry;
 
-    private Logger log;
-    
     // this instance is implement PushModel interface or not.
     private boolean pushModel;
     
     @Subscribe
     public final void onStart(StartEvent e) {
-        log = Logger.getLogger(AbstractProtocolHandler.class);
         server = e.getWebSocketServer();
         registry = e.getRpcRegistry();
         pushModel = (this instanceof PushModel);
@@ -80,8 +78,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onOpen(OpenEvent e) {
-        if (Logger.isTraceEnabled()) {
-            log.trace("new connection. conn:" + e.getConnection() +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("new connection. conn:" + e.getConnection() +
                       "\nremoteAddress:" + remoteAddress(e.getConnection()) +
                       "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
         }
@@ -90,9 +88,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onColse(CloseEvent e) {
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             WebSocket conn = e.getConnection();
-            log.trace("connection closed. conn:" + e.getConnection() +
+            LOG.trace("connection closed. conn:" + e.getConnection() +
                       "\ncode:" + e.getCode() +
                       "\nreason:" + e.getReason() +
                       "\nremote:" + e.isRemote());
@@ -105,8 +103,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(TextMessageEvent e) {
-        if (Logger.isTraceEnabled()) {
-            log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
@@ -117,8 +115,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(BinaryMessageEvent e) {
-        if (Logger.isTraceEnabled()) {
-            log.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
@@ -129,8 +127,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onError(ErrorEvent e) {
-        Logger.getLogger(AbstractProtocolHandler.class)
-            .error("error occurred remoteAddress:"  + remoteAddress(e.getConnection()), e.getException());
+        LOG.error("error occurred remoteAddress:"  + remoteAddress(e.getConnection()), e.getException());
         onError(e.getConnection(), e.getException());
     }
 
@@ -159,24 +156,24 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     protected void send(String message, WebSocket conn) {
         conn.send(message);
-        if (Logger.isTraceEnabled()) {
-            log.trace("message sended to " + conn.getRemoteSocketAddress() +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("message sended to " + conn.getRemoteSocketAddress() +
                       "\n <-- " + message);
         }
     }
     
     protected void push(String message, Collection<WebSocket> clients) {
         server.broadcast(message, clients);
-        if (Logger.isTraceEnabled()) {
-            log.trace("broadcast message to " + clients.size() + " clients." +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("broadcast message to " + clients.size() + " clients." +
                       "\n <-- " + message);
         }
     }
     
     protected void broadcast(String message) {
         server.broadcast(message);
-        if (Logger.isTraceEnabled()) {
-            log.trace("broadcast message to all " + server.getConnections().size() + " clients." +
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("broadcast message to all " + server.getConnections().size() + " clients." +
                       "\n <-- " + message);
         }
     }

@@ -34,8 +34,8 @@ import com.bitwig.extension.controller.api.ControllerHost;
  * This class assumes that all methods are called from within "Control Surface Session' thread.
  */
 public class ExecutionContext {
+    private static final Logger LOG = Logger.getLogger(ExecutionContext.class);
     private static ExecutionContext instance;
-
     private AbstractExtension extension;
     private final Map<String, Object> values;
     private boolean nextTick;
@@ -49,7 +49,7 @@ public class ExecutionContext {
         // checking re-entrant context
         if (instance != null) {
             RuntimeException ex = new RuntimeException("re-entrant context,");
-            Logger.getLogger(ExecutionContext.class).error(ex);
+            LOG.error(ex);
             throw ex;
         }
         instance = new ExecutionContext(extension);

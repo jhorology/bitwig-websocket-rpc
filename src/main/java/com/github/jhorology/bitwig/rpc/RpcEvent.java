@@ -45,10 +45,4 @@ public interface RpcEvent {
      * @param client the remote client connection
      */
     void unsubscribe(WebSocket client);
-    
-    /**
-     * push notification message to subscriber(s) of this event.
-     * @param params parameter of notification message.
-     */
-    void post(Object params);
 }

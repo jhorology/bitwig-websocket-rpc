@@ -23,7 +23,6 @@
 package com.github.jhorology.bitwig.websocket;
 
 // jdk
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -53,7 +52,8 @@ import java.util.function.Supplier;
  * Bassically do nothing in this class, it just exists for dispatching events to 'Control Surface Session" thread.
  */
 public class WebSocketRpcServer extends WebSocketServer implements SubscriberExceptionHandler {
-    private Logger log;
+    private static final Logger LOG = Logger.getLogger(WebSocketRpcServer.class);
+    
     private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private ProtocolHandler protocol;
@@ -97,12 +97,11 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
      */
     @Subscribe
     public void onInit(InitEvent e) {
-        log = Logger.getLogger(WebSocketRpcServer.class);
         // event bus for dispatching events to 'Control Surface Session' thread.
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         start();
-        log.info("WebSocket RPC server started.");
+        LOG.info("WebSocket RPC server started.");
     }
 
     /**
@@ -112,7 +111,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     @Subscribe
     public void onExit(ExitEvent e) {
         try {
-            log.info("waiting for WebSocket RPC server stop.");
+            LOG.info("waiting for WebSocket RPC server stop.");
             eventBus.post(new StopEvent());
             // --> unnecessary, but it's depend on FlushExecutor
             eventBus.register(this);
@@ -123,9 +122,9 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             stop(2000);
             // prevent Address in use error on restart extension.
             waitFor(() -> !running, 2000L);
-            log.info("WebSocket RPC server stopped.");
+            LOG.info("WebSocket RPC server stopped.");
         } catch (InterruptedException ex) {
-            log.error(ex);
+            LOG.error(ex);
         } finally {
             eventBus.unregister(this);
             eventBus.unregister(protocol);
@@ -141,7 +140,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             try {
                 Thread.sleep(50L);
             } catch (InterruptedException ex) {
-                log.error(ex);
+                LOG.error(ex);
             } finally {
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
@@ -153,7 +152,7 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
         running = true;
         try {
             super.run();
-            log.info("WebSocketServer has been stopped.");
+            LOG.info("WebSocketServer has been stopped.");
         } finally {
             running = false;
         }
@@ -197,12 +196,12 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     @SuppressWarnings("NonPublicExported")
     public void onFullDrained(FullDrainedEvent e) {
         fullDrained = true;
-        log.info("AsyncEventBus has been full drained.");
+        LOG.info("AsyncEventBus has been full drained.");
     }
     
     @Override
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
-        log.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
+        LOG.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
     }
 }

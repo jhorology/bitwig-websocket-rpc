@@ -1,16 +1,44 @@
+/*
+ * Copyright (c) 2018 Masafumi Fujimaru
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.github.jhorology.bitwig.extension;
 
-import com.bitwig.extension.controller.api.ControllerHost;
+// jdk
+import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
+// bitwig api
+import com.bitwig.extension.controller.api.ControllerHost;
+
+// provided dependencies
 import com.google.common.eventbus.Subscribe;
-import java.util.ArrayDeque;
 
 /**
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
 public class FlushExecutor implements Executor {
+    private static final Logger LOG = Logger.getLogger(FlushExecutor.class);
+
     private static final int IDLE = 0;
     private static final int REQUESTED = 1;
     private static final int WAITING = 2;
@@ -20,11 +48,9 @@ public class FlushExecutor implements Executor {
     private Thread controlSurfaceSession;
     private Queue<Runnable> tasks;
     private AbstractExtension extension;
-    private Logger log;
     private int state = IDLE;
     @Subscribe
     public void onInit(InitEvent e) {
-        log = Logger.getLogger(FlushExecutor.class);
         tasks = new ArrayDeque<>(QUEUE_SIZE);
         extension = e.getExtension();
         controlSurfaceSession = Thread.currentThread();
@@ -76,7 +102,7 @@ public class FlushExecutor implements Executor {
         }
         if (Logger.isWarnEnabled()) {
             if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
-                log.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
+                LOG.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
             }
         }
     }

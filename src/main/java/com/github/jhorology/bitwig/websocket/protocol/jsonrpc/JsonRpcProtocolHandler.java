@@ -1,16 +1,41 @@
+/*
+ * Copyright (c) 2018 Masafumi Fujimaru
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
+// jdk
 import java.util.List;
 import java.util.stream.Collectors;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 
+// dependencies
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 
+// source
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
@@ -19,28 +44,26 @@ import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
 public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements PushModel {
     public static final String JSONRPC_VERSION = "2.0";
+    private static final Logger LOG = Logger.getLogger(JsonRpcProtocolHandler.class);
         
-    private Logger log;
     private Gson gson;
     
     @Override
     public void onStart() {
-        log = Logger.getLogger(JsonRpcProtocolHandler.class);
-        GsonBuilder gsonBuilder = BitwigAdapters.newGsonBuilder()
+        gson = BitwigAdapters.adapt(new GsonBuilder())
             .serializeNulls()
             // .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
             .registerTypeAdapter(Request.class, new RequestAdapter(registry))
             .registerTypeAdapter(Response.class, new ResponseAdapter())
             .registerTypeAdapter(Error.class, new ErrorAdapter())
-            .registerTypeAdapter(Notification.class, new NotificationAdapter());
-        gson = gsonBuilder.create();
+            .registerTypeAdapter(Notification.class, new NotificationAdapter())
+            .create();
     }
     
     @Override
     public void onStop() {
         gson = null;
-        log = null;
     }
     
     @Override
@@ -137,7 +160,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         try {
             result = method.invoke(req.getArgs());
         } catch (Exception ex) {
-            log.error("rpc method invoking error.", ex);
+            LOG.error("rpc method invoking error.", ex);
             return createErrorResponse(ErrorEnum.INTERNAL_ERROR, ex.getMessage(), req.getId());
         }
         if (!req.isNotify()) {

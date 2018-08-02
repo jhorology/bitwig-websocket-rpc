@@ -46,11 +46,18 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
  */
 @SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
+    // TODO make it configurable
+    private static final boolean PUBLISH_SUBSCRIBABLE_METHODS = true;
+        
     /**
      * empty array of Object.
      */
     public static final Object[] EMPTY_ARRAY = {};
+    /**
+     * empty array of Class<?>.
+     */
     public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
+    
     private static final List<Method> BLACK_LISTED_METHODS;
     private static final List<Method> BLACK_LISTED_EVENTS;
     static {
@@ -63,8 +70,9 @@ public class ReflectUtils {
             // ObjectProxy, not controllable from remote.
             BLACK_LISTED_METHODS.addAll(Arrays.asList(ObjectProxy.class.getMethods()));
             // ObjectProxy extends Subscribable
-            // but, Subbscirbable member is OK
-            BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
+            if (PUBLISH_SUBSCRIBABLE_METHODS) {
+                BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
+            }
             // markInterested is probably same as Subscribable#subscibe()
             BLACK_LISTED_METHODS.add(Value.class.getMethod("markInterested", EMPTY_CLASS_ARRAY));
 

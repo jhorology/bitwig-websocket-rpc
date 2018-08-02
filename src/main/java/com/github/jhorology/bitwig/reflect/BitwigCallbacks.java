@@ -60,13 +60,17 @@ import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
 
+// source
+import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
+
 /**
  * A utility class for creating all known callbacks of Bitwig API.
  */
 public class BitwigCallbacks {
-    // TODO
-    // which is better?
-    // convert multiple paramers to named parameter or not.
+    private static final Logger LOG = Logger.getLogger(BitwigCallbacks.class);
+    
+    // TODO make it configurable
     private static final boolean PREFER_NAMED_PARAMS = true;
 
     // All knwown Subinterfaces of ValueChangedCallback
@@ -336,6 +340,10 @@ public class BitwigCallbacks {
      */
     public static <T> ObjectValueChangedCallback<T> newObjectValueChangedCallback(Consumer<Object> lambda) {
         return (T value) -> {
+            // for debug
+            if (Logger.isWarnEnabled() && value != null && !BitwigAdapters.isAdapted(value)) {
+                LOG.warn("maybe need seiralization adapter valueType:" + value.getClass());
+            }
             lambda.accept(value);
         };
     }

@@ -53,8 +53,7 @@ import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
 public class ReflectionRegistry implements RpcRegistry {
-
-    private Logger log;
+    private static final Logger LOG = Logger.getLogger(ReflectionRegistry.class);
 
     // server sent evnt bus.
     private final List<ModuleHolder<?>> preInitModules;
@@ -70,7 +69,6 @@ public class ReflectionRegistry implements RpcRegistry {
 
     @Subscribe
     public void onInit(InitEvent e) {
-        log = Logger.getLogger(ReflectionRegistry.class);
         extension = e.getExtension();
         modules = new LinkedHashMap<>();
         initialized = true;
@@ -254,7 +252,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private ModuleHolder<?> getModule(String moduleName) {
         ModuleHolder<?> module = modules.get(moduleName);
         if (module == null) {
-            log.warn("'" + moduleName + "' module not found.");
+            LOG.warn("'" + moduleName + "' module not found.");
             return null;
         }
         return module;
@@ -263,7 +261,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private String[] parseName(String name) {
         int index = name.indexOf('.');
         if (index < 1 || index > (name.length() - 1)) {
-            log.warn("name should be formatted as \"[moduleName].[method or event name]\".");
+            LOG.warn("name should be formatted as \"[moduleName].[method or event name]\".");
             return null;
         }
         return new String[] {

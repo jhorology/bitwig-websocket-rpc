@@ -114,7 +114,10 @@ public class BitwigUtils {
         String[] strValues = Stream.of(values)
             .map(e -> mapper == null ? e.name() : mapper.apply(e))
             .toArray(s -> new String[s]);
-        
+        String strInitialValue = mapper == null
+            ? initialValue.name()
+            : mapper.apply(initialValue);
+            
         Function<String, T> valueOf = mapper == null
             ? (s -> T.valueOf(enumClass, s))
             : (s -> Stream.of(values)
@@ -123,7 +126,7 @@ public class BitwigUtils {
         
         Preferences pref = host.getPreferences();
         SettableEnumValue value =
-            pref.getEnumSetting(label, category, strValues, initialValue.name());
+            pref.getEnumSetting(label, category, strValues, strInitialValue);
         if (onChange != null) {
             value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
         }
