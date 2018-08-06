@@ -31,12 +31,12 @@ import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
  * A context holder for executor task state. <br>
- * This class assumes that all methods are called from within "Control Surface Session' thread.
+ * This class assumes that all methods are called from within "Control Surface Session" thread.
  */
 public class ExecutionContext {
     private static final Logger LOG = Logger.getLogger(ExecutionContext.class);
     private static ExecutionContext instance;
-    private AbstractExtension extension;
+    private AbstractExtension<? extends AbstractConfiguration> extension;
     private final Map<String, Object> values;
     private boolean nextTick;
     private long nextTickMillis;
@@ -44,11 +44,11 @@ public class ExecutionContext {
     /**
      * initialize the context
      */
-    static void init(AbstractExtension extension) {
+    static void init(AbstractExtension<? extends AbstractConfiguration> extension) {
         // for debug
         // checking re-entrant context
         if (instance != null) {
-            RuntimeException ex = new RuntimeException("re-entrant context,");
+            RuntimeException ex = new RuntimeException("re-entrant context.");
             LOG.error(ex);
             throw ex;
         }
@@ -75,7 +75,7 @@ public class ExecutionContext {
         values = new HashMap<>();
     }
     
-    private ExecutionContext(AbstractExtension extension) {
+    private ExecutionContext(AbstractExtension<? extends AbstractConfiguration> extension) {
         this();
         this.extension = extension;
     }
@@ -84,7 +84,7 @@ public class ExecutionContext {
      * get a Extension instance.
      * @return
      */
-    public AbstractExtension getExtension() {
+    public AbstractExtension<? extends AbstractConfiguration> getExtension() {
         return extension;
     }
     

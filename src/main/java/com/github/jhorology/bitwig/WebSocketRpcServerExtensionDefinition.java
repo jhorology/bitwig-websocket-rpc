@@ -22,77 +22,28 @@
  */
 package com.github.jhorology.bitwig;
 
-import java.util.UUID;
-
-import com.bitwig.extension.api.PlatformType;
-import com.bitwig.extension.controller.AutoDetectionMidiPortNamesList;
-import com.bitwig.extension.controller.ControllerExtensionDefinition;
+// bitwig api
+import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
+
+// provided dependencies
+import com.google.gson.annotations.Expose;
+
+// source
+import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
 
 /**
  * A Definition class of this extension. 
  */
-public class WebSocketRpcServerExtensionDefinition extends ControllerExtensionDefinition
+public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefinition
 {
-    private static final UUID DRIVER_ID = UUID.fromString("68aa62d8-5a50-48d4-b9e4-9d684307f7ce");
-   
-    /**
-     * Default constructor.
-     */
-    public WebSocketRpcServerExtensionDefinition() {
-    }
-
-    @Override
-    public String getName() {
-        return "WebSocket RPC";
-    }
+    // populate from json -->
+    @Expose
+    private Config config;
+    // <--
    
     @Override
-    public String getAuthor() {
-        return "hogehoge";
-    }
-
-    @Override
-    public String getVersion() {
-        return "snapshot";
-    }
-
-    @Override
-    public UUID getId() {
-        return DRIVER_ID;
-    }
-   
-    @Override
-    public String getHardwareVendor() {
-        return "WebSocket RPC";
-    }
-   
-    @Override
-    public String getHardwareModel() {
-        return "WebSocket RPC";
-    }
-
-    @Override
-    public int getRequiredAPIVersion() {
-        return 7;
-    }
-
-    @Override
-    public int getNumMidiInPorts() {
-        return 0;
-    }
-
-    @Override
-    public int getNumMidiOutPorts() {
-        return 0;
-    }
-
-    @Override
-    public void listAutoDetectionMidiPortNames(final AutoDetectionMidiPortNamesList list, final PlatformType platformType) {
-    }
-
-    @Override
-    public WebSocketRpcServerExtension createInstance(final ControllerHost host) {
-        return new WebSocketRpcServerExtension(this, host);
+    public ControllerExtension createInstance(ControllerHost host) {
+        return new WebSocketRpcServerExtension(this, host, config);
     }
 }

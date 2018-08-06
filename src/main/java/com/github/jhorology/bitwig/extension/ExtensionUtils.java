@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -26,18 +26,31 @@ package com.github.jhorology.bitwig.extension;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 // bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Preferences;
 import com.bitwig.extension.controller.api.SettableEnumValue;
 
+// dependencies
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.InstanceCreator;
+
 /**
  * A set of utility functions for Bitwig API.
  */
-public class BitwigUtils {
+public class ExtensionUtils {
     /**
-     * Get a prefrence value as enum.
+     * Get a preference value as enum value.
      * @param <T>           the enum type to be returned.
      * @param host          the interface of ControllerHost
      * @param label         the name of the setting, must not be null
@@ -51,7 +64,7 @@ public class BitwigUtils {
         return getPreferenceAsEnum(host, label, category, null, initialValue, null);
     }
     /**
-     * Get a prefrence value as enum.
+     * Get a preference value as enum value.
      * @param <T>           the enum type to be returned.
      * @param host          the interface of ControllerHost
      * @param label         the name of the setting, must not be null
@@ -67,9 +80,9 @@ public class BitwigUtils {
                                                             T initialValue) {
         return getPreferenceAsEnum(host, label, category, mapper, initialValue, null);
     }
-    
+
     /**
-     * Get a prefrence value as enum.
+     * Get a prefrence value as enum value.
      * @param <T>           the enum type to be returned.
      * @param host          the interface of ControllerHost
      * @param label         the name of the setting, must not be null
@@ -84,9 +97,9 @@ public class BitwigUtils {
                                                             Consumer<T> onChange) {
         return getPreferenceAsEnum(host, label, category, null, initialValue, onChange);
     }
-    
+
     /**
-     * Get a prefrence value as enum.
+     * Get a preference value as enum.
      * @param <T>           the enum type to be returned.
      * @param host          the interface of ControllerHost
      * @param label         the name of the setting, must not be null
@@ -104,26 +117,26 @@ public class BitwigUtils {
                                                             Consumer<T> onChange) {
         Class<T> enumClass = initialValue.getDeclaringClass();
         T[] values = enumClass.getEnumConstants();
-        
+
         // host thrown exception
         // Enum settings should have at least two options.
         if (values.length <= 1) {
             return initialValue;
         }
-        
+
         String[] strValues = Stream.of(values)
             .map(e -> mapper == null ? e.name() : mapper.apply(e))
             .toArray(s -> new String[s]);
         String strInitialValue = mapper == null
             ? initialValue.name()
             : mapper.apply(initialValue);
-            
+
         Function<String, T> valueOf = mapper == null
             ? (s -> T.valueOf(enumClass, s))
             : (s -> Stream.of(values)
                .filter(e -> mapper.apply(e).equals(s))
                .findFirst().orElse(initialValue));
-        
+
         Preferences pref = host.getPreferences();
         SettableEnumValue value =
             pref.getEnumSetting(label, category, strValues, strInitialValue);
@@ -131,5 +144,78 @@ public class BitwigUtils {
             value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
         }
         return valueOf.apply(value.get());
+    }
+
+    /**
+     * Populate JSON properties to fields of specified object instance.
+     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+     * @param <T>          the type of the desired object
+     * @param resourceName the resource name of JSON.
+     * @param instance     an object of type T.
+     * @throws java.io.IOException
+     */
+    public static <T> void populateJsonProperties(String resourceName, T instance)
+        throws IOException {
+        try (Reader reader =
+             new InputStreamReader(instance.getClass()
+                                   .getClassLoader()
+                                   .getResourceAsStream(resourceName),
+                                   "UTF-8")) {
+            populateJsonProperties(reader, instance);
+        }
+    }
+
+    /**
+     * Populate JSON properties to fields of specified object instance.
+     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+     * @param <T>      the type of the desired object
+     * @param file     the file path of JSON.
+     * @param instance an object of type T.
+     * @throws java.io.IOException
+     */
+    public static <T> void populateJsonProperties(Path file, T instance)
+        throws IOException {
+        if (!Files.isReadable(file)) return;
+        try (Reader reader =
+             Files.newBufferedReader(file,
+                                     Charset.forName("UTF-8"))) {
+            populateJsonProperties(reader, instance);
+        }
+    }
+
+    /**
+     * Populate JSON properties to fields of specified object instance.
+     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+     * @param <T>      the type of the desired object
+     * @param reader   the reader producing the JSON.
+     * @param instance an object of type T.
+     */
+    public static <T> void populateJsonProperties(Reader reader, T instance) {
+        Gson gson = new GsonBuilder()
+            .excludeFieldsWithoutExposeAnnotation()
+            .registerTypeAdapter(instance.getClass(),
+                                 (InstanceCreator<T>)t -> instance)
+            .create();
+        gson.fromJson(reader, instance.getClass());
+    }
+
+    /**
+     * Write the JSON file of specified instance.<br>
+     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+     * @param instance      the object for which JSON representation is to be created.
+     * @param file          to which the JSON file of instance needs to be written.
+     * @throws IOException
+     */
+    public static void writeJsonFile(Object instance, Path file) throws IOException {
+        Gson gson = new GsonBuilder()
+            .excludeFieldsWithoutExposeAnnotation()
+            .create();
+        try (Writer writer =
+             Files.newBufferedWriter(file,
+                                     Charset.forName("UTF-8"),
+                                     StandardOpenOption.CREATE,
+                                     StandardOpenOption.TRUNCATE_EXISTING)) {
+            gson.toJson(instance, writer);
+        }
     }
 }

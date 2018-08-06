@@ -42,6 +42,7 @@ import com.google.common.eventbus.Subscribe;
 import org.java_websocket.WebSocket;
 
 // source
+import com.github.jhorology.bitwig.extension.AbstractConfiguration;
 import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
@@ -60,7 +61,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private Map<String, ModuleHolder<?>> modules;
 
     private PushModel pushModel;
-    private AbstractExtension extension;
+    private AbstractExtension<? extends AbstractConfiguration> extension;
     private boolean initialized;
 
     public ReflectionRegistry() {
@@ -166,6 +167,7 @@ public class ReflectionRegistry implements RpcRegistry {
         report.put("host", reportHost());
         report.put("extension", reportExtension());
         report.put("system", System.getProperties());
+        report.put("env", System.getenv());
         report.put("modules", reportModules());
         return report;
     }

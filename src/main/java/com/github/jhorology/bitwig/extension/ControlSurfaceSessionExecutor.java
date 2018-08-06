@@ -29,13 +29,13 @@ import java.util.concurrent.Executor;
  */
 @Deprecated
 public class ControlSurfaceSessionExecutor implements Executor {
-    private final AbstractExtension extension;
+    private final AbstractExtension<? extends AbstractConfiguration> extension;
     
     /**
      * Consutruct an instance of Executor.
      * @param extension 
      */
-    public ControlSurfaceSessionExecutor(AbstractExtension extension) {
+    public ControlSurfaceSessionExecutor(AbstractExtension<? extends AbstractConfiguration> extension) {
         this.extension = extension;
     }
     

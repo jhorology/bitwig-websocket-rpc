@@ -26,6 +26,7 @@ package com.github.jhorology.bitwig.websocket;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.function.Supplier;
 
 // provided dependencies
 import com.google.common.eventbus.AsyncEventBus;
@@ -45,28 +46,29 @@ import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
-import java.util.function.Supplier;
 
 /**
  * An implementation of WebSocketServer.
  * Bassically do nothing in this class, it just exists for dispatching events to 'Control Surface Session" thread.
  */
-public class WebSocketRpcServer extends WebSocketServer implements SubscriberExceptionHandler {
+public class WebSocketRpcServer
+    extends WebSocketServer
+    implements SubscriberExceptionHandler {
     private static final Logger LOG = Logger.getLogger(WebSocketRpcServer.class);
-    
+
     private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private ProtocolHandler protocol;
     private RpcRegistry registry;
     private boolean running;
     private boolean fullDrained;
-    
+
     /**
      *  private constructor for prevent instantiation
      */
     private WebSocketRpcServer() {
     }
-    
+
     /**
      * Construct a server.
      * @param port
@@ -74,26 +76,28 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
      * @param registry
      * @throws java.net.UnknownHostException
      */
-    public WebSocketRpcServer(int port, ProtocolHandler protocol, RpcRegistry registry) throws UnknownHostException {
+    public WebSocketRpcServer(int port, ProtocolHandler protocol, RpcRegistry registry)
+        throws UnknownHostException {
         this(new InetSocketAddress(port), protocol, registry);
     }
 
     /**
-     *  Construct a server.
-     *  @param address
-     *  @param protocol
-     *  @param registry
+     * Construct a server.
+     * @param address
+     * @param protocol
+     * @param registry
      */
     public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, RpcRegistry registry) {
-        // the maximum 4 worker threads is enougn for purpose. 
+        // the maximum 4 worker threads is enougn for purpose.
         super(address, DECODERS <= 4 ? DECODERS : 4);
         this.protocol = protocol;
         this.registry = registry;
     }
 
     /**
-     *  Intialize at extension's start of lifecycle.
-     *  @param e
+     * Initialize at extension's start of life-cycle.<b>
+     * This method is called from within 'Control Surfaces Session' thread.
+     * @param e
      */
     @Subscribe
     public void onInit(InitEvent e) {
@@ -105,8 +109,9 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
     }
 
     /**
-     *  De-intialize at extension's end of lifecycle.
-     *  @param e
+     * De-initialize at extension's end of life-cycle.
+     * This method is called from within 'Control Surfaces Session' thread.
+     * @param e
      */
     @Subscribe
     public void onExit(ExitEvent e) {
@@ -131,7 +136,125 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
             extension = null;
         }
     }
-    
+    /**
+     * An implementation of Runnable#run().<br>
+     * A override of {@link WebSocketServer#run()}
+     */
+    @Override
+    public void run() {
+        running = true;
+        try {
+            super.run();
+            LOG.info("WebSocketServer has been stopped.");
+        } finally {
+            running = false;
+        }
+    }
+
+    /**
+     * Called when the server started up successfully.<br>
+     * If any error occured, onError is called instead.<br>
+     * An implementation of {@link WebSocketServer#onStart()}
+     */
+    @Override
+    public void onStart() {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new StartEvent(this, registry));
+    }
+
+    /**
+     * Called after an opening handshake has been performed and the given websocket is ready to be written on.<br>
+     * An implementation of {@link WebSocketServer#onOpen(WebSocket, ClientHandshake)}
+     * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+     * @param handshake The handshake of the websocket instance
+     */
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new OpenEvent(conn, handshake));
+    }
+
+    /**
+     * Called after the websocket connection has been closed.<br>
+     * An implementation of {@link WebSocketServer#onClose(WebSocket, int, String, boolean)}
+     * @param conn   The <tt>WebSocket</tt> instance this event is occuring on.
+     * @param code   The codes can be looked up here: {@link CloseFrame}
+     * @param reason Additional information string
+     * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
+     */
+    @Override
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new CloseEvent(conn, code, reason, remote));
+    }
+
+    /**
+     * Callback for string messages received from the remote host<br>
+     * An implementation of {@link WebSocketServer#onMessage(WebSocket, String)}
+     * @see #onMessage(WebSocket, ByteBuffer)
+     * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+     * @param message The UTF-8 decoded message that was received.
+     */
+    @Override
+    public void onMessage(WebSocket conn, String message) {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new TextMessageEvent(conn, message));
+    }
+
+    /**
+     * Callback for binary messages received from the remote host.
+     * A override of {@link WebSocketServer#onMessage(WebSocket, ByteBuffer)}
+     * @see #onMessage(WebSocket, ByteBuffer)
+     * @param conn
+     *            The <tt>WebSocket</tt> instance this event is occurring on.
+     * @param message
+     *            The binary message that was received.
+     */
+    @Override
+    public void onMessage(WebSocket conn, ByteBuffer message) {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new BinaryMessageEvent(conn, message));
+    }
+
+    /**
+     * Called when errors occurs. If an error causes the websocket connection to fail
+     * {@link #onClose(WebSocket, int, String, boolean)} will be called additionally.<br>
+     * This method will be called primarily because of IO or protocol errors.<br>
+     * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
+     * An implementation of {@link WebSocketServer#onError(WebSocket, Exception)}
+     * @param conn Can be null if there error does not belong to one specific websocket.
+     * For example if the servers port could not be bound.
+     * @param ex The exception causing this error
+     */
+    @Override
+    public void onError(WebSocket conn, Exception ex) {
+        // dispatch to 'Control Surface Session' thread.
+        eventBus.post(new ErrorEvent(conn, ex));
+    }
+
+    /**
+     * To knows AsyncEvent bus is full drained.
+     * @param e
+     */
+    @Subscribe
+    @SuppressWarnings("NonPublicExported")
+    public void onFullDrained(FullDrainedEvent e) {
+        fullDrained = true;
+        LOG.info("AsyncEventBus has been full drained.");
+    }
+
+    /**
+     * Handles exceptions thrown by subscribers of eventBus.<br>
+     * An implementation of {@link SubscriberExceptionHandler#handleException(Throwable, SubscriberExceptionContext)}
+     * @param ex
+     * @param context
+     */
+    @Override
+    public void handleException(Throwable ex,
+                                SubscriberExceptionContext context) {
+        LOG.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
+    }
+
     @SuppressWarnings("SleepWhileInLoop")
     private void waitFor(Supplier<Boolean> lambda, long maxMills) {
         long startTime = System.currentTimeMillis();
@@ -145,63 +268,5 @@ public class WebSocketRpcServer extends WebSocketServer implements SubscriberExc
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-    }
-    
-    @Override
-    public void run() {
-        running = true;
-        try {
-            super.run();
-            LOG.info("WebSocketServer has been stopped.");
-        } finally {
-            running = false;
-        }
-    }
-
-    @Override
-    public void onStart() {
-        eventBus.post(new StartEvent(this, registry));
-    }
-
-    @Override
-    public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        eventBus.post(new OpenEvent(conn, handshake));
-    }
-
-    @Override
-    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        eventBus.post(new CloseEvent(conn, code, reason, remote));
-    }
-    
-    @Override
-    public void onMessage(WebSocket conn, String message) {
-        eventBus.post(new TextMessageEvent(conn, message));
-    }
-
-    @Override
-    public void onMessage(WebSocket conn, ByteBuffer message) {
-        eventBus.post(new BinaryMessageEvent(conn, message));
-    }
-
-    @Override
-    public void onError(WebSocket conn, Exception ex) {
-        eventBus.post(new ErrorEvent(conn, ex));
-    }
-
-    /**
-     *  To knows AsyncEvent bus is full drained.
-     *  @param e
-     */
-    @Subscribe
-    @SuppressWarnings("NonPublicExported")
-    public void onFullDrained(FullDrainedEvent e) {
-        fullDrained = true;
-        LOG.info("AsyncEventBus has been full drained.");
-    }
-    
-    @Override
-    public void handleException(Throwable ex,
-                                SubscriberExceptionContext context) {
-        LOG.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
     }
 }

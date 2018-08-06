@@ -38,14 +38,17 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
 // source
-import com.github.jhorology.bitwig.extension.Logger.Severity;
 
 /**
  * An abstract bass class that is used to trigger extension events.
+ * @param <T> the type of this extension's configuration.
  */
-public abstract class AbstractExtension extends ControllerExtension implements SubscriberExceptionHandler {
+public abstract class AbstractExtension<T extends AbstractConfiguration>
+        extends ControllerExtension
+        implements SubscriberExceptionHandler {
     private static final Logger LOG = Logger.getLogger(AbstractExtension.class);
 
+    protected final T config;
     private EventBus eventBus;
     private InitEvent initEvent;
     private ExitEvent exitEvent;
@@ -53,15 +56,17 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     private Executor asyncExecutor;
     private Stack<Object> extensionModules;
     private Logger log;
-
+    
     /**
      * Constructor.
      * Inherited class should call this as super().
      * @param definition
      * @param host
+     * @param config
      */
-    protected AbstractExtension(ControllerExtensionDefinition definition, ControllerHost host) {
+    protected AbstractExtension(ControllerExtensionDefinition definition, ControllerHost host, T config) {
         super(definition, host);
+        this.config = config;
     }
 
     /**
@@ -86,10 +91,8 @@ public abstract class AbstractExtension extends ControllerExtension implements S
     public void init() {
         ControllerHost host = getHost();
         // always return intial value at this time.
-        Severity logLevel =
-            BitwigUtils.getPreferenceAsEnum(host, "Log Level", "Debug",
-                                            Severity.DEBUG, Logger::setLevel);
-        Logger.init(getHost(), logLevel);
+        config.init(host, getExtensionDefinition());
+        Logger.init(host, config.getLogLevel());
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
         asyncExecutor = new FlushExecutor();
@@ -124,6 +127,7 @@ public abstract class AbstractExtension extends ControllerExtension implements S
         while(!extensionModules.empty()) {
             eventBus.unregister(extensionModules.pop());
         }
+        config.exit();
         extensionModules.clear();
     }
 

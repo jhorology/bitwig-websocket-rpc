@@ -30,13 +30,13 @@ import com.bitwig.extension.controller.api.ControllerHost;
  * An abstract base class for extension event. 
  */
 public abstract class AbstractExtensionEvent {
-    protected final AbstractExtension extension;
+    protected final AbstractExtension<? extends AbstractConfiguration> extension;
     
     /**
      * Construct an instance with extension.
      * @param extension 
      */
-    protected AbstractExtensionEvent(AbstractExtension extension) {
+    protected AbstractExtensionEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
         this.extension = extension;
     }
     
@@ -44,7 +44,7 @@ public abstract class AbstractExtensionEvent {
      * get an instance of extension.
      * @return 
      */
-    public AbstractExtension getExtension() {
+    public AbstractExtension<? extends AbstractConfiguration> getExtension() {
         return extension;
     }
     

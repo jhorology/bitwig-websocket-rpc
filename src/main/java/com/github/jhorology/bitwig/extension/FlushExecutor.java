@@ -47,7 +47,7 @@ public class FlushExecutor implements Executor {
 
     private Thread controlSurfaceSession;
     private Queue<Runnable> tasks;
-    private AbstractExtension extension;
+    private AbstractExtension<? extends AbstractConfiguration> extension;
     private int state = IDLE;
     @Subscribe
     public void onInit(InitEvent e) {
