@@ -30,6 +30,7 @@ import java.util.Map;
 import java.lang.reflect.Method;
 
 // bitwig api
+import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.Value;
 
@@ -265,6 +266,12 @@ public class EventHolder extends MethodHolder implements RpcEvent {
                 lastReportedParams = null;
                 ValueChangedCallback callback =
                     BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
+
+                // for debug
+                if (Logger.isDebugEnabled() && ObjectValueChangedCallback.class.equals(callback.getClass())) {
+                    LOG.debug("[" + absoluteName + "] event usess ObjectValueChangedCallback.");
+                }
+                    
                 // addValueObserver raise callback calls even after call unsubscribe()
                 value.addValueObserver(callback);
                 bindedToHost = true;

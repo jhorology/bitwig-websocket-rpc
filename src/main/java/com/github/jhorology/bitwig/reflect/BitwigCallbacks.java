@@ -24,11 +24,11 @@ package com.github.jhorology.bitwig.reflect;
 
 // jdk
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
@@ -63,6 +63,7 @@ import com.bitwig.extension.controller.api.Value;
 // source
 import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
+import java.lang.reflect.Method;
 
 /**
  * A utility class for creating all known callbacks of Bitwig API.
@@ -74,7 +75,7 @@ public class BitwigCallbacks {
     private static final boolean PREFER_NAMED_PARAMS = true;
 
     // All knwown Subinterfaces of ValueChangedCallback
-    private static final Map<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new HashMap<>();
+    private static final Map<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new LinkedHashMap<>();
     static {
         CALLBACK_FACTORY.put(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback);
         CALLBACK_FACTORY.put(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback);
@@ -104,30 +105,23 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"UseSpecificCatch", "unchecked"})
     public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
-        // TODO
-        // I'm sure that there is more smarter ways...
-        // couldn't find the rules from API.
-        Class<? extends ValueChangedCallback> callbackType = Stream.of(value.getClass().getMethods())
-            .filter(m -> "addValueObserver".equals(m.getName()))
-            .map(m -> m.getParameterTypes())
-            .filter(t -> t.length == 1)
-            .map(t -> t[0])
-            .filter(t -> !ValueChangedCallback.class.equals(t))
-            .map(t -> (Class<? extends ValueChangedCallback>)t)
+        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = CALLBACK_FACTORY.keySet()
+            .stream()
+            .filter(c -> {
+                    try {
+                        Method m = value.getClass().getMethod("addValueObserver", (Class<?>)c);
+                        return true;
+                    } catch (Exception ex) {
+                        return false;
+                    }
+                })
+            .map(CALLBACK_FACTORY::get)
             .findFirst().orElse(null);
-
-        if (callbackType == null) {
-            throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type ["
-                                                    + value.getClass()
-                                                    + "].");
-        }
-        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = CALLBACK_FACTORY.get(callbackType);
         if (factory == null) {
-            throw new UnsupportedOperationException("Unsupported callback type ["
-                                                    + callbackType
-                                                    + "].");
+            throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type:"
+                                                    + value.getClass());
         }
         return (T)factory.apply(lambda);
     }

@@ -105,7 +105,7 @@ public class WebSocketRpcServer
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         start();
-        LOG.info("WebSocket RPC server started.");
+        LOG.info("WebSocket RPC server started on port " + getPort() + ".");
     }
 
     /**
@@ -123,10 +123,16 @@ public class WebSocketRpcServer
             fullDrained = false;
             eventBus.post(new FullDrainedEvent());
             waitFor(() -> fullDrained, 500L);
+            if (fullDrained) {
+                LOG.info("AsyncEventBus has been full drained.");
+            }
             // <--
             stop(2000);
             // prevent Address in use error on restart extension.
             waitFor(() -> !running, 2000L);
+            if (!running) {
+                LOG.info("WebSocketServer has been stopped.");
+            }
             LOG.info("WebSocket RPC server stopped.");
         } catch (InterruptedException ex) {
             LOG.error(ex);
@@ -145,7 +151,6 @@ public class WebSocketRpcServer
         running = true;
         try {
             super.run();
-            LOG.info("WebSocketServer has been stopped.");
         } finally {
             running = false;
         }
@@ -240,7 +245,6 @@ public class WebSocketRpcServer
     @SuppressWarnings("NonPublicExported")
     public void onFullDrained(FullDrainedEvent e) {
         fullDrained = true;
-        LOG.info("AsyncEventBus has been full drained.");
     }
 
     /**

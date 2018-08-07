@@ -39,7 +39,7 @@ import com.google.gson.annotations.Expose;
 
 /**
  * A base definition class for supporting instantiation from JSON resource.<br>
- * JSON file should be named {@code "extension.json"} and need to be placed in root class path of extension jar.<br>
+ * JSON file should be named {@code "bitwig-extension.json"} and need to be placed in root class path of extension jar.<br>
  * JSON example:
  * <pre>{@code
  * {
@@ -73,7 +73,7 @@ import com.google.gson.annotations.Expose;
  */
 public abstract class AbstractExtensionDefinition
     extends ControllerExtensionDefinition {
-    private static final String EXTENSION_JSON = "extension.json";
+    private static final String EXTENSION_JSON = "bitwig-extension.json";
     private static final String[] EMPTY_STRING_ARRAY = {};
     // populate from json -->
     @Expose

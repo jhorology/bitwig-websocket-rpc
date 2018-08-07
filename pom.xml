@@ -6,21 +6,41 @@
   <artifactId>bitwig-websocket-rpc</artifactId>
   <packaging>jar</packaging>
   <name>Bitwig WebSocket RPC server</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <extension.json>${basedir}/src/main/resources/extension.development.json</extension.json>
+    <extension.json>src/main/resources/bitwig-extension.json</extension.json>
+    <!-- Bitwig extension definition -->
+    <extension.name>WebSocket RPC</extension.name>
+    <extension.author>Masafumi</extension.author>
+    <extension.version>0.1-SNAPSHOT</extension.version>
+    <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
+    <extension.requiredAPIVersion>7</extension.requiredAPIVersion>
+    <extension.usingBetaAPI>true</extension.usingBetaAPI>
+    <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
+    <extension.hardwareVendor>WebSocket RPC</extension.hardwareVendor>
+    <extension.hardwareModel>WebSocket RPC</extension.hardwareModel>
+    <!-- default configuration values -->
+    <extension.config.logLevel>DEBUG</extension.config.logLevel>
+    <extension.config.webSocketPort>8887</extension.config.webSocketPort>
   </properties>
   
   <profiles>
+    <!-- To activate: mvn -P production install...  -->
     <profile>
       <id>production</id>
       <properties>
-        <extension.json>${basedir}/src/main/resources/extension.production.json</extension.json>
+        <!-- Bitwig extension definition -->
+        <extension.version>0.1</extension.version>
+        <!-- default configuration values -->
+        <extension.usingBetaAPI>false</extension.usingBetaAPI>
+        <extension.config.logLevel>WARN</extension.config.logLevel>
+        <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
       </properties>
     </profile>
+    
     <profile>
       <id>mac-profile</id>
       <activation>
@@ -92,9 +112,10 @@
     <dependency>
       <groupId>org.java-websocket</groupId>
       <artifactId>Java-WebSocket</artifactId>
-      <version>1.3.8</version>
+      <version>1.3.9</version>
     </dependency>
   </dependencies>
+
 
   <build>
     <plugins>
@@ -104,12 +125,11 @@
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.1.0</version>
         <configuration>
+          <encoding>UTF-8</encoding>
           <resources>
             <resource>
               <directory>src/main/resources</directory>
-              <excludes>
-                <exclude>extension.*.json</exclude>
-              </excludes>
+              <filtering>true</filtering>
             </resource>
           </resources>
         </configuration>
@@ -152,17 +172,6 @@
         <artifactId>copy-rename-maven-plugin</artifactId>
         <version>1.0</version>
         <executions>
-          <execution>
-            <id>copy-extension-json</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <sourceFile>${extension.json}</sourceFile>
-              <destinationFile>${project.build.outputDirectory}/extension.json</destinationFile>
-            </configuration>
-          </execution>
           <execution>
             <id>copy-extension-jar</id>
             <phase>install</phase>

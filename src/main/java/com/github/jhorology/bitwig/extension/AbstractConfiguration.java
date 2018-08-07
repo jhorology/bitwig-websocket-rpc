@@ -68,8 +68,7 @@ public abstract class AbstractConfiguration {
      */
     void init(ControllerHost host, ControllerExtensionDefinition definition) {
         if (USE_RC_FILE) {
-            rcFilePath = Paths.get(System.getProperty("user.home"),
-                                   ".bitwig.extension." + definition.getName());
+            rcFilePath = rcFilePath(definition);
             if (Files.exists(rcFilePath)) {
                 try {
                     ExtensionUtils.populateJsonProperties(rcFilePath, this);
@@ -119,5 +118,13 @@ public abstract class AbstractConfiguration {
                 LOG.error(ex);
             }
         }
+    }
+
+    private Path rcFilePath(ControllerExtensionDefinition definition) {
+        StringBuilder fileName = new StringBuilder(".bitwig.extension.");
+        fileName.append(definition.getName());
+        fileName.append("-");
+        fileName.append(definition.getVersion());
+        return Paths.get(System.getProperty("user.home"), fileName.toString());
     }
 }

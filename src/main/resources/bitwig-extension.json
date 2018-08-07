@@ -1,0 +1,16 @@
+{
+    "name": "${extension.name}",
+    "author" : "${extension.author}",
+    "version": "${extension.version}",
+    "id": "${extension.uuid}",
+    "requiredAPIVersion": ${extension.requiredAPIVersion},
+    "usingBetaAPI": ${extension.usingBetaAPI},
+    "shouldFailOnDeprecatedUse": ${extension.shouldFailOnDeprecatedUse},
+    "errorReportingEMail": "${extension.errorReportingEMail}",
+    "hardwareVendor": "${extension.hardwareVendor}",
+    "hardwareModel": "${extension.hardwareModel}",
+    "config": {
+        "logLevel": "${extension.config.logLevel}",
+        "webSocketPort": ${extension.config.webSocketPort}
+    }
+}
