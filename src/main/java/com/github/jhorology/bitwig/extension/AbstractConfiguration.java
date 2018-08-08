@@ -48,7 +48,8 @@ public abstract class AbstractConfiguration {
     @Expose
     private Logger.Severity logLevel = Logger.Severity.ERROR;
     // <--
-    
+
+    private boolean valueChanged;
     private Path rcFilePath;
 
     /**
@@ -80,14 +81,16 @@ public abstract class AbstractConfiguration {
         
         Logger.Severity severity = ExtensionUtils.getPreferenceAsEnum
             (host, "Log Level", "Debug", logLevel, v -> {
-                logLevel = v;
-                Logger.setLevel(v);
-                valueChanged();
+                if (logLevel != v) {;
+                    Logger.setLevel(v);
+                    valueChanged();
+                }
             });
         
         if (!USE_RC_FILE) {
             logLevel = severity;
         }
+        valueChanged = false;
         onInit(host);
     }
 
@@ -95,7 +98,7 @@ public abstract class AbstractConfiguration {
      * De-initialize the this configuration.
      */
     void exit() {
-        if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE) {
+        if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE && valueChanged) {
             try {
                 ExtensionUtils.writeJsonFile(this, rcFilePath);
             } catch (IOException ex) {
@@ -123,6 +126,7 @@ public abstract class AbstractConfiguration {
                 LOG.error(ex);
             }
         }
+        valueChanged = true;
     }
 
     private Path rcFilePath(ControllerExtensionDefinition definition) {

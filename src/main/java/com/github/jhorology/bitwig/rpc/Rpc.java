@@ -26,8 +26,8 @@ package com.github.jhorology.bitwig.rpc;
 import java.util.Map;
 
 // bitwig api
-import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.callback.StringValueChangedCallback;
+import com.bitwig.extension.controller.api.StringValue;
 import com.bitwig.extension.controller.api.Value;
 
 /**
@@ -50,6 +50,7 @@ public interface Rpc {
      * Remove the remote connection from subscriber list of each event.
      * @param eventNames the names of event to unsubscribe.
      * @return the mapped results of each event. "ok" or error message.
+     * @see https://github.com/elpheria/rpc-websockets
      */
     Map<String, String> off(String... eventNames);
     
@@ -75,7 +76,7 @@ public interface Rpc {
 
     /**
      * log event for debugging
-     * @return
+     * @return latest log message.
      */
-    Value<StringValueChangedCallback> log();
+     StringValue log();
 }

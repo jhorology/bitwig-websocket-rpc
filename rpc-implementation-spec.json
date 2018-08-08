@@ -1,5 +1,5 @@
 {
-  "reportedOn": "Aug 5, 2018 1:53:29 AM",
+  "reportedOn": "Aug 8, 2018 10:53:51 PM",
   "host": {
     "apiVersion": 7,
     "product": "Bitwig Studio",
@@ -9,8 +9,8 @@
   },
   "extension": {
     "name": "WebSocket RPC",
-    "author": "hogehoge",
-    "version": "snapshot",
+    "author": "Masafumi",
+    "version": "0.1-SNAPSHOT",
     "requiredApiVersion": 7
   },
   "system": {
@@ -90,13 +90,14 @@
     "bundleDir": "/Users/masafumi/Applications/Bitwig Studio Beta/Bitwig Studio.app"
   },
   "env": {
-    "PATH": "/Users/masafumi/.nvm/versions/node/v10.7.0/bin:/Users/masafumi/.local/bin:/Users/masafumi/.local/perl5/bin:/usr/local/sbin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Wireshark.app/Contents/MacOS:/Applications/Xamarin Workbooks.app/Contents/SharedSupport/path-bin",
+    "PATH": "/Users/masafumi/.jabba/jdk/1.8.181/Contents/Home/bin:/Users/masafumi/.nvm/versions/node/v10.8.0/bin:/Users/masafumi/.local/bin:/Users/masafumi/.local/perl5/bin:/usr/local/sbin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Wireshark.app/Contents/MacOS:/Applications/Xamarin Workbooks.app/Contents/SharedSupport/path-bin",
+    "JAVA_MAIN_CLASS_13464": "com.bitwig.flt.app.BitwigStudioMain",
     "ALTERNATE_EDITOR": "/Applications/Emacs.app/Contents/MacOS/Emacs",
     "PERL_MM_OPT": "INSTALL_BASE=/Users/masafumi/.local/perl5",
-    "JAVA_HOME": "/Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home",
+    "JAVA_HOME": "/Users/masafumi/.jabba/jdk/1.8.181/Contents/Home",
     "TERM": "xterm-256color",
     "LANG": "ja_JP.UTF-8",
-    "DISPLAY": "/private/tmp/com.apple.launchd.mXdDDkl9DB/org.macosforge.xquartz:0",
+    "DISPLAY": "/private/tmp/com.apple.launchd.Dq4BiiVX2U/org.macosforge.xquartz:0",
     "PERL_MB_OPT": "--install_base \"/Users/masafumi/.local/perl5\"",
     "LOGNAME": "masafumi",
     "XPC_SERVICE_NAME": "0",
@@ -104,27 +105,29 @@
     "TERM_PROGRAM_VERSION": "404",
     "PERL5LIB": "/Users/masafumi/.local/perl5/lib/perl5",
     "_": "/Users/masafumi/Applications/Bitwig Studio Beta/Bitwig Studio.app/Contents/MacOS/BitwigStudio",
+    "JABBA_HOME": "/Users/masafumi/.jabba",
     "COMMAND_LINE_INSTALL": "true",
     "NVM_CD_FLAGS": "",
     "NVM_DIR": "/Users/masafumi/.nvm",
     "SHELL": "/bin/bash",
-    "JAVA_MAIN_CLASS_3232": "com.bitwig.flt.app.BitwigStudioMain",
     "TERM_PROGRAM": "Apple_Terminal",
     "LSCOLORS": "GxFxCxDxBxegedabagaced",
+    "SECURITYSESSIONID": "186a7",
     "VISUAL": "/usr/local/bin/emacsclient",
     "USER": "masafumi",
     "CLICOLOR": "1",
     "TMPDIR": "/var/folders/ph/bsmd4zy175xdh0xlflczpncw0000gn/T/",
-    "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.QE3XIlq8JU/Listeners",
+    "SSH_AUTH_SOCK": "/private/tmp/com.apple.launchd.zcDM2wOAsH/Listeners",
     "EDITOR": "/usr/local/bin/emacsclient",
     "XPC_FLAGS": "0x0",
-    "TERM_SESSION_ID": "FB0A1947-C828-40FB-9CB3-18BCC39FB1BF",
+    "TERM_SESSION_ID": "267365FB-5513-4BA2-8E73-9583847437EF",
     "__CF_USER_TEXT_ENCODING": "0x1F5:0x0:0x0",
     "COPYFILE_DISABLE": "1",
-    "Apple_PubSub_Socket_Render": "/private/tmp/com.apple.launchd.pxhEvaPkXn/Render",
+    "Apple_PubSub_Socket_Render": "/private/tmp/com.apple.launchd.joyygTZMZf/Render",
     "BITWIG_DEBUG_PORT": "8989",
     "LC_CTYPE": "UTF-8",
-    "NVM_BIN": "/Users/masafumi/.nvm/versions/node/v10.7.0/bin",
+    "JAVA_HOME_BEFORE_JABBA": "/Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home",
+    "NVM_BIN": "/Users/masafumi/.nvm/versions/node/v10.8.0/bin",
     "PERL_LOCAL_LIB_ROOT": "/Users/masafumi/.local/perl5",
     "SHLVL": "2",
     "HOME": "/Users/masafumi"
@@ -133,9 +136,9 @@
     "name": "rpc",
     "methods": [{
       "method": "rpc.broadcast",
-      "params": ["String", "Object[]"],
+      "params": ["String", "Object"],
       "result": "void",
-      "expression": "void rpc.broadcast(String, Object[])"
+      "expression": "void rpc.broadcast(String, Object)"
     }, {
       "method": "rpc.echo",
       "params": ["String"],
@@ -146,6 +149,16 @@
       "params": [],
       "result": "Object",
       "expression": "Object rpc.log()"
+    }, {
+      "method": "rpc.log.get",
+      "params": [],
+      "result": "String",
+      "expression": "String rpc.log().get()"
+    }, {
+      "method": "rpc.log.getLimited",
+      "params": ["Number"],
+      "result": "String",
+      "expression": "String rpc.log().getLimited(Number)"
     }, {
       "method": "rpc.log.isSubscribed",
       "params": [],
@@ -167,16 +180,6 @@
       "result": "void",
       "expression": "void rpc.log().unsubscribe()"
     }, {
-      "method": "rpc.nextTick",
-      "params": [],
-      "result": "void",
-      "expression": "void rpc.nextTick()"
-    }, {
-      "method": "rpc.nextTick",
-      "params": ["Number"],
-      "result": "void",
-      "expression": "void rpc.nextTick(Number)"
-    }, {
       "method": "rpc.off",
       "params": ["String[]"],
       "result": "Object",
@@ -186,11 +189,6 @@
       "params": ["String[]"],
       "result": "Object",
       "expression": "Object rpc.on(String[])"
-    }, {
-      "method": "rpc.once",
-      "params": ["String[]"],
-      "result": "Object",
-      "expression": "Object rpc.once(String[])"
     }, {
       "method": "rpc.report",
       "params": [],

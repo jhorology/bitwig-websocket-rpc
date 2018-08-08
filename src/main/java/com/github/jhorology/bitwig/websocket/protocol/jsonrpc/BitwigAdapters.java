@@ -151,7 +151,8 @@ public class BitwigAdapters {
             JsonObject json = new JsonObject();
             json.addProperty("id", src.getId());
             json.addProperty("name", src.getName());
-            json.add("actions", context.serialize(src.getActions()));
+            // this cause infinite loop.
+            // json.add("actions", context.serialize(src.getActions()));
             return json;
         }
     }

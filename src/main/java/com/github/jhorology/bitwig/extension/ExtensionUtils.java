@@ -44,6 +44,7 @@ import com.bitwig.extension.controller.api.SettableEnumValue;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import java.util.Arrays;
 
 /**
  * A set of utility functions for Bitwig API.
@@ -146,6 +147,46 @@ public class ExtensionUtils {
         return valueOf.apply(value.get());
     }
 
+    /**
+     * Get a preference value as int that is selected from options.
+     * @param host          the interface of ControllerHost
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param options       the array of value options.
+     * @param onChange      the lamda consumer to be called on value has changed
+     * @return the preference value
+     */
+    public static int getPreferenceAsIntOptions(ControllerHost host,
+                                                String label, String category,
+                                                int initialValue,
+                                                int[] options,
+                                                Consumer<Integer> onChange) {
+        // host thrown exception
+        // Enum settings should have at least two options.
+        if (options == null || options.length <= 1) {
+            return initialValue;
+        }
+
+        String[] strOptions = Arrays.stream(options)
+            .mapToObj(String::valueOf)
+            .toArray(String[]::new);
+        String strInitialValue = String.valueOf(initialValue);
+        Preferences pref = host.getPreferences();
+        SettableEnumValue value =
+            pref.getEnumSetting(label, category, strOptions, strInitialValue);
+        if (onChange != null) {
+            value.addValueObserver((String s) -> onChange.accept(Integer.valueOf(s)));
+        }
+        String strValue = value.get();
+        try {
+            return Integer.valueOf(value.get());
+        } catch (NumberFormatException ex) {
+            // never occurred
+            return initialValue;
+        }
+    }
+    
     /**
      * Populate JSON properties to fields of specified object instance.
      * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.

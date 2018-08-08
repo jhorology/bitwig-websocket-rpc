@@ -40,7 +40,6 @@ import java.util.function.Consumer;
 import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.StringValue;
-import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
@@ -49,7 +48,7 @@ import static com.github.jhorology.bitwig.extension.Logger.Severity.*;
 /**
  * A simple logging class for Controller Script Console with supporting Bitwig Value intreface model.
  */
-public class Logger implements Value<StringValueChangedCallback>, StringValue {
+public class Logger implements StringValue {
     public static enum Severity {
         /**
          * severity level of debug

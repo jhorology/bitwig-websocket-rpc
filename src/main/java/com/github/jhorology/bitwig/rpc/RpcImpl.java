@@ -29,8 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // bitwig api
-import com.bitwig.extension.callback.StringValueChangedCallback;
-import com.bitwig.extension.controller.api.Value;
+import com.bitwig.extension.controller.api.StringValue;
 
 // provided dependencies
 import org.apache.commons.lang3.StringUtils;
@@ -76,7 +75,7 @@ public class RpcImpl implements Rpc {
      * @return
      */
     @Override
-    public Value<StringValueChangedCallback> log() {
+    public StringValue log() {
         Logger log = Logger.getLogger("rpc.log");
         log.info("Hello!");
         return log;

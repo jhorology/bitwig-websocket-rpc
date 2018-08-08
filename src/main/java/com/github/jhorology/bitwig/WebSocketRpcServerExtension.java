@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -50,8 +50,8 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
     /**
      * Constructor
      * @param definition
-     * @param host 
-     * @param config 
+     * @param host
+     * @param config
      */
     protected WebSocketRpcServerExtension(WebSocketRpcServerExtensionDefinition definition, ControllerHost host, Config config) {
         super(definition, host, config);
@@ -65,25 +65,35 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
         ControllerHost host = getHost();
         ExtensionDefinition def = getExtensionDefinition();
         String id = def.getId().toString();
-        Transport transport = host.createTransport();
-        Application application = host.createApplication(); 
-        CursorTrack cursorTrack =
-            host.createCursorTrack(id, def.getName(),
-                                   config.getNumSends(),
-                                   config.getNumScenes(),
-                                   true);   // shouldFollwSection
-        PinnableCursorDevice cursorDevice =
-            cursorTrack.createCursorDevice(id, def.getName(),
-                                           config.getNumSends(),
-                                           CursorDeviceFollowMode.FOLLOW_SELECTION);
         ReflectionRegistry registry = new ReflectionRegistry();
-        registry.register("rpc",           Rpc.class,                  new RpcImpl());
-        registry.register("test",          Test.class,                 new TestImpl());
-        registry.register("application",   Application.class,          application);
-        registry.register("transport",     Transport.class,            transport);
-        registry.register("cursorTrack",   CursorTrack.class,          cursorTrack);
-        registry.register("cursorDevice",  PinnableCursorDevice.class, cursorDevice);
-        // return subscriber modules of extension event.
+        registry.register("rpc",  Rpc.class, new RpcImpl());
+        // for test
+        registry.register("test", Test.class, new TestImpl());
+
+        if (config.useApplication()) {
+            Application application = host.createApplication();
+            registry.register("application", Application.class, application);
+        }
+        if (config.useTransport()) {
+            Transport transport = host.createTransport();
+            registry.register("transport", Transport.class, transport);
+        }
+        if (config.useCursorTrack()) {
+            CursorTrack cursorTrack =
+                host.createCursorTrack(id, def.getName(),
+                                       config.getCursorTrackNumSends(),
+                                       config.getCursorTrackNumScenes(),
+                                       config.cursorTrackShouldFollowSelection());
+            registry.register("cursorTrack", CursorTrack.class, cursorTrack);
+            if (config.useCursorDevice()) {
+                PinnableCursorDevice cursorDevice =
+                    cursorTrack.createCursorDevice(id, def.getName(),
+                                                   config.getCursorDeviceNumSends(),
+                                                   config.getCursorDeviceFollowMode());
+                registry.register("cursorDevice", PinnableCursorDevice.class, cursorDevice);
+            }
+        }
+        // returns subscriber modules of extension event.
         return new Object[] {
             registry,
             new WebSocketRpcServer(config.getWebSocketPort(),
