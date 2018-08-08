@@ -22,16 +22,23 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
+// jdk
 import java.lang.reflect.Type;
 
+// dependencies
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+/**
+ * A GSON type adapter for {@link Response}.
+ */
 public class ResponseAdapter implements JsonSerializer<Response> {
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement serialize(Response src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject json = new JsonObject();
@@ -45,8 +52,6 @@ public class ResponseAdapter implements JsonSerializer<Response> {
                 json.add("result", result);
             } catch (Exception ex) {
                 // BitwigAdapters may thorws exceptions
-                // e.g)
-                // Either call markInterested() or add at least one observer in init in order to access the current valueransport.
                 src.setResult(null);
                 src.setError( new Error(ErrorEnum.INTERNAL_ERROR, ex.getMessage()));
             }

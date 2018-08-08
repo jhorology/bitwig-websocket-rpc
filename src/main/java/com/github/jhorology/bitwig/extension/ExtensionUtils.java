@@ -149,7 +149,7 @@ public class ExtensionUtils {
     /**
      * Populate JSON properties to fields of specified object instance.
      * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>          the type of the desired object
+     * @param <T>          the type of the specified object
      * @param resourceName the resource name of JSON.
      * @param instance     an object of type T.
      * @throws java.io.IOException
@@ -168,7 +168,7 @@ public class ExtensionUtils {
     /**
      * Populate JSON properties to fields of specified object instance.
      * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>      the type of the desired object
+     * @param <T>      the type of the specified object
      * @param file     the file path of JSON.
      * @param instance an object of type T.
      * @throws java.io.IOException
@@ -186,7 +186,7 @@ public class ExtensionUtils {
     /**
      * Populate JSON properties to fields of specified object instance.
      * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>      the type of the desired object
+     * @param <T>      the type of the specified object
      * @param reader   the reader producing the JSON.
      * @param instance an object of type T.
      */

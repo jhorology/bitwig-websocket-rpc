@@ -40,6 +40,8 @@ import org.java_websocket.WebSocket;
 
 // source
 import com.github.jhorology.bitwig.extension.Logger;
+import com.github.jhorology.bitwig.websocket.protocol.Notification;
+import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
@@ -60,17 +62,6 @@ public class RpcImpl implements Rpc {
     }
 
     /**
-     * Add the remote connection to subscriber list of each event.
-     * The next time event is triggered, this subscriber is removed and then invoked.
-     * @param eventNames the names of event to subscribe.
-     * @return the mapped results of each event. "ok" or error message.
-     */
-    @Override
-    public Map<String, String> once(String... eventNames) {
-        return acceptEvents(eventNames, (e, c) -> e.subscribeOnce(c));
-    }
-
-    /**
      * Remove the remote connection from subscriber list of each event.
      * @param eventNames the names of event to unsubscribe.
      * @return the mapped results of each event. "ok" or error message.
@@ -80,23 +71,6 @@ public class RpcImpl implements Rpc {
         return acceptEvents(eventNames, (e, c) -> e.unsubscribe(c));
     }
 
-    /**
-     * wait for next tick to gurantee value integrity of concurrency.
-     */
-    @Override
-    public void nextTick() {
-        nextTick(0);
-    }
-    
-    /**
-     * wait for next tick to gurantee value integrity of concurrency.
-     * @param millis
-     */
-    @Override
-    public void nextTick(long millis) {
-        RequestContext.getContext().nextTick(millis);
-    }
-    
     /**
      * log event for debugging
      * @return
@@ -123,7 +97,12 @@ public class RpcImpl implements Rpc {
      * @param message
      */
     @Override
-    public void broadcast(String message, Object[] params) {
+    public void broadcast(String message, Object params) {
+        RequestContext context = RequestContext.getContext();
+        PushModel pushModel = context.getPushModel();
+        if (pushModel != null) {
+            pushModel.broadcast(new Notification(message, params));
+        }
     }
 
     /**

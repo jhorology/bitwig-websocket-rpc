@@ -35,12 +35,6 @@ public interface RpcEvent {
     void subscribe(WebSocket client);
     
     /**
-     * Subscribe once this event.
-     * @param client the remote client connection
-     */
-    void subscribeOnce(WebSocket client);
-    
-    /**
      * Unsubscribe this event.
      * @param client the remote client connection
      */

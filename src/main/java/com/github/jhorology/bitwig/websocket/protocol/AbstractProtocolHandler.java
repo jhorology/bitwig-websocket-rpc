@@ -42,7 +42,9 @@ import com.github.jhorology.bitwig.websocket.TextMessageEvent;
 import java.util.List;
 
 /**
- * An abstract base class of ProtocolHandler.
+ * An abstract base class of ProtocolHandler.<br>
+ * This class provides the environment that is possible for
+ * handling websocket in 'Control Surface Session' thread.
  */
 public abstract class AbstractProtocolHandler implements ProtocolHandler {
     private static final Logger LOG = Logger.getLogger(AbstractProtocolHandler.class);
@@ -78,7 +80,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onOpen(OpenEvent e) {
-        if (LOG.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             LOG.trace("new connection. conn:" + e.getConnection() +
                       "\nremoteAddress:" + remoteAddress(e.getConnection()) +
                       "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
@@ -88,7 +90,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onColse(CloseEvent e) {
-        if (LOG.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             WebSocket conn = e.getConnection();
             LOG.trace("connection closed. conn:" + e.getConnection() +
                       "\ncode:" + e.getCode() +
@@ -103,7 +105,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(TextMessageEvent e) {
-        if (LOG.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
@@ -115,7 +117,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(BinaryMessageEvent e) {
-        if (LOG.isTraceEnabled()) {
+        if (Logger.isTraceEnabled()) {
             LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
@@ -132,6 +134,52 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     }
 
     /**
+     * Sends the messages to contextual client.
+     * @param message 
+     */
+    protected void send(String message) {
+        send(message, RequestContext.getContext().getConnection());
+    }
+    
+    /**
+     * Sends the messages to specidied client.
+     * @param message
+     * @param conn 
+     */
+    protected void send(String message, WebSocket conn) {
+        conn.send(message);
+        if (Logger.isTraceEnabled()) {
+            LOG.trace("message sended to " + conn.getRemoteSocketAddress() +
+                      "\n <-- " + message);
+        }
+    }
+    
+    /**
+     * Push the messages to specidied cliens.
+     * @param message
+     * @param clients 
+     */
+    protected void push(String message, Collection<WebSocket> clients) {
+        server.broadcast(message, clients);
+        if (Logger.isTraceEnabled()) {
+            LOG.trace("broadcast message to " + clients.size() + " clients." +
+                      "\n <-- " + message);
+        }
+    }
+    
+    /**
+     * Broadcast the message.
+     * @param message 
+     */
+    protected void broadcast(String message) {
+        server.broadcast(message);
+        if (Logger.isTraceEnabled()) {
+            LOG.trace("broadcast message to all " + server.getConnections().size() + " clients." +
+                      "\n <-- " + message);
+        }
+    }
+    
+    /**
      *  processing after request/response sequence.
      */
     private void afterRequest(WebSocket conn) {
@@ -143,38 +191,10 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
             }
         }
     }
-    
+
     private InetSocketAddress remoteAddress(WebSocket conn) {
         return conn != null
             ? conn.getRemoteSocketAddress()
             : null;
-    }
-
-    protected void send(String message) {
-        send(message, RequestContext.getContext().getConnection());
-    }
-    
-    protected void send(String message, WebSocket conn) {
-        conn.send(message);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("message sended to " + conn.getRemoteSocketAddress() +
-                      "\n <-- " + message);
-        }
-    }
-    
-    protected void push(String message, Collection<WebSocket> clients) {
-        server.broadcast(message, clients);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("broadcast message to " + clients.size() + " clients." +
-                      "\n <-- " + message);
-        }
-    }
-    
-    protected void broadcast(String message) {
-        server.broadcast(message);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("broadcast message to all " + server.getConnections().size() + " clients." +
-                      "\n <-- " + message);
-        }
     }
 }

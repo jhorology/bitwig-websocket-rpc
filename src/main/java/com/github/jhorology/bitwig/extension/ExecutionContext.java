@@ -38,8 +38,6 @@ public class ExecutionContext {
     private static ExecutionContext instance;
     private AbstractExtension<? extends AbstractConfiguration> extension;
     private final Map<String, Object> values;
-    private boolean nextTick;
-    private long nextTickMillis;
     
     /**
      * initialize the context
@@ -97,31 +95,6 @@ public class ExecutionContext {
     }
     
     /**
-     * gurantee to execute next command in next tick.
-     * @param millis
-     */
-    public void nextTick(long millis) {
-        nextTick = true;
-        nextTickMillis = millis;
-    }
-    
-    /**
-     * nextTick() method was called in this context or not.
-     * @return
-     */
-    public boolean isNextTickRequested() {
-        return nextTick;
-    }
-    
-    /**
-     * nextTick() method was called in this context or not.
-     * @return
-     */
-    public long getNextTickMillis() {
-        return nextTickMillis;
-    }
-    
-    /**
      * set a contextual value with name.
      * @param name
      * @param value
@@ -141,6 +114,7 @@ public class ExecutionContext {
     
     /**
      * set a contextual value with class.
+     * @param <T>
      * @param clazz
      * @param value
      */
@@ -150,6 +124,7 @@ public class ExecutionContext {
 
     /**
      * get a contextual value by class.
+     * @param <T>
      * @param clazz
      * @return value
      */

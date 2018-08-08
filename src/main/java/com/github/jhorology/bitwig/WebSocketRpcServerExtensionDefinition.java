@@ -42,6 +42,12 @@ public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefi
     private Config config;
     // <--
    
+    /**
+     * Creates an instance of this extension.<br>
+     * An implementation of {@link com.bitwig.extension.controller.ControllerExtensionDefinition#createInstance(com.bitwig.extension.controller.api.ControllerHost)}
+     * @param host
+     * @return 
+     */
     @Override
     public ControllerExtension createInstance(ControllerHost host) {
         return new WebSocketRpcServerExtension(this, host, config);

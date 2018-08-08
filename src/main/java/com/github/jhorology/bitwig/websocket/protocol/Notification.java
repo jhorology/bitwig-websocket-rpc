@@ -1,7 +1,7 @@
 package com.github.jhorology.bitwig.websocket.protocol;
 
 /**
- *  A class to use for JSON serialization of notification message.
+ *  A POJO class that represents server-sent notification message.<br>
  *  Sending notification to client is not specied in JSON-RPC 2.0 specifiations.
  *  this aims to support 'rpc-websockets' javascript module.
  *  @see https://github.com/elpheria/rpc-websockets
@@ -18,8 +18,8 @@ public class Notification {
 
     /**
      * construct a notification message with message and parameters.
-     * @param notification
-     * @param params
+     * @param notification The notification message. Basically use this as event name.
+     * @param params       The array or named parameters.
      */
     public Notification(String notification, Object params) {
         this.notification = notification;
@@ -35,7 +35,7 @@ public class Notification {
     }
     
     /**
-     * set a notification message.
+     * Set a notification message.
      * @param notification
      */
     public void setNotifictaion(String notification) {
@@ -43,7 +43,7 @@ public class Notification {
     }
 
     /**
-     * get an array of parameters.
+     * Get an array or named parameters.
      * @return
      */
     public Object getParams() {
@@ -51,7 +51,7 @@ public class Notification {
     }
 
     /**
-     * set an array of parameters.
+     * Set an array or named parameters.
      * @param params
      */
     public void setParams(Object params) {

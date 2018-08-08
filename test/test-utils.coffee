@@ -88,6 +88,12 @@ wsClose = (ws) ->
     , $.timeout
     ws.close()
     
+wait = (millis) ->
+  return new Promise (resolve, reject) ->
+    setTimeout ->
+      resolve()
+    , millis
+    
 _sendAndResponse = (ws, req, assertError, notify) ->
   return new Promise (resolve, reject) ->
     timer = undefined
@@ -139,4 +145,5 @@ module.exports =
  wsNotify:  wsNotify
  wsConnect: wsConnect
  wsClose:   wsClose
+ wait:      wait
  

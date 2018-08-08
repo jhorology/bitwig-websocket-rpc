@@ -61,7 +61,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     private static final long WAIT_HOST_TRIGGER_ON_SUBSCRIBE = 150L;
 
     private final Collection<WebSocket> clients;
-    private final Collection<WebSocket> triggerOnceClients;
     // observer is binded to host?
     private boolean bindedToHost;
     private boolean hostTriggered;
@@ -76,7 +75,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         super(owner, method, parantChain);
         // clients = new LinkedList<>();
         clients = new ArrayList<>();
-        triggerOnceClients = new ArrayList<>();
         if (!AVAILABLE_LATE_BINDING_TO_HOST) {
             syncSubscribedState();
         }
@@ -111,37 +109,11 @@ public class EventHolder extends MethodHolder implements RpcEvent {
      * {@inheritDoc}
      */
     @Override
-    public void subscribeOnce(WebSocket client) {
-        if (getError() != null) {
-            throw new RpcException(getError());
-        }
-        if (!clients.contains(client)) {
-            clients.add(client);
-            if (!triggerOnceClients.contains(client)) {
-                triggerOnceClients.add(client);
-            }
-            if (syncSubscribedState()) {
-                // if subscribed() was called
-                notifyCurrentValueIfHostNotTriggered(client);
-            } else {
-                notifyCurrentValue();
-            }
-            if (Logger.isTraceEnabled())  {
-                LOG.trace("[" + absoluteName + "] event has been subscribed once by " + client(client));
-            }
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void unsubscribe(WebSocket client) {
         if (getError() != null) {
             throw new RpcException(getError());
         }
         if (clients.remove(client)) {
-            triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
                 LOG.trace("[" + absoluteName + "] event has been unsubscribed by " + client(client));
@@ -153,7 +125,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     void disconnect(WebSocket client) {
         boolean removed = clients.remove(client);
         if (removed) {
-            triggerOnceClients.remove(client);
             syncSubscribedState();
             if (Logger.isTraceEnabled())  {
                 LOG.trace("subscriber of [" + absoluteName + "] event has been disconnected. client:" + client(client));
@@ -168,7 +139,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     void clear() {
         super.clear();
         clients.clear();
-        triggerOnceClients.clear();
     }
 
     /**
@@ -195,13 +165,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (!clients.isEmpty() && owner.getPushModel() != null) {
             owner.getPushModel()
                 .push(new Notification(absoluteName, params), clients);
-            if (!triggerOnceClients.isEmpty()) {
-                triggerOnceClients.stream().forEach(e -> clients.remove(e));
-                triggerOnceClients.clear();
-                if (clients.isEmpty()) {
-                    syncSubscribedState();
-                }
-            }
         }
     }
     
@@ -212,11 +175,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (clients.contains(client) && owner.getPushModel() != null) {
             owner.getPushModel()
                 .push(new Notification(absoluteName, params), client);
-            if (triggerOnceClients.remove(client)) {
-                if (clients.remove(client)) {
-                    syncSubscribedState();
-                }
-            }
         }
     }
     
@@ -306,7 +264,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             sb.append(", ");
             sb.append(client.getRemoteSocketAddress().toString());
         }
-        sb.append("]\n number of subscriber(s):" + clients.size());
+        sb.append("]\n number of subscriber(s):");
+        sb.append(clients.size());
         sb.append(']');
         return sb.toString();
     }

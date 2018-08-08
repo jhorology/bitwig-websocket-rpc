@@ -110,12 +110,4 @@ public class RequestContext {
     List<Notification> getNotifications() {
         return notifications;
     }
-    
-    /**
-     * gurantee to execute next command in next tick.
-     * @param millis
-     */
-    public void nextTick(long millis) {
-        ExecutionContext.getContext().nextTick(millis);
-    }
 }

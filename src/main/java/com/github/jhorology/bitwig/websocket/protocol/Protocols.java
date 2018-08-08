@@ -38,7 +38,7 @@ public enum Protocols {
     }
 
     /**
-     * Get a display name for UI.
+     * Get a display name of this protocol for UI.
      * @return 
      */
     public String getDisplayName() {
@@ -48,9 +48,9 @@ public enum Protocols {
     /**
      * Create new specidied protocol handler.
      * @param protocol
-     * @return 
+     * @return
      */
-    public static AbstractProtocolHandler newProtocolHandler(Protocols protocol) {
+    public static ProtocolHandler newProtocolHandler(Protocols protocol) {
         switch(protocol) {
         case JSONRPC20:
             return new JsonRpcProtocolHandler();

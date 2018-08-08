@@ -41,7 +41,7 @@ import com.google.gson.annotations.Expose;
 public abstract class AbstractConfiguration {
     private final static Logger LOG = Logger.getLogger(AbstractConfiguration.class);
     // options for future use.
-    private static final boolean USE_RC_FILE = true;
+    protected static final boolean USE_RC_FILE = true;
     private static final boolean WRITE_THROUGHT_RC_FILE = false;
     
     // populate from json -->
@@ -77,12 +77,17 @@ public abstract class AbstractConfiguration {
                 }
             }
         }
-        ExtensionUtils.getPreferenceAsEnum(host, "Log Level", "Debug",
-                                           logLevel, v -> {
-                                               logLevel = v;
-                                               Logger.setLevel(v);
-                                               valueChanged();
-                                           });
+        
+        Logger.Severity severity = ExtensionUtils.getPreferenceAsEnum
+            (host, "Log Level", "Debug", logLevel, v -> {
+                logLevel = v;
+                Logger.setLevel(v);
+                valueChanged();
+            });
+        
+        if (!USE_RC_FILE) {
+            logLevel = severity;
+        }
         onInit(host);
     }
 

@@ -88,7 +88,7 @@ public class BitwigCallbacks {
     }
 
     /**
-     * create a new optimunm callback for 'addValueObserber' of specified instance of Value intreface.
+     * create a new optimum callback for 'addValueObserber' of specified Value instance.
      * All Konwn Subinterfaces of ValueChangedCallback:
      * <pre>{@code
      *   BooleanValueChangedCallback
@@ -119,6 +119,7 @@ public class BitwigCallbacks {
                 })
             .map(CALLBACK_FACTORY::get)
             .findFirst().orElse(null);
+        
         if (factory == null) {
             throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type:"
                                                     + value.getClass());

@@ -76,7 +76,6 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
         ERROR;
     }
     
-    private static final String[] SEVERITIES = {"D", "T", "I", "W", "E"};
     private static final int COLUMN_SIZE = 94;
     private static final String DELIMITER = "|";
     private static final String INDENT_PREFIX = " > ";
@@ -323,9 +322,8 @@ public class Logger implements Value<StringValueChangedCallback>, StringValue {
      * @param subscribed
      */
     @Override
-    @SuppressWarnings("static-access")
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
+        Logger.subscribed = subscribed;
         // to knows tail messages
         if (subscribed) {
             // to let subscribers to know tail messages.

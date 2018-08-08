@@ -9,11 +9,12 @@ wsRequest = utils.wsRequest
 wsNotify = utils.wsNotify
 wsConnect= utils.wsConnect
 wsClose= utils.wsClose
+wait = utils.wait
 
 $ =
   OK: 'ok'
   expectError: on
-  nextTickMillis: 50
+  waitMillis: 100
 describe 'Transport Module', ->
   ws = undefined
   before ->
@@ -29,17 +30,14 @@ describe 'Transport Module', ->
   it 'isPlaying.subscrive()', ->
     wsNotify ws, {jsonrpc: '2.0', method: 'transport.isPlaying.subscribe'}
       .should.become $.OK
-  it "nextTick(#{$.nextTickMillis})", ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
-      .should.become $.OK
-      
+
   it 'stop()', ->
     wsNotify ws, {jsonrpc: '2.0', method: 'transport.stop'}
       .should.become $.OK
-  it "nextTick(#{$.nextTickMillis})", ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
-      .should.become $.OK
       
+  it "wait(#{$.waitMillis})", ->
+    wait $.waitMillis
+    
   it 'isPlaying.get id:1', ->
     wsRequest ws, {jsonrpc: '2.0', method: 'transport.isPlaying.get', id:1}
       .should.become   {jsonrpc: '2.0', result: false, id: 1}
@@ -51,10 +49,10 @@ describe 'Transport Module', ->
   it 'play()', ->
     wsNotify ws, {jsonrpc:'2.0', method: 'transport.play'}
       .should.become $.OK
-  it "nextTick(#{$.nextTickMillis})", ->
-    wsNotify ws, {jsonrpc: '2.0', method: 'rpc.nextTick', params:[$.nextTickMillis]}
-      .should.become $.OK
       
+  it "wait(#{$.waitMillis})", ->
+    wait $.waitMillis
+    
   it 'isPlaying.get() id:2', ->
     wsRequest ws, {jsonrpc: '2.0', method: 'transport.isPlaying.get', id: 3}
       .should.become   {jsonrpc: '2.0', result: true, id: 3}

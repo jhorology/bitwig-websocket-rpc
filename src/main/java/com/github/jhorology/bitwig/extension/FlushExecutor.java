@@ -27,9 +27,6 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.Executor;
 
-// bitwig api
-import com.bitwig.extension.controller.api.ControllerHost;
-
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
 
@@ -41,8 +38,7 @@ public class FlushExecutor implements Executor {
 
     private static final int IDLE = 0;
     private static final int REQUESTED = 1;
-    private static final int WAITING = 2;
-    private static final int SHUTDOWN = 3;
+    private static final int SHUTDOWN = 2;
     private static final int QUEUE_SIZE = 64;
 
     private Thread controlSurfaceSession;
@@ -59,7 +55,9 @@ public class FlushExecutor implements Executor {
     
     @Subscribe
     public void onFlush(FlushEvent e) {
-        runAllQueuedTasks();
+        synchronized(this) {
+            runAllQueuedTasks();
+        }
     }
     
     @Subscribe
@@ -82,18 +80,9 @@ public class FlushExecutor implements Executor {
         if (state == SHUTDOWN) {
             // to available to execute event that triggerd from another module's onExit.
             if (Thread.currentThread() == controlSurfaceSession) {
-                Runnable task = tasks.poll();
-                while(task != null) {
-                    ExecutionContext.init(extension);
-                    try {
-                        task.run();
-                    } finally {
-                        ExecutionContext.destroy();
-                        task = tasks.poll();
-                    }
-                }
+                runAllQueuedTasks();
             }
-        } else if (state != WAITING) {
+        } else if (state == IDLE) {
             // TODO
             // is this safe?
             // maybe not callable from other than control surface session thread.
@@ -107,8 +96,7 @@ public class FlushExecutor implements Executor {
         }
     }
 
-    private synchronized void runAllQueuedTasks() {
-        if (state != REQUESTED) return;
+    private void runAllQueuedTasks() {
         Runnable task = tasks.poll();
         while(task != null) {
             ExecutionContext.init(extension);
@@ -116,24 +104,10 @@ public class FlushExecutor implements Executor {
             try {
                 task.run();
             } finally {
-                if (context.isNextTickRequested()) {
-                    final ControllerHost host = context.getHost();
-                    long waitMillis = context.getNextTickMillis();
-                    if (waitMillis > 0) {
-                        state = WAITING;
-                        host.scheduleTask(() -> {
-                                host.requestFlush();
-                                state = REQUESTED;
-                            },
-                            waitMillis);
-                    }
-                    task = null;
-                } else {
-                    task = tasks.poll();
-                }
+                task = tasks.poll();
                 ExecutionContext.destroy();
             }
         }
-        if (state != WAITING) state = IDLE;
+        if (state == REQUESTED) state = IDLE;
     }
 }

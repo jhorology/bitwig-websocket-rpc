@@ -24,6 +24,7 @@ package com.github.jhorology.bitwig;
 
 // bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.SettableRangedValue;
 
 // dependencies
 import com.google.gson.annotations.Expose;
@@ -36,7 +37,7 @@ import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
 public class Config extends AbstractConfiguration {
     private static final Logger LOG = Logger.getLogger(Config.class);
-    private static final String WEBSOCKET_PREF_CATEGORY = "Websocket(new settings need restart)";
+    private static final String WEBSOCKET_PREF_CATEGORY = "Websocket (new settings need restart)";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
     private static final int DEFAULT_NUM_SENDS = 4;
     private static final int DEFAULT_NUM_SCENES = 8;
@@ -89,15 +90,16 @@ public class Config extends AbstractConfiguration {
      */
     @Override
     protected void onInit(ControllerHost host) {
-        host.getPreferences().getNumberSetting
-            ("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, 1, "", webSocketPort)
-            .addRawValueObserver((double v) -> {
-                    if (webSocketPort != (int)v) {
-                        webSocketPort = (int)v;
-                        valueChanged();
-                    }
-                });
-        ExtensionUtils.getPreferenceAsEnum
+        SettableRangedValue webSocketPortValue = host.getPreferences().getNumberSetting
+            ("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, 1, "", webSocketPort);
+        webSocketPortValue.addRawValueObserver(v -> {
+                if (webSocketPort != (int)v) {
+                    webSocketPort = (int)v;
+                    valueChanged();
+                }
+            });
+        
+        Protocols protocol = ExtensionUtils.getPreferenceAsEnum
             (host, "Protocol", WEBSOCKET_PREF_CATEGORY,
              e -> e.getDisplayName(), rpcProtocol,
              e -> {
@@ -106,6 +108,13 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+
+        // for future use
+        if (!USE_RC_FILE) {
+            webSocketPort = (int)webSocketPortValue.getRaw();
+            rpcProtocol = protocol;
+        }
+        
         host.getPreferences().getSignalSetting
             ("Restart", WEBSOCKET_PREF_CATEGORY, "Restart")
             .addSignalObserver(() -> host.restart());
@@ -117,5 +126,4 @@ public class Config extends AbstractConfiguration {
     @Override
     protected void onExit() {
     }
-
 }

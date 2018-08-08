@@ -34,10 +34,10 @@
       <properties>
         <!-- Bitwig extension definition -->
         <extension.version>0.1</extension.version>
-        <!-- default configuration values -->
         <extension.usingBetaAPI>false</extension.usingBetaAPI>
-        <extension.config.logLevel>WARN</extension.config.logLevel>
         <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
+        <!-- default configuration values -->
+        <extension.config.logLevel>WARN</extension.config.logLevel>
       </properties>
     </profile>
     

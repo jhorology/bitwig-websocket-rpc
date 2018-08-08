@@ -22,30 +22,33 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol;
 
+// jdk
 import java.util.Collection;
 
+// dependencies
 import org.java_websocket.WebSocket;
 
 /**
- * An interface of Server-Sent push model.
+ * An interface of Server-Sent push model.<br>
+ * It's neccesary to implement this inteface if the protocol supports push model.
  */
 public interface PushModel {
     /**
-     * send a notification to clients.
+     * Sends a notification to clients.
      * @param notification
      * @param client
      */
     void push(Notification notification, WebSocket client);
     
     /**
-     * send a notification to clients.
+     * Sends a notification to clients.
      * @param notification
      * @param clients
      */
     void push(Notification notification, Collection<WebSocket> clients);
     
     /**
-     * send a notification to all clients.
+     * Sends a notification to all clients.
      * @param notification
      */
     void broadcast(Notification notification);

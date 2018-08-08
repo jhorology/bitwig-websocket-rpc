@@ -48,6 +48,9 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         
     private Gson gson;
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onStart() {
         gson = BitwigAdapters.adapt(new GsonBuilder())
@@ -61,19 +64,31 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
             .create();
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onStop() {
         gson = null;
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onMessage(WebSocket conn, String message) {
         BatchOrSingleRequest req;
@@ -109,29 +124,47 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onMessage(WebSocket conn, ByteBuffer message) {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void onError(WebSocket conn, Exception ex) {
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void push(Notification notification, WebSocket client) {
         send(gson.toJson(notification), client);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void push(Notification notification, Collection<WebSocket> clients) {
         push(gson.toJson(notification), clients);
     }
     
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void broadcast(Notification notification) {
         broadcast(gson.toJson(notification));
     }
     
+    /**
+     * {@inheritDoc}
+     */
     private String onBatchRequest(List<Request> batch) {
         List<Response> results = batch.stream()
             .map(req -> processRequest(req))

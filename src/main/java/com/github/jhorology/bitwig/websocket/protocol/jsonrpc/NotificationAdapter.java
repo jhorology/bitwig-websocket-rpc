@@ -31,8 +31,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+/**
+ * A GSON type adapter for {@link Notification}.
+ */
 public class NotificationAdapter implements JsonSerializer<Notification> {
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement serialize(Notification src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject json = new JsonObject();

@@ -35,7 +35,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 
 /**
- * A GSON type adapter for BatchOrSingleRequest.
+ * A GSON type adapter for {@link BatchOrSingleRequest}.
  */
 public class BatchOrSingleRequestAdapter implements JsonDeserializer<BatchOrSingleRequest> {
     /**

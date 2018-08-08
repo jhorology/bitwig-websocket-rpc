@@ -22,15 +22,22 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
+// jdk
 import java.lang.reflect.Type;
 
+// dependencies
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+/**
+ * A GSON type adapter for {@link Error}.
+ */
 public class ErrorAdapter implements JsonSerializer<Error> {
-
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement serialize(Error src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject json = new JsonObject();
