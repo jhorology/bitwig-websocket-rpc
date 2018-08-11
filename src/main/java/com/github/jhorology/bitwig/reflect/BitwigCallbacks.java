@@ -89,7 +89,7 @@ public class BitwigCallbacks {
 
     /**
      * create a new optimum callback for 'addValueObserber' of specified Value instance.
-     * All Konwn Subinterfaces of ValueChangedCallback:
+     * All known subinterfaces of ValueChangedCallback:
      * <pre>{@code
      *   BooleanValueChangedCallback
      *   ColorValueChangedCallback

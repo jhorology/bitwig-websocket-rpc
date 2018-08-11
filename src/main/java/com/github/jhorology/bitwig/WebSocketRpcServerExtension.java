@@ -27,10 +27,13 @@ package com.github.jhorology.bitwig;
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.ClipLauncherSlotOrScene;
 import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.CursorDeviceFollowMode;
+import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
+import com.bitwig.extension.controller.api.RemoteControl;
+import com.bitwig.extension.controller.api.Send;
 import com.bitwig.extension.controller.api.Transport;
 
 // source
@@ -41,6 +44,7 @@ import com.github.jhorology.bitwig.rpc.RpcImpl;
 import com.github.jhorology.bitwig.rpc.test.Test;
 import com.github.jhorology.bitwig.rpc.test.TestImpl;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
+import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
 /**
@@ -65,7 +69,8 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
         ControllerHost host = getHost();
         ExtensionDefinition def = getExtensionDefinition();
         String id = def.getId().toString();
-        ReflectionRegistry registry = new ReflectionRegistry();
+        ProtocolHandler protocol = Protocols.newProtocolHandler(config.getRpcProtocol());
+        ReflectionRegistry registry = new ReflectionRegistry(protocol);
         registry.register("rpc",  Rpc.class, new RpcImpl());
         // for test
         registry.register("test", Test.class, new TestImpl());
@@ -84,20 +89,32 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                                        config.getCursorTrackNumSends(),
                                        config.getCursorTrackNumScenes(),
                                        config.cursorTrackShouldFollowSelection());
-            registry.register("cursorTrack", CursorTrack.class, cursorTrack);
+            registry.register("cursorTrack", CursorTrack.class, cursorTrack)
+                .registerBankItemCount(Send.class, config.getCursorTrackNumSends())
+                .registerBankItemCount(ClipLauncherSlotOrScene.class, config.getCursorTrackNumScenes());
+                    
             if (config.useCursorDevice()) {
                 PinnableCursorDevice cursorDevice =
                     cursorTrack.createCursorDevice(id, def.getName(),
                                                    config.getCursorDeviceNumSends(),
                                                    config.getCursorDeviceFollowMode());
-                registry.register("cursorDevice", PinnableCursorDevice.class, cursorDevice);
+                registry.register("cursorDevice", PinnableCursorDevice.class, cursorDevice)
+                    .registerBankItemCount(Send.class, config.getCursorDeviceNumSends());
+                
+                if (config.useCursorRemoteControlsPage()) {
+                    CursorRemoteControlsPage cursorRemoteControlsPage
+                        = cursorDevice.createCursorRemoteControlsPage
+                        (config.getCursorRemoteControlsPageParameterCount());
+                    registry.register("cursorRemoteControlsPage", CursorRemoteControlsPage.class, cursorRemoteControlsPage)
+                        .registerBankItemCount(RemoteControl.class, config.getCursorRemoteControlsPageParameterCount());
+                }
             }
         }
         // returns subscriber modules of extension event.
         return new Object[] {
             registry,
             new WebSocketRpcServer(config.getWebSocketPort(),
-                                   Protocols.newProtocolHandler(config.getRpcProtocol()),
+                                   protocol,
                                    registry)
         };
     }

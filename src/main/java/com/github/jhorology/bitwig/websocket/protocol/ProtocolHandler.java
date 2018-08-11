@@ -79,4 +79,17 @@ public interface ProtocolHandler {
      * @param ex 
      */
     void onError(WebSocket conn, Exception ex);
+
+    /**
+     * 
+     * @return 
+     */
+    PushModel getPushModel();
+    
+    /**
+     * Returns specifdid Bitwig type are serializable or not.
+     * @param bitwigType
+     * @return 
+     */
+    boolean isSerializableBitwigType(Class<?> bitwigType);
 }

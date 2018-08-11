@@ -67,9 +67,6 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
         server = e.getWebSocketServer();
         registry = e.getRpcRegistry();
         pushModel = (this instanceof PushModel);
-        if (pushModel) {
-            registry.registerPushModel((PushModel)this);
-        }
         onStart();
     }
 
@@ -187,7 +184,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
             List<Notification> notifications = RequestContext
                 .getContext().getNotifications();
             if (notifications != null && !notifications.isEmpty()) {
-                notifications.stream().forEach((n) -> ((PushModel)this).push(n, conn));
+                notifications.forEach((n) -> ((PushModel)this).push(n, conn));
             }
         }
     }

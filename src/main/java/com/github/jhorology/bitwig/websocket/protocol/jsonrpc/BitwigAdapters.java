@@ -92,6 +92,22 @@ public class BitwigAdapters {
         return ADAPTED_TYPES.keySet().stream()
             .anyMatch(c -> c.isAssignableFrom(clazz));
     }
+    
+    /**
+     * Return specified type is adapted or not.
+     * @param type
+     * @return
+     */
+    public static boolean isAdaptedType(Class<?> type) {
+        Class<?> clazz = type.isArray()
+                ? type.getComponentType()
+                : type;
+        if (ADAPTED_TYPES.containsKey(clazz)) {
+            return true;
+        }
+        return ADAPTED_TYPES.keySet().stream()
+            .anyMatch(c -> c.isAssignableFrom(clazz));
+    }
 
     /**
      * Adapt specified GsonBuilder to Bitiwg Value Objects.

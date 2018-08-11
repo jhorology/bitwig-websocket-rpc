@@ -64,6 +64,22 @@ public class ExtensionUtils {
                                                             T initialValue) {
         return getPreferenceAsEnum(host, label, category, null, initialValue, null);
     }
+    
+    /**
+     * Get a preference value as enum value.
+     * @param <T>           the enum type to be returned.
+     * @param preferences   the interface of Preferences
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @return the preference value
+     */
+    public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
+                                                            String label, String category,
+                                                            T initialValue) {
+        return getPreferenceAsEnum(preferences, label, category, null, initialValue, null);
+    }
+    
     /**
      * Get a preference value as enum value.
      * @param <T>           the enum type to be returned.
@@ -80,6 +96,24 @@ public class ExtensionUtils {
                                                             Function<T, String> mapper,
                                                             T initialValue) {
         return getPreferenceAsEnum(host, label, category, mapper, initialValue, null);
+    }
+    
+    /**
+     * Get a preference value as enum value.
+     * @param <T>           the enum type to be returned.
+     * @param preferences   the interface of Preferences
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
+     *                      return value should be unique.
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @return the preference value
+     */
+    public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
+                                                            String label, String category,
+                                                            Function<T, String> mapper,
+                                                            T initialValue) {
+        return getPreferenceAsEnum(preferences, label, category, mapper, initialValue, null);
     }
 
     /**
@@ -98,6 +132,23 @@ public class ExtensionUtils {
                                                             Consumer<T> onChange) {
         return getPreferenceAsEnum(host, label, category, null, initialValue, onChange);
     }
+    
+    /**
+     * Get a prefrence value as enum value.
+     * @param <T>           the enum type to be returned.
+     * @param preferences   the interface of Preferences
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param onChange      the lamda consumer to be called on value has changed
+     * @return the preference value
+     */
+    public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
+                                                            String label, String category,
+                                                            T initialValue,
+                                                            Consumer<T> onChange) {
+        return getPreferenceAsEnum(preferences, label, category, null, initialValue, onChange);
+    }
 
     /**
      * Get a preference value as enum.
@@ -112,6 +163,27 @@ public class ExtensionUtils {
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
+                                                            String label, String category,
+                                                            Function<T, String> mapper,
+                                                            T initialValue,
+                                                            Consumer<T> onChange) {
+        return getPreferenceAsEnum
+            (host.getPreferences(), label, category, mapper, initialValue, onChange);
+    }
+    
+    /**
+     * Get a preference value as enum.
+     * @param <T>           the enum type to be returned.
+     * @param preferences   the interface of Preferences
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
+     *                      return value should be unique.
+     * @param onChange      the lamda consumer to be called on value has changed
+     * @return the preference value
+     */
+    public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
                                                             String label, String category,
                                                             Function<T, String> mapper,
                                                             T initialValue,
@@ -138,9 +210,8 @@ public class ExtensionUtils {
                .filter(e -> mapper.apply(e).equals(s))
                .findFirst().orElse(initialValue));
 
-        Preferences pref = host.getPreferences();
         SettableEnumValue value =
-            pref.getEnumSetting(label, category, strValues, strInitialValue);
+            preferences.getEnumSetting(label, category, strValues, strInitialValue);
         if (onChange != null) {
             value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
         }
@@ -162,6 +233,25 @@ public class ExtensionUtils {
                                                 int initialValue,
                                                 int[] options,
                                                 Consumer<Integer> onChange) {
+        return getPreferenceAsIntOptions
+            (host.getPreferences(), label, category, initialValue, options, onChange);
+    }
+    
+    /**
+     * Get a preference value as int that is selected from options.
+     * @param preferences   the interface of Preferences
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param options       the array of value options.
+     * @param onChange      the lamda consumer to be called on value has changed
+     * @return the preference value
+     */
+    public static int getPreferenceAsIntOptions(Preferences preferences,
+                                                String label, String category,
+                                                int initialValue,
+                                                int[] options,
+                                                Consumer<Integer> onChange) {
         // host thrown exception
         // Enum settings should have at least two options.
         if (options == null || options.length <= 1) {
@@ -172,9 +262,8 @@ public class ExtensionUtils {
             .mapToObj(String::valueOf)
             .toArray(String[]::new);
         String strInitialValue = String.valueOf(initialValue);
-        Preferences pref = host.getPreferences();
         SettableEnumValue value =
-            pref.getEnumSetting(label, category, strOptions, strInitialValue);
+            preferences.getEnumSetting(label, category, strOptions, strInitialValue);
         if (onChange != null) {
             value.addValueObserver((String s) -> onChange.accept(Integer.valueOf(s)));
         }

@@ -23,17 +23,18 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // bitwig api
-import com.bitwig.extension.ExtensionDefinition;
-import com.bitwig.extension.api.Host;
+import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
@@ -42,8 +43,6 @@ import com.google.common.eventbus.Subscribe;
 import org.java_websocket.WebSocket;
 
 // source
-import com.github.jhorology.bitwig.extension.AbstractConfiguration;
-import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
@@ -51,52 +50,50 @@ import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
-import com.github.jhorology.bitwig.websocket.protocol.PushModel;
+import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
+import java.util.ArrayList;
 
+/**
+ * 
+ */
 public class ReflectionRegistry implements RpcRegistry {
     private static final Logger LOG = Logger.getLogger(ReflectionRegistry.class);
 
+    private final ProtocolHandler protocol;
+    private ControllerHost host;
+    private ControllerExtensionDefinition definition;
+    
     // server sent evnt bus.
-    private final List<ModuleHolder<?>> preInitModules;
-    private Map<String, ModuleHolder<?>> modules;
+    private final List<ModuleHolder<?>> modules;
+    private final Map<MethodIdentifier, MethodHolder<?>> methods;
+    private final Map<String, EventHolder<?>> events;
 
-    private PushModel pushModel;
-    private AbstractExtension<? extends AbstractConfiguration> extension;
     private boolean initialized;
 
-    public ReflectionRegistry() {
-        preInitModules = new ArrayList<>();
+    public ReflectionRegistry(ProtocolHandler protocol) {
+        this.protocol = protocol;
+        modules = new ArrayList<>();
+        methods = new LinkedHashMap<>(512);
+        events = new LinkedHashMap<>(256);
     }
 
     @Subscribe
     public void onInit(InitEvent e) {
-        extension = e.getExtension();
-        modules = new LinkedHashMap<>();
+        host = e.getHost();
+        definition = e.getExtension().getExtensionDefinition();
+        modules.forEach(m -> registerMethods(m));
+        
         initialized = true;
-        preInitModules.stream().forEach(m -> {
-                m.init();
-                modules.put(m.getModuleName(), m);
-            });
-        preInitModules.clear();
     }
 
     @Subscribe
     public void onExit(ExitEvent e) {
-        preInitModules.clear();
-        if (modules != null) {
-            modules.values().forEach(ModuleHolder::clear);
-            modules.clear();
-        }
-    }
-
-    /**
-     * Register a interface of server-sent push model to use for trigger event.
-     * @param pushModel
-     */
-    @Override
-    public void registerPushModel(PushModel pushModel) {
-        // should manage as List
-        this.pushModel = pushModel;
+        modules.forEach(ModuleHolder::clear);
+        modules.clear();
+        methods.values().forEach(MethodHolder::clear);
+        methods.clear();
+        events.values().forEach(EventHolder::clear);
+        events.clear();
     }
 
     /**
@@ -107,27 +104,17 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     @Override
     public RpcMethod getRpcMethod(String name, RpcParamType[] paramTypes) {
-        String[] pair = parseName(name);
-        if (pair == null) {
-            return null;
-        }
-        String moduleName = pair[0];
-        String methodName = pair[1];
-        ModuleHolder<?> module = getModule(moduleName);
-        if (module == null) {
-            return null;
-        }
-        RpcMethod method = module.getMethod(methodName, paramTypes);
+        RpcMethod method = methods.get(new MethodIdentifier(name, paramTypes));
         // try matching varargs
         if (method == null) {
             RpcParamType[] varargsTypes = ReflectUtils.toVarargs(paramTypes);
             if (varargsTypes != null) {
-                method = module.getMethod(methodName, varargsTypes);
+                method = methods.get(new MethodIdentifier(name, varargsTypes));
             }
         }
         return method;
     }
-
+    
     /**
      * Get an interface for RPC event model.
      * @param name the event name.
@@ -135,25 +122,17 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     @Override
     public RpcEvent getRpcEvent(String name) {
-        String[] pair = parseName(name);
-        String moduleName = pair[0];
-        String eventName = pair[1];
-        ModuleHolder<?> module;
-        module = getModule(moduleName);
-        if (module == null) {
-            return null;
-        }
-        return module.getEvent(eventName);
+        return events.get(name);
     }
 
     /**
      * clean up a client that has been disconnected.
-     * @param client remote connextion.
+     * @param client remote connection.
      */
     @Override
     public void disconnect(WebSocket client) {
-        modules.values().stream()
-            .forEach(m -> m.disconnect(client));
+        events.values().stream()
+            .forEach(e -> e.disconnect(client));
     }
 
     /**
@@ -168,46 +147,26 @@ public class ReflectionRegistry implements RpcRegistry {
         report.put("extension", reportExtension());
         report.put("system", System.getProperties());
         report.put("env", System.getenv());
-        report.put("modules", reportModules());
+        report.put("methods", reportMethods());
+        report.put("events", reportEvents());
         return report;
     }
 
-    public <T> void register(String moduleName, Class<T> interfaceType, T target) {
-        ModuleHolder<T> module = new ModuleHolder<>(this, moduleName, interfaceType, target);
-        if (!initialized) {
-            preInitModules.add(module);
-        } else {
-            module.init();
-            modules.put(moduleName, module);
-        }
-    }
-
-    public <T> void register(String moduleName, Class<T> interfaceType) {
-        register(moduleName, interfaceType, null);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> void setModuleInstance(String moduleName, Class<T> interfaceType, T moduleInstance) {
-        ModuleHolder<T> module = (ModuleHolder<T>) modules.get(moduleName);
-        if (module != null) {
-            module.setModuleInstance(moduleInstance);
-        }
-    }
-
     /**
-     * Get a interface of server-sent push model for triger event.
-     * @return
+     * Register a RPC module.
+     * @param <T>            the type of interface.
+     * @param moduleName     the name of module.
+     * @param interfaceType  the type of interface.
+     * @param moduleInstance the instance of interface.
+     * @return the instance of ModuleHolder.
      */
-    PushModel getPushModel() {
-        return pushModel;
-    }
-    
-    /**
-     * Get an interface of ControllerHost.
-     * @return
-     */
-    ControllerHost getHost() {
-        return extension.getHost();
+    public <T> ModuleHolder<T> register(String moduleName, Class<T> interfaceType, T moduleInstance) {
+        ModuleHolder<T> module = new ModuleHolder<>(this, moduleName, interfaceType, moduleInstance);
+        if (initialized) {
+            throw new IllegalStateException("This method can be called only before initializtion.");
+        }
+        modules.add(module);
+        return module;
     }
 
     /**
@@ -216,7 +175,6 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     private Object reportHost() {
         Map<String,Object> report = new LinkedHashMap<>();
-        Host host = extension.getHost();
         report.put("apiVersion", host.getHostApiVersion());
         report.put("product", host.getHostProduct());
         report.put("vendor", host.getHostVendor());
@@ -231,44 +189,108 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     private Object reportExtension() {
         Map<String,Object> report = new LinkedHashMap<>();
-        ExtensionDefinition def = extension.getExtensionDefinition();
-        report.put("name", def.getName());
-        report.put("author", def.getAuthor());
-        report.put("version", def.getVersion());
-        report.put("requiredApiVersion", def.getRequiredAPIVersion());
+        report.put("name", definition.getName());
+        report.put("author", definition.getAuthor());
+        report.put("version", definition.getVersion());
+        report.put("id", definition.getId().toString());
+        report.put("requiredApiVersion", definition.getRequiredAPIVersion());
+        report.put("hardwareVendor", definition.getHardwareVendor());
+        report.put("hardwareModel", definition.getHardwareModel());
+        report.put("usingBetaAPI", definition.isUsingBetaAPI());
+        report.put("shouldFailOnDeprecatedUse", definition.shouldFailOnDeprecatedUse());
         return report;
     }
 
     /**
-     * create a report object for list of modules of this class.
      * @return
      */
-    private Object reportModules() {
-        List<Object> list = modules.values()
+    private Object reportMethods() {
+        List<Object> list = methods.values()
             .stream()
-            .map(m-> m.report())
+            .map(m-> m.reportRpcMethod())
+            .collect(Collectors.toList());
+        return list;
+    }
+    
+    /**
+     * @return
+     */
+    private Object reportEvents() {
+        List<Object> list = events.values()
+            .stream()
+            .map(e-> e.reportRpcEvent())
             .collect(Collectors.toList());
         return list;
     }
 
-    private ModuleHolder<?> getModule(String moduleName) {
-        ModuleHolder<?> module = modules.get(moduleName);
-        if (module == null) {
-            LOG.warn("'" + moduleName + "' module not found.");
-            return null;
-        }
-        return module;
-    }
 
-    private String[] parseName(String name) {
-        int index = name.indexOf('.');
-        if (index < 1 || index > (name.length() - 1)) {
-            LOG.warn("name should be formatted as \"[moduleName].[method or event name]\".");
-            return null;
+    private void registerMethods(ModuleHolder<?> module) {
+        Stream.of(module.getNodeType().getMethods())
+            .forEach(m -> registerMethod(module, m, module.getNodeName() + ".", module, 0));
+    }
+    
+    @SuppressWarnings("unchecked")
+    private void registerMethod(ModuleHolder<?> module, Method method, String prefix, RegistryNode<?> parentNode, int chainDepth) {
+        // filter unusable methods
+        Class<?> returnType = method.getReturnType();
+        if (ReflectUtils.isDeprecated(method) ||
+            ReflectUtils.isDeprecated(returnType) ||
+            ReflectUtils.isModuleFactory(method) ||
+            ReflectUtils.hasAnyBitwigObjectParameter(method) ||
+            ReflectUtils.isBlackListedMethod(method)) {
+            return;
         }
-        return new String[] {
-            name.substring(0, index),
-            name.substring(index + 1)
-        };
+        if (chainDepth > 5) {
+            LOG.error("##!!! Method chain depth are too long. Something is wrong!!"
+                      + "\nmethod:" + prefix + method.getName());
+            return;
+        }
+        boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType);
+        boolean isReturnTypeBitwigValue = false;
+        Class<?> bankItemType;
+        int bankItemCount = 0;
+        Method[] methodsOfReturnType = null;
+        
+        if (isReturnTypeBitwigAPI) {
+            isReturnTypeBitwigValue = ReflectUtils.isBitwigValue(returnType);
+            bankItemType = ReflectUtils.getBankItemType(parentNode.getNodeType(), method);
+            if (bankItemType != null) { 
+                // maybe returnType is ObjectProxy
+                if (!bankItemType.isAssignableFrom(returnType)) {
+                    LOG.warn("##!!! BankMethod returns unassinable bank item type!!"
+                             + "\nmethod:" + prefix + method.getName() +
+                             " returnType:" + returnType);
+                    // replace return type
+                    returnType = bankItemType;
+                }
+                bankItemCount = module.getBankItemCount(bankItemType);
+            }
+            methodsOfReturnType = returnType.getMethods();
+        }
+        
+        boolean isEvent = isReturnTypeBitwigValue &&
+            ! ReflectUtils.isBlackListedEvent(method) &&
+            ! Stream.of(methodsOfReturnType)
+            .filter(m -> "addValueObserver".equals(m.getName()))
+            .anyMatch(ReflectUtils::isDeprecated);
+        
+        MethodHolder<?> mh = isEvent
+            ? new EventHolder(method, (Class<? extends Value>)returnType, parentNode, bankItemCount, host, protocol.getPushModel())
+            : new MethodHolder(method, returnType, parentNode, bankItemCount);
+        String key = prefix + method.getName();
+        
+        if (! isReturnTypeBitwigAPI ||
+            (isReturnTypeBitwigAPI &&
+             protocol.isSerializableBitwigType(returnType))) {
+            methods.put(mh.getIdentifier(), mh);
+        }
+        if (isEvent) {
+            events.put(key, (EventHolder)mh);
+        }
+        // register method recursively
+        if (methodsOfReturnType != null && methodsOfReturnType.length > 0) {
+            Stream.of(methodsOfReturnType)
+                .forEach(m -> registerMethod(module, m, key + ".", mh, chainDepth + 1));
+        }
     }
 }

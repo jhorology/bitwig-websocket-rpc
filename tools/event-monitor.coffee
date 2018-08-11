@@ -7,7 +7,7 @@ $ =
 
 events = []
 
-events.push event.event for event in module.events for module in spec.modules when module.name isnt 'test' and module.name isnt 'rpc'
+events.push e.event for e in spec.events when not ((e.event.startsWith 'test') or (e.event.startsWith 'rpc'))
 ws = new WebSocket($.url)
 error = undefined
 connected = undefined

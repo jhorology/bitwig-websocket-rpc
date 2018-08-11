@@ -33,13 +33,13 @@ import com.google.common.base.Objects;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 
 /**
- * A identifier class that is used as hash key for RegistryNode.
+ * A identifier class that is used as hash key for MethodHoler.
  */
-class MethodIdentifier implements Comparable<MethodIdentifier> {
+class NodeIdentifier implements Comparable<NodeIdentifier> {
     private final String name;
     private final List<RpcParamType> rpcParamTypes;
     
-    MethodIdentifier(String name, RpcParamType[] rpcParamTypes) {
+    NodeIdentifier(String name, RpcParamType[] rpcParamTypes) {
         this.name = name;
         this.rpcParamTypes = Arrays.asList(rpcParamTypes);
     }
@@ -51,15 +51,15 @@ class MethodIdentifier implements Comparable<MethodIdentifier> {
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof MethodIdentifier) {
-            MethodIdentifier ident = (MethodIdentifier) o;
+        if (o instanceof NodeIdentifier) {
+            NodeIdentifier ident = (NodeIdentifier) o;
             return name.equals(ident.name) && rpcParamTypes.equals(ident.rpcParamTypes);
         }
         return false;
     }
 
     @Override
-    public int compareTo(MethodIdentifier other) {
+    public int compareTo(NodeIdentifier other) {
         int ret = name.compareTo(other.name);
         if(ret != 0) return ret;
         int length = rpcParamTypes.size();

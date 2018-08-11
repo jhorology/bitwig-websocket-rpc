@@ -33,12 +33,6 @@ import com.github.jhorology.bitwig.websocket.protocol.PushModel;
  */
 public interface RpcRegistry {
     /**
-     * Register a interface of server-sent push model to use for trigger event.
-     * @param pushModel
-     */
-    void registerPushModel(PushModel pushModel);
-    
-    /**
      * Get an interface for RPC method model.
      * @param name the method name.
      * @param paramTypes the parameter types

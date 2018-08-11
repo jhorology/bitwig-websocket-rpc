@@ -165,6 +165,19 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     /**
      * {@inheritDoc}
      */
+    @Override
+    public boolean isSerializableBitwigType(Class<?> bitwigType) {
+        return BitwigAdapters.isAdaptedType(bitwigType);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public PushModel getPushModel() {
+        return this;
+    }
+
     private String onBatchRequest(List<Request> batch) {
         List<Response> results = batch.stream()
             .map(req -> processRequest(req))
@@ -211,4 +224,5 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         Response res = createErrorResponse(error, data, id);
         send(gson.toJson(res), conn);
     }
+
 }

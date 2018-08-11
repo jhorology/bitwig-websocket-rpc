@@ -44,7 +44,8 @@ public class Config extends AbstractConfiguration {
     private static final String API_PREF_CATEGORY = "API (new settings need restart)";
     private static final String RESTART_PREF_CATEGORY = "Restart";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
-    private static final int[] INT_OPTIONS_1248 = {1,2,4,8};
+    private static final int[] INT_OPTIONS_1TO8  = {1, 2, 4, 8};
+    private static final int[] INT_OPTIONS_4TO32 = {4, 8,16,32};
     // populate from json -->
     @Expose
     private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
@@ -68,6 +69,10 @@ public class Config extends AbstractConfiguration {
     private int cursorDeviceNumSends = 4;
     @Expose
     private CursorDeviceFollowMode cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
+    @Expose
+    private boolean useCursorRemoteControlsPage;
+    @Expose
+    private int cursorRemoteControlsPageParameterCount = 8;
     // <--
 
     /**
@@ -87,7 +92,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of the use or not use Application API.
+     * Returns a configuration value of the use or not use Application API.
      * @return
      */
     public boolean useApplication() {
@@ -95,7 +100,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of the use or not use Transport API.
+     * Returns a configuration value of the use or not use Transport API.
      * @return
      */
     public boolean useTransport() {
@@ -103,7 +108,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of the use or not use CursorTrack API.
+     * Returns a configuration value of the use or not use CursorTrack API.
      * @return
      */
     public boolean useCursorTrack() {
@@ -127,7 +132,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of the CursorDevice should follow section or not.
+     * Returns a configuration value of the CursorDevice should follow section or not.
      * @return
      */
     public boolean cursorTrackShouldFollowSelection() {
@@ -135,7 +140,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of the use or not use CursorTrack API.
+     * Returns a configuration value of the use or not use CursorTrack API.
      * @return
      */
     public boolean useCursorDevice() {
@@ -151,7 +156,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Return a configuration value of CursorDeviceFollowMode.
+     * Returns a configuration value of CursorDeviceFollowMode.
      * @return
      */
     public CursorDeviceFollowMode getCursorDeviceFollowMode() {
@@ -159,7 +164,23 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * {@inheritDoc }
+     * Returns a configuration value of the use or not use CursorRemoteControlsPage API.
+     * @return
+     */
+    public boolean useCursorRemoteControlsPage() {
+        return useCursorRemoteControlsPage;
+    }
+    
+    /**
+     * Returns a configuration value of parameter count of CursorRemoteControlsPage.
+     * @return
+     */
+    public int getCursorRemoteControlsPageParameterCount() {
+        return cursorRemoteControlsPageParameterCount;
+    };
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     protected void onInit(ControllerHost host) {
@@ -174,7 +195,7 @@ public class Config extends AbstractConfiguration {
             });
 
         Protocols protocol = ExtensionUtils.getPreferenceAsEnum
-            (host, "Protocol", WEBSOCKET_PREF_CATEGORY,
+            (pref, "Protocol", WEBSOCKET_PREF_CATEGORY,
              e -> e.getDisplayName(), rpcProtocol,
              e -> {
                 if (rpcProtocol != e) {
@@ -210,7 +231,7 @@ public class Config extends AbstractConfiguration {
                 }
             });
         int cursorTrackNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (host, "CursorTrack sends", API_PREF_CATEGORY, cursorTrackNumSends, INT_OPTIONS_1248, v -> {
+            (pref, "CursorTrack sends", API_PREF_CATEGORY, cursorTrackNumSends, INT_OPTIONS_1TO8, v -> {
                 if (cursorTrackNumSends != v) {
                     cursorTrackNumSends = v;
                     valueChanged();
@@ -218,7 +239,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int cursorTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (host, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_1248, v -> {
+            (pref, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_1TO8, v -> {
                 if (cursorTrackNumScenes != v) {
                     cursorTrackNumScenes = v;
                     valueChanged();
@@ -245,7 +266,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int cursorDeviceNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (host, "CursorDevice sends", API_PREF_CATEGORY, cursorDeviceNumSends, INT_OPTIONS_1248, v -> {
+            (pref, "CursorDevice sends", API_PREF_CATEGORY, cursorDeviceNumSends, INT_OPTIONS_1TO8, v -> {
                 if (cursorDeviceNumSends != v) {
                     cursorDeviceNumSends = v;
                     valueChanged();
@@ -253,14 +274,31 @@ public class Config extends AbstractConfiguration {
             });
 
         CursorDeviceFollowMode cursorDeviceFollowModeValue = ExtensionUtils.getPreferenceAsEnum
-            (host, "CursorDevice follow mode", API_PREF_CATEGORY, cursorDeviceFollowMode, v -> {
+            (pref, "CursorDevice follow mode", API_PREF_CATEGORY, cursorDeviceFollowMode, v -> {
                 if (cursorDeviceFollowMode != v) {
                     cursorDeviceFollowMode = v;
                     valueChanged();
                 }
             });
 
+        // --> CursorRemoteControlPage
+        SettableBooleanValue useCursorRemoteControlsPageValue = pref.getBooleanSetting
+            ("Use CursorRemoteControlPage (needs CursorDevice)", API_PREF_CATEGORY, useCursorRemoteControlsPage);
+        useCursorRemoteControlsPageValue.addValueObserver(v -> {
+                if (useCursorRemoteControlsPage != v) {
+                    useCursorRemoteControlsPage = v;
+                    valueChanged();
+                }
+            });
 
+        int cursorRemoteControlsPageParameterCountValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "CursorRemoteControlPage controls", API_PREF_CATEGORY, cursorRemoteControlsPageParameterCount, INT_OPTIONS_4TO32, v -> {
+                if (cursorRemoteControlsPageParameterCount != v) {
+                    cursorRemoteControlsPageParameterCount = v;
+                    valueChanged();
+                }
+            });
+        
         // for future use
         if (!USE_RC_FILE) {
             webSocketPort = (int)webSocketPortValue.getRaw();
@@ -276,6 +314,9 @@ public class Config extends AbstractConfiguration {
             useCursorDevice = useCursorDeviceValue.get();
             cursorDeviceNumSends = cursorDeviceNumSendsValue;
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
+
+            useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
+            cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;
         }
 
 
@@ -285,7 +326,7 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     @Override
     protected void onExit() {

@@ -140,6 +140,8 @@ public enum RpcParamType {
                 } else {
                     return RpcParamType.NUMBER;
                 }
+            } else if (c.isEnum()) {
+                return RpcParamType.STRING;
             } else if (c.isArray()) {
                 Class<?> cc = c.getComponentType();
                 if (cc.isPrimitive()) {
@@ -148,6 +150,8 @@ public enum RpcParamType {
                     } else {
                         return RpcParamType.NUMBER_ARRAY;
                     }
+                } else if (c.isEnum()) {
+                    return RpcParamType.STRING_ARRAY;
                 } else if (Boolean.class.isAssignableFrom(cc)) {
                     return RpcParamType.BOOLEAN_ARRAY;
                 } else if (Number.class.isAssignableFrom(cc)) {
