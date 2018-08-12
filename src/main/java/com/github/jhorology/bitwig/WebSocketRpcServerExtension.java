@@ -27,12 +27,18 @@ package com.github.jhorology.bitwig;
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.ChainSelector;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrScene;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.CursorDeviceLayer;
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.CursorTrack;
+import com.bitwig.extension.controller.api.DrumPad;
+import com.bitwig.extension.controller.api.DrumPadBank;
+import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.RemoteControl;
+import com.bitwig.extension.controller.api.Scene;
 import com.bitwig.extension.controller.api.Send;
 import com.bitwig.extension.controller.api.Transport;
 
@@ -77,11 +83,15 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
 
         if (config.useApplication()) {
             Application application = host.createApplication();
-            registry.register("application", Application.class, application);
+            registry.register("application",
+                              Application.class,
+                              application);
         }
         if (config.useTransport()) {
             Transport transport = host.createTransport();
-            registry.register("transport", Transport.class, transport);
+            registry.register("transport",
+                              Transport.class,
+                              transport);
         }
         if (config.useCursorTrack()) {
             CursorTrack cursorTrack =
@@ -89,27 +99,77 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                                        config.getCursorTrackNumSends(),
                                        config.getCursorTrackNumScenes(),
                                        config.cursorTrackShouldFollowSelection());
-            registry.register("cursorTrack", CursorTrack.class, cursorTrack)
-                .registerBankItemCount(Send.class, config.getCursorTrackNumSends())
-                .registerBankItemCount(ClipLauncherSlotOrScene.class, config.getCursorTrackNumScenes());
+            registry.register("cursorTrack",
+                              CursorTrack.class,
+                              cursorTrack)
+                .registerBankItemCount(Send.class,
+                                       config.getCursorTrackNumSends())
+                .registerBankItemCount(ClipLauncherSlotOrScene.class,
+                                       config.getCursorTrackNumScenes());
                     
             if (config.useCursorDevice()) {
                 PinnableCursorDevice cursorDevice =
                     cursorTrack.createCursorDevice(id, def.getName(),
                                                    config.getCursorDeviceNumSends(),
                                                    config.getCursorDeviceFollowMode());
-                registry.register("cursorDevice", PinnableCursorDevice.class, cursorDevice)
-                    .registerBankItemCount(Send.class, config.getCursorDeviceNumSends());
+                registry.register("cursorDevice",
+                                  PinnableCursorDevice.class,
+                                  cursorDevice)
+                    .registerBankItemCount(Send.class,
+                                           config.getCursorDeviceNumSends());
+                
+                if (config.useChainSelector()) {
+                    ChainSelector chainSelector = cursorDevice.createChainSelector();
+                    registry.register("chainSelector",
+                                      ChainSelector.class,
+                                      chainSelector)
+                        .registerBankItemCount(Send.class,
+                                               config.getCursorDeviceNumSends());
+                }
+                
+                if (config.useCursorDeviceLayer()) {
+                    CursorDeviceLayer cursorDeviceLayer = cursorDevice.createCursorLayer();
+                    registry.register("cursorDeviceLayer",
+                                      CursorDeviceLayer.class,
+                                      cursorDeviceLayer)
+                        .registerBankItemCount(Send.class,
+                                               config.getCursorDeviceNumSends());
+                }
                 
                 if (config.useCursorRemoteControlsPage()) {
                     CursorRemoteControlsPage cursorRemoteControlsPage
                         = cursorDevice.createCursorRemoteControlsPage
                         (config.getCursorRemoteControlsPageParameterCount());
-                    registry.register("cursorRemoteControlsPage", CursorRemoteControlsPage.class, cursorRemoteControlsPage)
-                        .registerBankItemCount(RemoteControl.class, config.getCursorRemoteControlsPageParameterCount());
+                    registry.register("cursorRemoteControlsPage",
+                                      CursorRemoteControlsPage.class,
+                                      cursorRemoteControlsPage)
+                        .registerBankItemCount(RemoteControl.class,
+                                               config.getCursorRemoteControlsPageParameterCount());
+                }
+                
+                if (config.useDrumPadBank()) {
+                    DrumPadBank drumPadBank
+                        = cursorDevice.createDrumPadBank(config.getDrumPadBankNumPads());
+                    registry.register("drumPadBank",
+                                      DrumPadBank.class,
+                                      drumPadBank)
+                        .registerBankItemCount(DrumPad.class,
+                                               config.getDrumPadBankNumPads())
+                        .registerBankItemCount(Send.class,
+                                               config.getCursorDeviceNumSends());
                 }
             }
         }
+        if (config.useMasterTrack()) {
+            MasterTrack masterTrack
+                = host.createMasterTrack(config.getMasterTrackNumScenes());
+            registry.register("masterTrack",
+                              MasterTrack.class,
+                              masterTrack)
+                .registerBankItemCount(ClipLauncherSlotOrScene.class,
+                                       config.getMasterTrackNumScenes());
+        }
+
         // returns subscriber modules of extension event.
         return new Object[] {
             registry,

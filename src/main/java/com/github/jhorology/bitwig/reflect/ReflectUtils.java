@@ -26,7 +26,6 @@ package com.github.jhorology.bitwig.reflect;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,7 +55,7 @@ import com.bitwig.extension.controller.api.DeviceLayerBank;
 import com.bitwig.extension.controller.api.DrumPad;
 import com.bitwig.extension.controller.api.DrumPadBank;
 import com.bitwig.extension.controller.api.GenericBrowsingSession;
-import com.bitwig.extension.controller.api.ObjectProxy;
+import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.ParameterBank;
 import com.bitwig.extension.controller.api.RemoteControl;
@@ -67,7 +66,6 @@ import com.bitwig.extension.controller.api.Send;
 import com.bitwig.extension.controller.api.SendBank;
 import com.bitwig.extension.controller.api.StringArrayValue;
 import com.bitwig.extension.controller.api.StringValue;
-import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Value;
@@ -85,7 +83,7 @@ public class ReflectUtils {
     private static final Logger LOG = Logger.getLogger(ReflectUtils.class);
     // TODO make it configurable
     private static final boolean PUBLISH_SUBSCRIBABLE_METHODS = true;
-        
+
     /**
      * empty array of Object.
      */
@@ -95,32 +93,12 @@ public class ReflectUtils {
      */
     public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
     public static final Class<?>[] BANK_METHOD_PARAM_TYPES = {int.class};
-    private static final List<Method> BLACK_LISTED_METHODS;
-    private static final List<Method> BLACK_LISTED_EVENTS;
     private static final Map<Class<? extends Bank>, Class<?>> BANK_ITEM_TYPES;
     private static final Map<Method, Class<?>> BANK_METHOD_TYPES;
     static {
-        BLACK_LISTED_METHODS = new ArrayList<>();
-        BLACK_LISTED_EVENTS = new ArrayList<>();
         BANK_ITEM_TYPES = new LinkedHashMap<>();
         BANK_METHOD_TYPES = new LinkedHashMap<>();
         try {
-            // public interface Value<? extends ValueChangedCallback> extneds Subscribable
-            // public interface ObjectProxy extends Subscribable
-            
-            // ObjectProxy, not controllable from remote.
-            BLACK_LISTED_METHODS.addAll(Arrays.asList(ObjectProxy.class.getMethods()));
-            // ObjectProxy extends Subscribable
-            if (PUBLISH_SUBSCRIBABLE_METHODS) {
-                BLACK_LISTED_METHODS.removeAll(Arrays.asList(Subscribable.class.getMethods()));
-            }
-            // markInterested is probably same as Subscribable#subscibe()
-            BLACK_LISTED_METHODS.add(Value.class.getMethod("markInterested", EMPTY_CLASS_ARRAY));
-            
-            // This has been deprecated since API version 2: Use value().addValueObserver(callback) instead
-            BLACK_LISTED_EVENTS.add(Channel.class.getMethod("pan", EMPTY_CLASS_ARRAY));
-            BLACK_LISTED_EVENTS.add(Channel.class.getMethod("volume", EMPTY_CLASS_ARRAY));
-            
             // All known sub-interfaces of Bank
             // ItemType can't be resolved at runtime.
             // public interface Bank<ItemType extends ObjectProxy> extends ObjectProxy, Scrollable
@@ -139,13 +117,13 @@ public class ReflectUtils {
             BANK_ITEM_TYPES.put(ClipLauncherSlotBank.class, ClipLauncherSlot.class);
             BANK_ITEM_TYPES.put(SceneBank.class, Scene.class);
             BANK_ITEM_TYPES.put(ClipLauncherSlotOrSceneBank.class, ClipLauncherSlotOrScene.class);
-            
+
             // bank methods
             // null for returns ObjectProxy at runtime
             BANK_METHOD_TYPES.put(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES), null);
             BANK_METHOD_TYPES.put(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), RemoteControl.class);
             BANK_METHOD_TYPES.put(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), Parameter.class);
-            
+
             // TODO need more methods...
         } catch (Exception ex) {
         }
@@ -159,7 +137,7 @@ public class ReflectUtils {
         }
         return false;
     }
-    
+
     /**
      * convert to varargs type if available
      * [Number, Number, Number] -> [Namber[]]
@@ -189,7 +167,7 @@ public class ReflectUtils {
     public static boolean isBitwigAPI(Class<?> interfaceType) {
         return interfaceType.getName().startsWith("com.bitwig.extension.");
     }
-        
+
     /**
      * return interface type is Bitwig Controller API or not.
      * @param interfaceType
@@ -198,7 +176,7 @@ public class ReflectUtils {
     public static boolean isBitwigControllerAPI(Class<?> interfaceType) {
         return interfaceType.getName().startsWith("com.bitwig.extension.controller.api.");
     }
-    
+
     /**
      * Specified interfaceType is Bitwig Extension API or not.
      * @param interfaceType
@@ -217,7 +195,7 @@ public class ReflectUtils {
     public static boolean isBitwigValue(Method method) {
         return isBitwigValue(method.getReturnType());
     }
-    
+
     /**
      * Specifid interfaceType is implemented Value interface or not ?
      * @param interfaceType
@@ -235,7 +213,7 @@ public class ReflectUtils {
     public static boolean isBitwigParameter(Method method) {
         return isBitwigParameter(method.getReturnType());
     }
-    
+
     /**
      * Secified interfaceType is implemented Prameter interface or not ?
      * @param interfaceType
@@ -244,7 +222,7 @@ public class ReflectUtils {
     public static boolean isBitwigParameter(Class<?> interfaceType) {
         return Parameter.class.isAssignableFrom(interfaceType);
     }
-    
+
     /**
      * Method has any paramater of Callback or not.
      * @param method
@@ -271,7 +249,7 @@ public class ReflectUtils {
             .map(RpcParamType::of)
             .anyMatch(t -> t == RpcParamType.OBJECT);
     }
-    
+
     /**
      * Method has any parameter of OBJECT or ARRAY.
      * @param method
@@ -293,7 +271,7 @@ public class ReflectUtils {
     public static boolean isDeprecated(Method method) {
         return method.getAnnotation(Deprecated.class) != null;
     }
-    
+
     /**
      * Return class is deprecated or not.
      * @param clazz
@@ -302,7 +280,7 @@ public class ReflectUtils {
     public static boolean isDeprecated(Class<?> clazz) {
         return clazz.getAnnotation(Deprecated.class) != null;
     }
-    
+
     /**
      * Retun specified method is core module factory or not.
      *  it's should be managed as RPC module.
@@ -314,19 +292,16 @@ public class ReflectUtils {
         // need to investigate core modules that can be instantiated at only within init.
         //
         // this is enough for now.
-        return method.getName().startsWith("create")
+        boolean result = method.getName().startsWith("create")
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
+        if (result && Logger.isDebugEnabled()) {
+            LOG.debug("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
+                      + "] has been ignored as factory method for core module.");
+        }
+        return result;
     }
-    
-    public static boolean isBlackListedMethod(Method method) {
-        return BLACK_LISTED_METHODS.contains(method);
-    }
-    
-    public static boolean isBlackListedEvent(Method method) {
-        return BLACK_LISTED_EVENTS.contains(method);
-    }
-    
+
     /**
      * Secified interfaceType is implemented Bank or not ?
      * @param interfaceType
@@ -335,7 +310,7 @@ public class ReflectUtils {
     public static boolean isBank(Class<?> interfaceType) {
         return Bank.class.isAssignableFrom(interfaceType);
     }
-    
+
     /**
      * Secified interfaceType is implemented Bank or not ?
      * @param method
@@ -344,7 +319,7 @@ public class ReflectUtils {
     public static boolean isBankMethod(Method method) {
         return BANK_METHOD_TYPES.containsKey(method);
     }
-    
+
     /**
      * Returns a bank item type of specified bank type.
      * @param bankType the type of bank.
@@ -353,7 +328,7 @@ public class ReflectUtils {
     public static Class<?> getBankItemType(Class<? extends Bank> bankType) {
         return BANK_ITEM_TYPES.get(bankType);
     }
-    
+
     /**
      * Returns a bank item type of specified method.
      * @param bankMethod the type of bank.
@@ -399,9 +374,15 @@ public class ReflectUtils {
             .filter(m -> !isDeprecated(m.getReturnType()))
             .filter(m -> !hasAnyBitwigObjectParameter(m))
             .filter(m -> !hasAnyCallbackParameter(m))
-            .filter(m -> !isModuleFactory(m))
-            .filter(m -> !BLACK_LISTED_METHODS.contains(m));
-                
+            .filter(m -> !isModuleFactory(m));
+
+        // markInterested is probably same as Subscribable#subscibe()
+        if (Value.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("markInterested".equals(m.getName())));
+        }
+
+
         // WTF! fixing one by one
 
         // StringArrayValue has two get() methods.  Object[] get()/String[] get()
@@ -423,9 +404,14 @@ public class ReflectUtils {
                 .filter(m -> !("name".equals(m.getName())
                                && StringValue.class.equals(m.getReturnType())));
         }
-        
-        
-        
+        // MasterTrack#sendBank() is useless, and host throw exception.
+        if (MasterTrack.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !"sendBank".equals(m.getName()));
+        }
+
+
+
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug
         if (Logger.isDebugEnabled()) {

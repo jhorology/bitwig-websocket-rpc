@@ -81,7 +81,8 @@ public abstract class AbstractConfiguration {
         
         Logger.Severity severity = ExtensionUtils.getPreferenceAsEnum
             (host, "Log Level", "Debug", logLevel, v -> {
-                if (logLevel != v) {;
+                if (logLevel != v) {
+                    logLevel = v;
                     Logger.setLevel(v);
                     valueChanged();
                 }

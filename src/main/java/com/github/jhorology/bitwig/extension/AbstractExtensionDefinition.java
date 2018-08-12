@@ -67,8 +67,8 @@ import com.google.gson.annotations.Expose;
  *       "logLevel": "WARN",
  *       "useRcFile": true,
  *       "writeThroughtRcFile": false
+ *   }
  * }
-}
  * }</pre>
  */
 public abstract class AbstractExtensionDefinition

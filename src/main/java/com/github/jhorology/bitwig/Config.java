@@ -45,7 +45,9 @@ public class Config extends AbstractConfiguration {
     private static final String RESTART_PREF_CATEGORY = "Restart";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
     private static final int[] INT_OPTIONS_1TO8  = {1, 2, 4, 8};
+    private static final int[] INT_OPTIONS_2TO16 = {2, 4, 8,16};
     private static final int[] INT_OPTIONS_4TO32 = {4, 8,16,32};
+    private static final int[] INT_OPTIONS_8TO64 = {8,16,32,64};
     // populate from json -->
     @Expose
     private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
@@ -70,9 +72,21 @@ public class Config extends AbstractConfiguration {
     @Expose
     private CursorDeviceFollowMode cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
     @Expose
+    private boolean useChainSelector;
+    @Expose
+    private boolean useCursorDeviceLayer;
+    @Expose
     private boolean useCursorRemoteControlsPage;
     @Expose
     private int cursorRemoteControlsPageParameterCount = 8;
+    @Expose
+    private boolean useDrumPadBank;
+    @Expose
+    private int drumPadBankNumPads = 8;
+    @Expose
+    private boolean useMasterTrack;
+    @Expose
+    private int masterTrackNumScenes = 8;
     // <--
 
     /**
@@ -164,6 +178,22 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
+     * Returns a configuration value of the use or not use ChainSelector API.
+     * @return
+     */
+    public boolean useChainSelector() {
+        return useChainSelector;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use CursorDeviceLayer API.
+     * @return
+     */
+    public boolean useCursorDeviceLayer() {
+        return useCursorDeviceLayer;
+    }
+    
+    /**
      * Returns a configuration value of the use or not use CursorRemoteControlsPage API.
      * @return
      */
@@ -178,6 +208,38 @@ public class Config extends AbstractConfiguration {
     public int getCursorRemoteControlsPageParameterCount() {
         return cursorRemoteControlsPageParameterCount;
     };
+
+    /**
+     * Returns a configuration value of the use or not use MasterTrack API.
+     * @return
+     */
+    public boolean useDrumPadBank() {
+        return useDrumPadBank;
+    }
+    
+    /**
+     * Returns a configuration value of the number of pads of DrumPadBank.
+     * @return
+     */
+    public int getDrumPadBankNumPads() {
+        return drumPadBankNumPads;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use MasterTrack API.
+     * @return
+     */
+    public boolean useMasterTrack() {
+        return useMasterTrack;
+    }
+    
+    /**
+     * Returns a configuration value of the number of scenes of MasterTrack.
+     * @return
+     */
+    public int getMasterTrackNumScenes() {
+        return masterTrackNumScenes;
+    }
 
     /**
      * {@inheritDoc}
@@ -221,6 +283,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+
         // --> CursorTrack
         SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting
             ("Use CursorTrack", API_PREF_CATEGORY, useCursorTrack);
@@ -239,7 +302,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int cursorTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_1TO8, v -> {
+            (pref, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_2TO16, v -> {
                 if (cursorTrackNumScenes != v) {
                     cursorTrackNumScenes = v;
                     valueChanged();
@@ -281,6 +344,26 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        // --> ChainSelector
+        SettableBooleanValue useChainSelectorValue = pref.getBooleanSetting
+            ("Use ChainSelector (needs CursorDevice)", API_PREF_CATEGORY, useChainSelector);
+        useChainSelectorValue.addValueObserver(v -> {
+                if (useChainSelector != v) {
+                    useChainSelector = v;
+                    valueChanged();
+                }
+            });
+        
+        // --> CursorDeviceLayer
+        SettableBooleanValue useCursorDeviceLayerValue = pref.getBooleanSetting
+            ("Use CursorDeviceLayer (needs CursorDevice)", API_PREF_CATEGORY, useCursorDeviceLayer);
+        useCursorDeviceLayerValue.addValueObserver(v -> {
+                if (useCursorDeviceLayer != v) {
+                    useCursorDeviceLayer = v;
+                    valueChanged();
+                }
+            });
+        
         // --> CursorRemoteControlPage
         SettableBooleanValue useCursorRemoteControlsPageValue = pref.getBooleanSetting
             ("Use CursorRemoteControlPage (needs CursorDevice)", API_PREF_CATEGORY, useCursorRemoteControlsPage);
@@ -295,6 +378,42 @@ public class Config extends AbstractConfiguration {
             (pref, "CursorRemoteControlPage controls", API_PREF_CATEGORY, cursorRemoteControlsPageParameterCount, INT_OPTIONS_4TO32, v -> {
                 if (cursorRemoteControlsPageParameterCount != v) {
                     cursorRemoteControlsPageParameterCount = v;
+                    valueChanged();
+                }
+            });
+        
+        // --> DrumPadBank
+        SettableBooleanValue useDrumPadBankValue = pref.getBooleanSetting
+            ("Use DrumPadBank (needs CursorDevice)", API_PREF_CATEGORY, useDrumPadBank);
+        useDrumPadBankValue.addValueObserver(v -> {
+                if (useDrumPadBank != v) {
+                    useDrumPadBank = v;
+                    valueChanged();
+                }
+            });
+
+        int drumPadBankNumPadsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "DrumPadBank pads", API_PREF_CATEGORY, drumPadBankNumPads, INT_OPTIONS_8TO64, v -> {
+                if (drumPadBankNumPads != v) {
+                    drumPadBankNumPads = v;
+                    valueChanged();
+                }
+            });
+        
+        // --> MasterTrack
+        SettableBooleanValue useMasterTrackValue = pref.getBooleanSetting
+            ("Use MasterTrack", API_PREF_CATEGORY, useMasterTrack);
+        useMasterTrackValue.addValueObserver(v -> {
+                if (useMasterTrack != v) {
+                    useMasterTrack = v;
+                    valueChanged();
+                }
+            });
+        
+        int masterTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "MasterTrack scenes", API_PREF_CATEGORY, masterTrackNumScenes, INT_OPTIONS_2TO16, v -> {
+                if (masterTrackNumScenes != v) {
+                    masterTrackNumScenes = v;
                     valueChanged();
                 }
             });
@@ -315,8 +434,18 @@ public class Config extends AbstractConfiguration {
             cursorDeviceNumSends = cursorDeviceNumSendsValue;
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
 
+            useChainSelector = useChainSelectorValue.get();
+            
+            useCursorDevice = useCursorDeviceValue.get();
+            
             useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
             cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;
+
+            useDrumPadBank = useDrumPadBankValue.get();
+            drumPadBankNumPads = drumPadBankNumPadsValue;
+            
+            useMasterTrack = useMasterTrackValue.get();
+            masterTrackNumScenes = masterTrackNumScenesValue;
         }
 
 

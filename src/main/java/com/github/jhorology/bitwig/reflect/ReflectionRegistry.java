@@ -258,13 +258,21 @@ public class ReflectionRegistry implements RpcRegistry {
             if (bankItemType != null) { 
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
-                    LOG.warn("##!!! BankMethod returns unassinable bank item type!!"
+                    LOG.warn("##!!! Bank Method returns unassinable bank item type!!"
                              + "\nmethod:" + absoluteName +
                              " returnType:" + returnType);
                     // replace return type
                     returnType = bankItemType;
                 }
                 bankItemCount = module.getBankItemCount(bankItemType);
+                if (bankItemCount == 0) {
+                    // maybe correct
+                    // e.g) MasterTrack has sendBank().getItemAt(int), but it can't use.
+                    LOG.warn("##!!! Bank Method founded, but bankItemCount is not registered.!!"
+                             + "\nmethod:" + absoluteName +
+                             " bankItemType:" + bankItemType);
+                    return;
+                }
             }
             // correct conflicted methods
             methodsOfReturnType = ReflectUtils.getCleanMethods(returnType);
@@ -273,8 +281,7 @@ public class ReflectionRegistry implements RpcRegistry {
         // if return type is implemented both Value and Parameter
         // shoud use Parameter#Value() as event.
         boolean isEvent = isReturnTypeBitwigValue &&
-            ! isReturnTypeBitwigParameter &&
-            ! ReflectUtils.isBlackListedEvent(method);
+            ! isReturnTypeBitwigParameter;
         
         MethodHolder<?> mh = isEvent
             ? new EventHolder(method, (Class<? extends Value>)returnType, parentNode, bankItemCount, host, protocol.getPushModel())
