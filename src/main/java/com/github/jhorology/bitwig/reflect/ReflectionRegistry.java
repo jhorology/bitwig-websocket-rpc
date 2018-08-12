@@ -34,6 +34,7 @@ import java.util.stream.Stream;
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.RemoteControl;
 import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
@@ -57,6 +58,10 @@ import java.util.ArrayList;
  * 
  */
 public class ReflectionRegistry implements RpcRegistry {
+    /**
+     * the delimitter for method chain.
+     */
+    public static final String NODE_DELIMITER = ".";
     private static final Logger LOG = Logger.getLogger(ReflectionRegistry.class);
 
     private final ProtocolHandler protocol;
@@ -225,72 +230,90 @@ public class ReflectionRegistry implements RpcRegistry {
 
 
     private void registerMethods(ModuleHolder<?> module) {
-        Stream.of(module.getNodeType().getMethods())
-            .forEach(m -> registerMethod(module, m, module.getNodeName() + ".", module, 0));
+        ReflectUtils.getCleanMethods(module.getNodeType())
+            .forEach(m -> registerMethod(module, m, module, 0));
     }
     
     @SuppressWarnings("unchecked")
-    private void registerMethod(ModuleHolder<?> module, Method method, String prefix, RegistryNode<?> parentNode, int chainDepth) {
+    private void registerMethod(ModuleHolder<?> module, Method method, RegistryNode<?> parentNode, int chainDepth) {
         // filter unusable methods
         Class<?> returnType = method.getReturnType();
-        if (ReflectUtils.isDeprecated(method) ||
-            ReflectUtils.isDeprecated(returnType) ||
-            ReflectUtils.isModuleFactory(method) ||
-            ReflectUtils.hasAnyBitwigObjectParameter(method) ||
-            ReflectUtils.isBlackListedMethod(method)) {
-            return;
-        }
+        String absoluteName = parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName();
         if (chainDepth > 5) {
             LOG.error("##!!! Method chain depth are too long. Something is wrong!!"
-                      + "\nmethod:" + prefix + method.getName());
+                      + "\nmethod:" + absoluteName);
             return;
         }
         boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType);
         boolean isReturnTypeBitwigValue = false;
+        boolean isReturnTypeBitwigParameter = false;
         Class<?> bankItemType;
         int bankItemCount = 0;
-        Method[] methodsOfReturnType = null;
+        List<Method> methodsOfReturnType = null;
         
         if (isReturnTypeBitwigAPI) {
             isReturnTypeBitwigValue = ReflectUtils.isBitwigValue(returnType);
+            isReturnTypeBitwigParameter = ReflectUtils.isBitwigParameter(returnType);
             bankItemType = ReflectUtils.getBankItemType(parentNode.getNodeType(), method);
             if (bankItemType != null) { 
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     LOG.warn("##!!! BankMethod returns unassinable bank item type!!"
-                             + "\nmethod:" + prefix + method.getName() +
+                             + "\nmethod:" + absoluteName +
                              " returnType:" + returnType);
                     // replace return type
                     returnType = bankItemType;
                 }
                 bankItemCount = module.getBankItemCount(bankItemType);
             }
-            methodsOfReturnType = returnType.getMethods();
+            // correct conflicted methods
+            methodsOfReturnType = ReflectUtils.getCleanMethods(returnType);
         }
-        
+
+        // if return type is implemented both Value and Parameter
+        // shoud use Parameter#Value() as event.
         boolean isEvent = isReturnTypeBitwigValue &&
-            ! ReflectUtils.isBlackListedEvent(method) &&
-            ! Stream.of(methodsOfReturnType)
-            .filter(m -> "addValueObserver".equals(m.getName()))
-            .anyMatch(ReflectUtils::isDeprecated);
+            ! isReturnTypeBitwigParameter &&
+            ! ReflectUtils.isBlackListedEvent(method);
         
         MethodHolder<?> mh = isEvent
             ? new EventHolder(method, (Class<? extends Value>)returnType, parentNode, bankItemCount, host, protocol.getPushModel())
             : new MethodHolder(method, returnType, parentNode, bankItemCount);
-        String key = prefix + method.getName();
         
         if (! isReturnTypeBitwigAPI ||
             (isReturnTypeBitwigAPI &&
              protocol.isSerializableBitwigType(returnType))) {
+            // for debug
+            if (Logger.isDebugEnabled()) {
+                EventHolder<?> duplicatedMethod = events.get(absoluteName);
+                if (duplicatedMethod != null) {
+                    LOG.debug("##!!! duplicated method!!"
+                              + "\nevent:" + absoluteName
+                              + "\nold:" + duplicatedMethod.parentNode.getNodeType().getSimpleName() + "#" + duplicatedMethod.getNodeName()
+                              + "\nnew:" + mh.parentNode.getNodeType().getSimpleName() + "#" + mh.getNodeName());
+                }
+            }
+            
+            
             methods.put(mh.getIdentifier(), mh);
         }
         if (isEvent) {
-            events.put(key, (EventHolder)mh);
+            // for debug
+            if (Logger.isDebugEnabled()) {
+                EventHolder<?> duplicatedEvent = events.get(absoluteName);
+                if (duplicatedEvent != null) {
+                    LOG.warn("##!!! duplicated event!!"
+                             + "\nevent:" + absoluteName
+                             + "\nold:" + duplicatedEvent.parentNode.getNodeType().getSimpleName() + "#" + duplicatedEvent.getNodeName()
+                             + "\nnew:" + mh.parentNode.getNodeType().getSimpleName() + "#" + mh.getNodeName());
+                }
+            }
+            events.put(absoluteName, (EventHolder)mh);
         }
         // register method recursively
-        if (methodsOfReturnType != null && methodsOfReturnType.length > 0) {
-            Stream.of(methodsOfReturnType)
-                .forEach(m -> registerMethod(module, m, key + ".", mh, chainDepth + 1));
+        if (methodsOfReturnType != null && !methodsOfReturnType.isEmpty()) {
+            methodsOfReturnType
+                .forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
     }
 }

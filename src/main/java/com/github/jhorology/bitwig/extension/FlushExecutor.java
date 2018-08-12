@@ -64,7 +64,7 @@ public class FlushExecutor implements Executor {
     public void onExit(ExitEvent e) {
         // runAllQueuedTasks();
         synchronized(this) {
-            tasks.clear();
+            // tasks.clear();
             state = SHUTDOWN;
         }
     }

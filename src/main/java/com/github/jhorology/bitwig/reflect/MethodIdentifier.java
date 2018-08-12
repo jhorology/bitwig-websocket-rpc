@@ -31,6 +31,9 @@ import com.google.common.base.Objects;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import java.lang.reflect.Type;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A identifier class that is used as hash key for RegistryNode.
@@ -43,6 +46,14 @@ class MethodIdentifier implements Comparable<MethodIdentifier> {
         this.name = name;
         this.rpcParamTypes = Arrays.asList(rpcParamTypes);
     }
+    
+    MethodIdentifier(String name, Type[] paramTypes) {
+        this.name = name;
+        this.rpcParamTypes = Stream.of(paramTypes)
+            .map(RpcParamType::of)
+            .collect(Collectors.toList());
+    }
+
     
     @Override
     public int hashCode() {

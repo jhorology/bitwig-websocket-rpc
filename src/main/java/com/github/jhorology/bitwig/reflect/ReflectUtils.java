@@ -65,19 +65,24 @@ import com.bitwig.extension.controller.api.Scene;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.Send;
 import com.bitwig.extension.controller.api.SendBank;
+import com.bitwig.extension.controller.api.StringArrayValue;
+import com.bitwig.extension.controller.api.StringValue;
 import com.bitwig.extension.controller.api.Subscribable;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.extension.Logger;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import java.util.stream.Collectors;
 
 /**
  * utility class
  */
 @SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
+    private static final Logger LOG = Logger.getLogger(ReflectUtils.class);
     // TODO make it configurable
     private static final boolean PUBLISH_SUBSCRIBABLE_METHODS = true;
         
@@ -89,7 +94,7 @@ public class ReflectUtils {
      * empty array of Class<?>.
      */
     public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
-    public static final Class<?>[] BANK_METHOD_PARAM = {int.class};
+    public static final Class<?>[] BANK_METHOD_PARAM_TYPES = {int.class};
     private static final List<Method> BLACK_LISTED_METHODS;
     private static final List<Method> BLACK_LISTED_EVENTS;
     private static final Map<Class<? extends Bank>, Class<?>> BANK_ITEM_TYPES;
@@ -137,9 +142,9 @@ public class ReflectUtils {
             
             // bank methods
             // null for returns ObjectProxy at runtime
-            BANK_METHOD_TYPES.put(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM), null);
-            BANK_METHOD_TYPES.put(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM), RemoteControl.class);
-            BANK_METHOD_TYPES.put(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM), Parameter.class);
+            BANK_METHOD_TYPES.put(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES), null);
+            BANK_METHOD_TYPES.put(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), RemoteControl.class);
+            BANK_METHOD_TYPES.put(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), Parameter.class);
             
             // TODO need more methods...
         } catch (Exception ex) {
@@ -377,5 +382,66 @@ public class ReflectUtils {
             return BANK_ITEM_TYPES.get(interfaceType);
         }
         return null;
+    }
+
+
+    /**
+     * WTF! cleanup confilicted or deprecated or blacklisted methods
+     * @param interfaceType
+     * @return the list of methods
+     */
+    public static List<Method> getCleanMethods(Class<?> interfaceType) {
+        boolean fixRemoteControlsPage = RemoteControlsPage.class.isAssignableFrom(interfaceType)
+            && ParameterBank.class.isAssignableFrom(interfaceType);
+        Stream<Method> methodsStream = Arrays.asList(interfaceType.getMethods())
+            .stream()
+            .filter(m -> !isDeprecated(m))
+            .filter(m -> !isDeprecated(m.getReturnType()))
+            .filter(m -> !hasAnyBitwigObjectParameter(m))
+            .filter(m -> !isModuleFactory(m))
+            .filter(m -> !BLACK_LISTED_METHODS.contains(m));
+                
+        // WTF! fixing one by one
+
+        // StringArrayValue has two get() methods.  Object[] get()/String[] get()
+        if (StringArrayValue.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("get".equals(m.getName())
+                               && Object[].class.equals(m.getReturnType())));
+        }
+        // RemoteControlsPage/ParameterBank duplicated getParameter method
+        if (RemoteControlsPage.class.isAssignableFrom(interfaceType)
+            && ParameterBank.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("getParameter".equals(m.getName())
+                               && Parameter.class.equals(m.getReturnType())));
+        }
+        // RemoteContrrol has two name() methods. returnType: StringValue/SettableStringValue
+        if (RemoteControl.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("name".equals(m.getName())
+                               && StringValue.class.equals(m.getReturnType())));
+        }
+        
+        
+        
+        List<Method> methods = methodsStream.collect(Collectors.toList());
+        // for debug
+        if (Logger.isDebugEnabled()) {
+            methods.stream().forEach(m0 -> {
+                    methods.stream().forEach(m1 -> {
+                            if (m0 != m1) {
+                                MethodIdentifier m0id = new MethodIdentifier(m0.getName(), m0.getGenericParameterTypes());
+                                MethodIdentifier m1id = new MethodIdentifier(m1.getName(), m1.getGenericParameterTypes());
+                                if (m0id.equals(m1id)) {
+                                    LOG.debug("these two methods are identical." +
+                                              "\nmethod0:" + interfaceType.getSimpleName() + "#" + m0.getName() + " returnType:" + m0.getReturnType().getSimpleName() +
+                                              "\nmethod1:" + interfaceType.getSimpleName() + "#" + m1.getName() + " returnType:" + m1.getReturnType().getSimpleName());
+                                }
+                            }
+                        });
+                });
+        }
+        return methods;
     }
 }

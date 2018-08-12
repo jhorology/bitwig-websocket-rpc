@@ -25,9 +25,7 @@ package com.github.jhorology.bitwig.reflect;
 // jdk
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 
 // provided dependencies
@@ -41,7 +39,6 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
  * @param <T>
  */
 abstract class RegistryNode<T> {
-    protected static final String NODE_DELIMITER = ".";
     protected static final Object[] EMPTY_PARAMS = {};
     protected static final Type[] EMPTY_PARAM_TYPES = {};
     private final static int[] EMPTY_DIMENNSION = {};
@@ -100,10 +97,6 @@ abstract class RegistryNode<T> {
      */
     protected final int[] bankDimension;
     
-    /**
-     * all combinations of bankDimension.
-     */
-    protected final List<int[]> bankIndexCombinations;
         
     /**
      * Constructor.
@@ -120,21 +113,18 @@ abstract class RegistryNode<T> {
         this.nodeParamTypes = nodeParamTypes;
         this.bankItemCount = bankItemCount;
         this.absoluteName = parentNode != null
-            ? parentNode.absoluteName + NODE_DELIMITER + nodeName
+            ? parentNode.absoluteName + ReflectionRegistry.NODE_DELIMITER + nodeName
             : nodeName;
         this.nodeRpcParamTypes = Stream.of(nodeParamTypes)
             .map(RpcParamType::of)
             .toArray(size -> new RpcParamType[size]);
         this.rpcNodeType = RpcParamType.of(nodeType);
-        int[] dim = parentNode instanceof MethodHolder
-            ? ((MethodHolder)parentNode).bankDimension
+        int[] dim = parentNode != null
+            ? parentNode.bankDimension
             : EMPTY_DIMENNSION;
         this.bankDimension =  bankItemCount > 0
             ? ArrayUtils.add(dim, bankItemCount)
             : dim;
-        this.bankIndexCombinations = bankDimension.length > 0
-            ? createCombinations(bankDimension)
-            : null;
     }
     
     /**
@@ -180,24 +170,4 @@ abstract class RegistryNode<T> {
      * Clears this instance;
      */
     abstract void clear();
-    
-    private static List<int[]> createCombinations(int[] dimension) {
-        List<int[]> combinations = new ArrayList<>();
-        for (int size : dimension) {
-            List<int[]> newCombinations = new ArrayList<>();
-            for (int element = 0; element < size; element++) {
-                if (combinations.isEmpty()) {
-                    int[] combination = {element};
-                    newCombinations.add(combination);
-                } else {
-                    for (int[] combination : combinations) {
-                        int [] newCombination = ArrayUtils.add(combination, element);
-                        newCombinations.add(newCombination);
-                    }
-                }
-            }
-            combinations = newCombinations;
-        }
-        return combinations;
-    }
 }

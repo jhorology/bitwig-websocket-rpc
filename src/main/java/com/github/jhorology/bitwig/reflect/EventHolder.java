@@ -63,6 +63,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
     private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
     private static final long WAIT_HOST_TRIGGER_ON_SUBSCRIBE = 150L;
 
+    private final List<int[]> bankIndexCombinations;
     private final Collection<WebSocket> clients;
     private final PushModel pushModel;
     private final ControllerHost host;
@@ -131,7 +132,6 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
             if (Logger.isDebugEnabled())  {
                 LOG.debug(event() + " event has been subscribed by " + client(client));
             }
-            
         }
         
         /**
@@ -242,6 +242,9 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
         this.host = host;
         this.pushModel = pushModel;
         this.clients = new ArrayList<>();
+        this.bankIndexCombinations = bankDimension.length > 0
+            ? createCombinations(bankDimension)
+            : null;
         if (bankIndexCombinations != null) {
             this.bankedEvents = bankIndexCombinations.stream()
                 .map(combination -> new BankedEvent(combination))
@@ -353,5 +356,25 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
         sb.append(clients.size());
         sb.append(']');
         return sb.toString();
+    }
+    
+    private static List<int[]> createCombinations(int[] dimension) {
+        List<int[]> combinations = new ArrayList<>();
+        for (int size : dimension) {
+            List<int[]> newCombinations = new ArrayList<>();
+            for (int element = 0; element < size; element++) {
+                if (combinations.isEmpty()) {
+                    int[] combination = {element};
+                    newCombinations.add(combination);
+                } else {
+                    for (int[] combination : combinations) {
+                        int [] newCombination = ArrayUtils.add(combination, element);
+                        newCombinations.add(newCombination);
+                    }
+                }
+            }
+            combinations = newCombinations;
+        }
+        return combinations;
     }
 }
