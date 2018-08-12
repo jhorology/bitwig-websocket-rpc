@@ -187,8 +187,7 @@ public class ReflectUtils {
      * @return
      */
     public static boolean isBitwigAPI(Class<?> interfaceType) {
-        return isBitwigControllerAPI(interfaceType)
-            || isBitwigExtensionAPI(interfaceType);
+        return interfaceType.getName().startsWith("com.bitwig.extension.");
     }
         
     /**
@@ -267,9 +266,10 @@ public class ReflectUtils {
         Class<?>[] types = method.getParameterTypes();
         if (types.length == 0) return false;
         return Stream.of(types)
+            .map(t -> t.isArray() ? t.getComponentType() : t)
             .filter(ReflectUtils::isBitwigAPI)
             .map(RpcParamType::of)
-            .anyMatch(t -> t == RpcParamType.OBJECT || t == RpcParamType.OBJECT_ARRAY);
+            .anyMatch(t -> t == RpcParamType.OBJECT);
     }
     
     /**
@@ -398,6 +398,7 @@ public class ReflectUtils {
             .filter(m -> !isDeprecated(m))
             .filter(m -> !isDeprecated(m.getReturnType()))
             .filter(m -> !hasAnyBitwigObjectParameter(m))
+            .filter(m -> !hasAnyCallbackParameter(m))
             .filter(m -> !isModuleFactory(m))
             .filter(m -> !BLACK_LISTED_METHODS.contains(m));
                 
