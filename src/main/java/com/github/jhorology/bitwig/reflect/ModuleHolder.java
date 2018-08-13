@@ -61,12 +61,12 @@ public class ModuleHolder<T> extends RegistryNode<T> {
 
     /**
      * Register item count of specified Bank class.
-     * @param bankItemType the type of bankItem.
+     * @param bankType the type of bank.
      * @param count the count of bank items.
      * @return this instance.
      */
-    public ModuleHolder<T> registerBankItemCount(Class<?> bankItemType, int count) {
-        bankItemCounts.put(bankItemType, count);
+    public ModuleHolder<T> registerBankItemCount(Class<?> bankType, int count) {
+        bankItemCounts.put(bankType, count);
         return this;
     }
 
@@ -75,13 +75,13 @@ public class ModuleHolder<T> extends RegistryNode<T> {
      * @param bankItemType
      * @return 
      */
-    int getBankItemCount(Class<?> bankItemType) {
-        Integer count = bankItemCounts.get(bankItemType);
+    int getBankItemCount(Class<?> bankType) {
+        Integer count = bankItemCounts.get(bankType);
         if (count != null) {
             return count;
         }
         count = bankItemCounts.keySet().stream()
-                .filter(c -> c.isAssignableFrom(bankItemType))
+                .filter(c -> c.isAssignableFrom(bankType))
                 .map(c -> bankItemCounts.get(c))
                 .findFirst().orElse(null);
         if (count != null) {

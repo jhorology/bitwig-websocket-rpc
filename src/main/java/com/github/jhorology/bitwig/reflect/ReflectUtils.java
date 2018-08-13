@@ -28,8 +28,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // bitwig api
@@ -73,7 +76,6 @@ import com.github.jhorology.bitwig.extension.Logger;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
-import java.util.stream.Collectors;
 
 /**
  * utility class
@@ -94,10 +96,12 @@ public class ReflectUtils {
     public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
     public static final Class<?>[] BANK_METHOD_PARAM_TYPES = {int.class};
     private static final Map<Class<? extends Bank>, Class<?>> BANK_ITEM_TYPES;
-    private static final Map<Method, Class<?>> BANK_METHOD_TYPES;
+    private static final Map<Class<?>, Class<?>> SEMI_BANK_ITEM_TYPES;
+    private static final Set<Method> BANK_METHODS;
     static {
         BANK_ITEM_TYPES = new LinkedHashMap<>();
-        BANK_METHOD_TYPES = new LinkedHashMap<>();
+        SEMI_BANK_ITEM_TYPES = new LinkedHashMap<>();
+        BANK_METHODS = new LinkedHashSet<>();
         try {
             // All known sub-interfaces of Bank
             // ItemType can't be resolved at runtime.
@@ -117,14 +121,17 @@ public class ReflectUtils {
             BANK_ITEM_TYPES.put(ClipLauncherSlotBank.class, ClipLauncherSlot.class);
             BANK_ITEM_TYPES.put(SceneBank.class, Scene.class);
             BANK_ITEM_TYPES.put(ClipLauncherSlotOrSceneBank.class, ClipLauncherSlotOrScene.class);
+            // not implemented Bank
+            SEMI_BANK_ITEM_TYPES.put(RemoteControlsPage.class, RemoteControl.class);
+            SEMI_BANK_ITEM_TYPES.put(ParameterBank.class, Parameter.class);
 
             // bank methods
             // null for returns ObjectProxy at runtime
-            BANK_METHOD_TYPES.put(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES), null);
-            BANK_METHOD_TYPES.put(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), RemoteControl.class);
-            BANK_METHOD_TYPES.put(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES), Parameter.class);
-
+            BANK_METHODS.add(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES));
+            BANK_METHODS.add(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
+            BANK_METHODS.add(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
             // TODO need more methods...
+            
         } catch (Exception ex) {
         }
     }
@@ -308,16 +315,18 @@ public class ReflectUtils {
      * @return
      */
     public static boolean isBank(Class<?> interfaceType) {
-        return Bank.class.isAssignableFrom(interfaceType);
+        return Bank.class.isAssignableFrom(interfaceType) ||
+            SEMI_BANK_ITEM_TYPES.keySet().stream()
+            .anyMatch(c -> c.isAssignableFrom(interfaceType));
     }
-
+    
     /**
      * Secified interfaceType is implemented Bank or not ?
      * @param method
      * @return
      */
     public static boolean isBankMethod(Method method) {
-        return BANK_METHOD_TYPES.containsKey(method);
+        return BANK_METHODS.contains(method);
     }
 
     /**
@@ -325,40 +334,28 @@ public class ReflectUtils {
      * @param bankType the type of bank.
      * @return the type of bank item.
      */
-    public static Class<?> getBankItemType(Class<? extends Bank> bankType) {
-        return BANK_ITEM_TYPES.get(bankType);
-    }
-
-    /**
-     * Returns a bank item type of specified method.
-     * @param bankMethod the type of bank.
-     * @return the type of bank item.
-     */
-    public static Class<?> getBankItemType(Method bankMethod) {
-        return BANK_METHOD_TYPES.get(bankMethod);
-    }
-
-    /**
-     * Returns a bank item type of specified interface type and method.
-     * @param interfaceType
-     * @param method
-     * @return the type of bank item.
-     */
-    @SuppressWarnings("element-type-mismatch")
-    public static Class<?> getBankItemType(Class<?> interfaceType, Method method) {
-        if (!isBankMethod(method)) {
-            return null;
-        }
-        Class<?> bankItemType = BANK_METHOD_TYPES.get(method);
+    public static Class<?> getBankItemType(Class<?> bankType) {
+        Class<?> bankItemType = BANK_ITEM_TYPES.get(bankType);
         if (bankItemType != null) {
             return bankItemType;
         }
-        if (interfaceType != null && isBank(interfaceType)) {
-            return BANK_ITEM_TYPES.get(interfaceType);
+        bankItemType = SEMI_BANK_ITEM_TYPES.get(bankType);
+        if (bankItemType != null) {
+            return bankItemType;
         }
-        return null;
+        bankItemType = BANK_ITEM_TYPES.keySet().stream()
+            .filter(c -> c.isAssignableFrom(bankType))
+            .map(c -> BANK_ITEM_TYPES.get(c))
+            .findFirst().orElse(null);
+        if (bankItemType != null) {
+            return bankItemType;
+        }
+        bankItemType = SEMI_BANK_ITEM_TYPES.keySet().stream()
+            .filter(c -> c.isAssignableFrom(bankType))
+            .map(c -> SEMI_BANK_ITEM_TYPES.get(c))
+            .findFirst().orElse(null);
+        return bankItemType;
     }
-
 
     /**
      * WTF! cleanup confilicted or deprecated or blacklisted methods
@@ -366,8 +363,6 @@ public class ReflectUtils {
      * @return the list of methods
      */
     public static List<Method> getCleanMethods(Class<?> interfaceType) {
-        boolean fixRemoteControlsPage = RemoteControlsPage.class.isAssignableFrom(interfaceType)
-            && ParameterBank.class.isAssignableFrom(interfaceType);
         Stream<Method> methodsStream = Arrays.asList(interfaceType.getMethods())
             .stream()
             .filter(m -> !isDeprecated(m))
@@ -409,8 +404,18 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !"sendBank".equals(m.getName()));
         }
-
-
+        
+        // Scene has two name() methods. returnType: StringValue/SettableStringValue
+        if (Scene.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("name".equals(m.getName())
+                               && StringValue.class.equals(m.getReturnType())));
+        }
+        // SceneBank is implemented Bank<Scene>, should use Bank#getItemAt(int) instead of SceneBank#getScene(int)
+        if (SceneBank.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !"getScene".equals(m.getName()));
+        }
 
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug

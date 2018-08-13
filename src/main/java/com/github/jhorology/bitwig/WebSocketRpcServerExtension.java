@@ -28,18 +28,19 @@ package com.github.jhorology.bitwig;
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.ChainSelector;
-import com.bitwig.extension.controller.api.ClipLauncherSlotOrScene;
+import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
+import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.CursorDeviceLayer;
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.CursorTrack;
-import com.bitwig.extension.controller.api.DrumPad;
 import com.bitwig.extension.controller.api.DrumPadBank;
+import com.bitwig.extension.controller.api.Groove;
 import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
-import com.bitwig.extension.controller.api.RemoteControl;
-import com.bitwig.extension.controller.api.Scene;
-import com.bitwig.extension.controller.api.Send;
+import com.bitwig.extension.controller.api.SceneBank;
+import com.bitwig.extension.controller.api.SendBank;
+import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Transport;
 
 // source
@@ -93,6 +94,12 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                               Transport.class,
                               transport);
         }
+        if (config.useGroove()) {
+            Groove groove = host.createGroove();
+            registry.register("groove",
+                              Groove.class,
+                              groove);
+        }
         if (config.useCursorTrack()) {
             CursorTrack cursorTrack =
                 host.createCursorTrack(id, def.getName(),
@@ -102,11 +109,11 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
             registry.register("cursorTrack",
                               CursorTrack.class,
                               cursorTrack)
-                .registerBankItemCount(Send.class,
+                .registerBankItemCount(SendBank.class,
                                        config.getCursorTrackNumSends())
-                .registerBankItemCount(ClipLauncherSlotOrScene.class,
+                .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
                                        config.getCursorTrackNumScenes());
-                    
+
             if (config.useCursorDevice()) {
                 PinnableCursorDevice cursorDevice =
                     cursorTrack.createCursorDevice(id, def.getName(),
@@ -115,27 +122,27 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                 registry.register("cursorDevice",
                                   PinnableCursorDevice.class,
                                   cursorDevice)
-                    .registerBankItemCount(Send.class,
+                    .registerBankItemCount(SendBank.class,
                                            config.getCursorDeviceNumSends());
-                
+
                 if (config.useChainSelector()) {
                     ChainSelector chainSelector = cursorDevice.createChainSelector();
                     registry.register("chainSelector",
                                       ChainSelector.class,
                                       chainSelector)
-                        .registerBankItemCount(Send.class,
+                        .registerBankItemCount(SendBank.class,
                                                config.getCursorDeviceNumSends());
                 }
-                
+
                 if (config.useCursorDeviceLayer()) {
                     CursorDeviceLayer cursorDeviceLayer = cursorDevice.createCursorLayer();
                     registry.register("cursorDeviceLayer",
                                       CursorDeviceLayer.class,
                                       cursorDeviceLayer)
-                        .registerBankItemCount(Send.class,
+                        .registerBankItemCount(SendBank.class,
                                                config.getCursorDeviceNumSends());
                 }
-                
+
                 if (config.useCursorRemoteControlsPage()) {
                     CursorRemoteControlsPage cursorRemoteControlsPage
                         = cursorDevice.createCursorRemoteControlsPage
@@ -143,22 +150,58 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                     registry.register("cursorRemoteControlsPage",
                                       CursorRemoteControlsPage.class,
                                       cursorRemoteControlsPage)
-                        .registerBankItemCount(RemoteControl.class,
+                        .registerBankItemCount(CursorRemoteControlsPage.class,
                                                config.getCursorRemoteControlsPageParameterCount());
                 }
-                
+
                 if (config.useDrumPadBank()) {
                     DrumPadBank drumPadBank
                         = cursorDevice.createDrumPadBank(config.getDrumPadBankNumPads());
                     registry.register("drumPadBank",
                                       DrumPadBank.class,
                                       drumPadBank)
-                        .registerBankItemCount(DrumPad.class,
+                        .registerBankItemCount(DrumPadBank.class,
                                                config.getDrumPadBankNumPads())
-                        .registerBankItemCount(Send.class,
+                        .registerBankItemCount(SendBank.class,
                                                config.getCursorDeviceNumSends());
                 }
             }
+        }
+        if (config.useSceneBank()) {
+            SceneBank sceneBank
+                = host.createSceneBank(config.getSceneBankNumScenes());
+            registry.register("sceneBank",
+                              SceneBank.class,
+                              sceneBank)
+                .registerBankItemCount(SceneBank.class,
+                                       config.getSceneBankNumScenes());
+        }
+        if (config.useMainTrackBank()) {
+            TrackBank mainTrackBank
+                = host.createMainTrackBank(config.getMainTrackBankNumTracks(),
+                                           config.getMainTrackBankNumSends(),
+                                           config.getMainTrackBankNumScenes());
+            registry.register("mainTrackBank",
+                              TrackBank.class,
+                              mainTrackBank)
+                .registerBankItemCount(TrackBank.class,
+                                       config.getMainTrackBankNumTracks())
+                .registerBankItemCount(SendBank.class,
+                                       config.getMainTrackBankNumSends())
+                .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                       config.getMainTrackBankNumScenes());
+        }
+        if (config.useEffectTrackBank()) {
+            TrackBank effectTrackBank
+                = host.createEffectTrackBank(config.getEffectTrackBankNumTracks(),
+                                             config.getEffectTrackBankNumScenes());
+            registry.register("effectTrackBank",
+                              TrackBank.class,
+                              effectTrackBank)
+                .registerBankItemCount(TrackBank.class,
+                                       config.getEffectTrackBankNumTracks())
+                .registerBankItemCount(ClipLauncherSlotBank.class,
+                                       config.getEffectTrackBankNumScenes());
         }
         if (config.useMasterTrack()) {
             MasterTrack masterTrack
@@ -166,7 +209,7 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
             registry.register("masterTrack",
                               MasterTrack.class,
                               masterTrack)
-                .registerBankItemCount(ClipLauncherSlotOrScene.class,
+                .registerBankItemCount(ClipLauncherSlotBank.class,
                                        config.getMasterTrackNumScenes());
         }
 

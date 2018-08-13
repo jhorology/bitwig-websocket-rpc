@@ -244,35 +244,45 @@ public class ReflectionRegistry implements RpcRegistry {
                       + "\nmethod:" + absoluteName);
             return;
         }
+        
+        if (ReflectUtils.isBank(returnType) &&
+            module.getBankItemCount(returnType) == 0) {
+            // maybe correct
+            // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't use.
+            if (Logger.isDebugEnabled()) {
+                LOG.debug("##!!! Bank type founded, but bankItemCount is not registered.!!"
+                          + "\nmethod:" + absoluteName +
+                          " bankType:" + returnType);
+            }
+            return;
+        }
+        
         boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType);
         boolean isReturnTypeBitwigValue = false;
         boolean isReturnTypeBitwigParameter = false;
-        Class<?> bankItemType;
+        Class<?> bankItemType = null;
         int bankItemCount = 0;
         List<Method> methodsOfReturnType = null;
         
         if (isReturnTypeBitwigAPI) {
             isReturnTypeBitwigValue = ReflectUtils.isBitwigValue(returnType);
             isReturnTypeBitwigParameter = ReflectUtils.isBitwigParameter(returnType);
-            bankItemType = ReflectUtils.getBankItemType(parentNode.getNodeType(), method);
+            if (ReflectUtils.isBankMethod(method)) {
+                bankItemType = ReflectUtils.getBankItemType(parentNode.getNodeType());
+            }
             if (bankItemType != null) { 
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
-                    LOG.warn("##!!! Bank Method returns unassinable bank item type!!"
-                             + "\nmethod:" + absoluteName +
-                             " returnType:" + returnType);
+                    if (Logger.isDebugEnabled()) {
+                        LOG.debug("##!!! Bank Method returns unassinable bank item type!!"
+                                  + "\nmethod:" + absoluteName +
+                                  " returnType:" + returnType +
+                                  " replaceWith:" + bankItemType);
+                    }
                     // replace return type
                     returnType = bankItemType;
                 }
-                bankItemCount = module.getBankItemCount(bankItemType);
-                if (bankItemCount == 0) {
-                    // maybe correct
-                    // e.g) MasterTrack has sendBank().getItemAt(int), but it can't use.
-                    LOG.warn("##!!! Bank Method founded, but bankItemCount is not registered.!!"
-                             + "\nmethod:" + absoluteName +
-                             " bankItemType:" + bankItemType);
-                    return;
-                }
+                bankItemCount = module.getBankItemCount(parentNode.getNodeType());
             }
             // correct conflicted methods
             methodsOfReturnType = ReflectUtils.getCleanMethods(returnType);

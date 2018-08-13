@@ -58,9 +58,11 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useTransport;
     @Expose
+    private boolean useGroove;
+    @Expose
     private boolean useCursorTrack;
     @Expose
-    private int cursorTrackNumSends = 4;
+    private int cursorTrackNumSends = 2;
     @Expose
     private int cursorTrackNumScenes = 8;
     @Expose
@@ -68,7 +70,7 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useCursorDevice;
     @Expose
-    private int cursorDeviceNumSends = 4;
+    private int cursorDeviceNumSends = 2;
     @Expose
     private CursorDeviceFollowMode cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
     @Expose
@@ -82,7 +84,25 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useDrumPadBank;
     @Expose
-    private int drumPadBankNumPads = 8;
+    private int drumPadBankNumPads = 16;
+    @Expose
+    private boolean useSceneBank;
+    @Expose
+    private int sceneBankNumScenes = 8;
+    @Expose
+    private boolean useMainTrackBank;
+    @Expose
+    private int mainTrackBankNumTracks = 8;
+    @Expose
+    private int mainTrackBankNumSends = 2;
+    @Expose
+    private int mainTrackBankNumScenes = 8;
+    @Expose
+    private boolean useEffectTrackBank;
+    @Expose
+    private int effectTrackBankNumTracks = 2;
+    @Expose
+    private int effectTrackBankNumScenes = 8;
     @Expose
     private boolean useMasterTrack;
     @Expose
@@ -119,6 +139,14 @@ public class Config extends AbstractConfiguration {
      */
     public boolean useTransport() {
         return useTransport;
+    }
+
+    /**
+     * Returns a configuration value of the use or not use Groove API.
+     * @return
+     */
+    public boolean useGroove() {
+        return useGroove;
     }
 
     /**
@@ -184,7 +212,7 @@ public class Config extends AbstractConfiguration {
     public boolean useChainSelector() {
         return useChainSelector;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use CursorDeviceLayer API.
      * @return
@@ -192,7 +220,7 @@ public class Config extends AbstractConfiguration {
     public boolean useCursorDeviceLayer() {
         return useCursorDeviceLayer;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use CursorRemoteControlsPage API.
      * @return
@@ -200,7 +228,7 @@ public class Config extends AbstractConfiguration {
     public boolean useCursorRemoteControlsPage() {
         return useCursorRemoteControlsPage;
     }
-    
+
     /**
      * Returns a configuration value of parameter count of CursorRemoteControlsPage.
      * @return
@@ -216,7 +244,7 @@ public class Config extends AbstractConfiguration {
     public boolean useDrumPadBank() {
         return useDrumPadBank;
     }
-    
+
     /**
      * Returns a configuration value of the number of pads of DrumPadBank.
      * @return
@@ -224,7 +252,79 @@ public class Config extends AbstractConfiguration {
     public int getDrumPadBankNumPads() {
         return drumPadBankNumPads;
     }
-    
+
+    /**
+     * Returns a configuration value of the use or not use SceneBank API.
+     * @return
+     */
+    public boolean useSceneBank() {
+        return useSceneBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of scenes of SceneBank
+     * @return
+     */
+    public int getSceneBankNumScenes() {
+        return sceneBankNumScenes;
+    }
+
+    /**
+     * Returns a configuration value of the use or not use MainTrackBank API.
+     * @return
+     */
+    public boolean useMainTrackBank() {
+        return useMainTrackBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of tracks of MainTrackBank
+     * @return
+     */
+    public int getMainTrackBankNumTracks() {
+        return mainTrackBankNumTracks;
+    }
+
+    /**
+     * Returns a configuration value of the number of sends of MainTrackBank
+     * @return
+     */
+    public int getMainTrackBankNumSends() {
+        return mainTrackBankNumSends;
+    }
+
+    /**
+     * Returns a configuration value of the number of scenes of MainTrackBank
+     * @return
+     */
+    public int getMainTrackBankNumScenes() {
+        return mainTrackBankNumScenes;
+    }
+
+    /**
+     * Returns a configuration value of the use or not use EffectTrackBank API.
+     * @return
+     */
+    public boolean useEffectTrackBank() {
+        return useEffectTrackBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of tracks of EffectTrackBank
+     * @return
+     */
+    public int getEffectTrackBankNumTracks() {
+        return effectTrackBankNumTracks;
+    }
+
+    /**
+     * Returns a configuration value of the number of scenes of EffectTrackBank
+     * @return
+     */
+    public int getEffectTrackBankNumScenes() {
+        return effectTrackBankNumScenes;
+    }
+
     /**
      * Returns a configuration value of the use or not use MasterTrack API.
      * @return
@@ -232,7 +332,7 @@ public class Config extends AbstractConfiguration {
     public boolean useMasterTrack() {
         return useMasterTrack;
     }
-    
+
     /**
      * Returns a configuration value of the number of scenes of MasterTrack.
      * @return
@@ -240,6 +340,7 @@ public class Config extends AbstractConfiguration {
     public int getMasterTrackNumScenes() {
         return masterTrackNumScenes;
     }
+
 
     /**
      * {@inheritDoc}
@@ -284,6 +385,15 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        SettableBooleanValue useGrooveValue = pref.getBooleanSetting
+            ("Use Groove", API_PREF_CATEGORY, useGroove);
+        useGrooveValue.addValueObserver(v -> {
+                if (useGroove != v) {
+                    useGroove = v;
+                    valueChanged();
+                }
+            });
+
         // --> CursorTrack
         SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting
             ("Use CursorTrack", API_PREF_CATEGORY, useCursorTrack);
@@ -302,7 +412,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int cursorTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_2TO16, v -> {
+            (pref, "CursorTrack scenes", API_PREF_CATEGORY, cursorTrackNumScenes, INT_OPTIONS_4TO32, v -> {
                 if (cursorTrackNumScenes != v) {
                     cursorTrackNumScenes = v;
                     valueChanged();
@@ -353,7 +463,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-        
+
         // --> CursorDeviceLayer
         SettableBooleanValue useCursorDeviceLayerValue = pref.getBooleanSetting
             ("Use CursorDeviceLayer (needs CursorDevice)", API_PREF_CATEGORY, useCursorDeviceLayer);
@@ -363,7 +473,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-        
+
         // --> CursorRemoteControlPage
         SettableBooleanValue useCursorRemoteControlsPageValue = pref.getBooleanSetting
             ("Use CursorRemoteControlPage (needs CursorDevice)", API_PREF_CATEGORY, useCursorRemoteControlsPage);
@@ -381,7 +491,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-        
+
         // --> DrumPadBank
         SettableBooleanValue useDrumPadBankValue = pref.getBooleanSetting
             ("Use DrumPadBank (needs CursorDevice)", API_PREF_CATEGORY, useDrumPadBank);
@@ -399,7 +509,85 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-        
+
+        // --> SceneBank
+        SettableBooleanValue useSceneBankValue = pref.getBooleanSetting
+            ("Use SceneBank", API_PREF_CATEGORY, useSceneBank);
+        useSceneBankValue.addValueObserver(v -> {
+                if (useSceneBank != v) {
+                    useSceneBank = v;
+                    valueChanged();
+                }
+            });
+
+        int sceneBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "SceneBank scenes", API_PREF_CATEGORY, sceneBankNumScenes, INT_OPTIONS_4TO32, v -> {
+                if (sceneBankNumScenes != v) {
+                    sceneBankNumScenes = v;
+                    valueChanged();
+                }
+            });
+
+        // --> MainTrackBank
+        SettableBooleanValue useMainTrackBankValue = pref.getBooleanSetting
+            ("Use MainTrackBank", API_PREF_CATEGORY, useMainTrackBank);
+        useMainTrackBankValue.addValueObserver(v -> {
+                if (useMainTrackBank != v) {
+                    useMainTrackBank = v;
+                    valueChanged();
+                }
+            });
+
+        int mainTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "MainTrackBank tracks", API_PREF_CATEGORY, mainTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
+                if (mainTrackBankNumTracks != v) {
+                    mainTrackBankNumTracks = v;
+                    valueChanged();
+                }
+            });
+
+        int mainTrackBankNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "MainTrackBank sends", API_PREF_CATEGORY, mainTrackBankNumSends, INT_OPTIONS_1TO8, v -> {
+                if (mainTrackBankNumSends != v) {
+                    mainTrackBankNumSends = v;
+                    valueChanged();
+                }
+            });
+
+        int mainTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "MainTrackBank scenes", API_PREF_CATEGORY, mainTrackBankNumScenes, INT_OPTIONS_4TO32, v -> {
+                if (mainTrackBankNumScenes != v) {
+                    mainTrackBankNumScenes = v;
+                    valueChanged();
+                }
+            });
+
+        // --> EffectrackBank
+        SettableBooleanValue useEffectTrackBankValue = pref.getBooleanSetting
+            ("Use EffectTrackBank", API_PREF_CATEGORY, useEffectTrackBank);
+        useEffectTrackBankValue.addValueObserver(v -> {
+                if (useEffectTrackBank != v) {
+                    useEffectTrackBank = v;
+                    valueChanged();
+                }
+            });
+
+        int effectTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "EffectTrackBank tracks", API_PREF_CATEGORY, effectTrackBankNumTracks, INT_OPTIONS_1TO8, v -> {
+                if (effectTrackBankNumTracks != v) {
+                    effectTrackBankNumTracks = v;
+                    valueChanged();
+                }
+            });
+
+        int effectTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "EffectTrackBank scenes", API_PREF_CATEGORY, effectTrackBankNumScenes, INT_OPTIONS_4TO32, v -> {
+                if (effectTrackBankNumScenes != v) {
+                    effectTrackBankNumScenes = v;
+                    valueChanged();
+                }
+            });
+
         // --> MasterTrack
         SettableBooleanValue useMasterTrackValue = pref.getBooleanSetting
             ("Use MasterTrack", API_PREF_CATEGORY, useMasterTrack);
@@ -409,21 +597,22 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-        
+
         int masterTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "MasterTrack scenes", API_PREF_CATEGORY, masterTrackNumScenes, INT_OPTIONS_2TO16, v -> {
+            (pref, "MasterTrack scenes", API_PREF_CATEGORY, masterTrackNumScenes, INT_OPTIONS_4TO32, v -> {
                 if (masterTrackNumScenes != v) {
                     masterTrackNumScenes = v;
                     valueChanged();
                 }
             });
-        
+
         // for future use
         if (!USE_RC_FILE) {
             webSocketPort = (int)webSocketPortValue.getRaw();
             rpcProtocol = protocol;
             useApplication = useApplicationValue.get();
             useTransport = useTransportValue.get();
+            useGroove = useGrooveValue.get();
 
             useCursorTrack = useCursorTrackValue.get();
             cursorTrackNumSends = cursorTrackNumSendsValue;
@@ -435,19 +624,30 @@ public class Config extends AbstractConfiguration {
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
 
             useChainSelector = useChainSelectorValue.get();
-            
+
             useCursorDevice = useCursorDeviceValue.get();
-            
+
             useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
             cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;
 
             useDrumPadBank = useDrumPadBankValue.get();
             drumPadBankNumPads = drumPadBankNumPadsValue;
-            
+
+            useSceneBank = useSceneBankValue.get();
+            sceneBankNumScenes = sceneBankNumScenesValue;
+
+            useMainTrackBank = useMainTrackBankValue.get();
+            mainTrackBankNumTracks = mainTrackBankNumTracksValue;
+            mainTrackBankNumSends = mainTrackBankNumSendsValue;
+            mainTrackBankNumScenes = mainTrackBankNumScenesValue;
+
+            useEffectTrackBank = useEffectTrackBankValue.get();
+            effectTrackBankNumTracks = effectTrackBankNumTracksValue;
+            effectTrackBankNumScenes = effectTrackBankNumScenesValue;
+
             useMasterTrack = useMasterTrackValue.get();
             masterTrackNumScenes = masterTrackNumScenesValue;
         }
-
 
         host.getPreferences().getSignalSetting
             ("Restart", RESTART_PREF_CATEGORY, "Restart")
