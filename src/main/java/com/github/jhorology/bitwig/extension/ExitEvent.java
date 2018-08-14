@@ -30,7 +30,7 @@ public class ExitEvent extends AbstractExtensionEvent {
      * Construct an instance with extension.
      * @param extension 
      */
-    ExitEvent(AbstractExtension extension) {
+    ExitEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
         super(extension);
     }
 }

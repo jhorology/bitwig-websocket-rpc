@@ -24,17 +24,16 @@ package com.github.jhorology.bitwig.reflect;
 
 // jdk
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.RemoteControl;
 import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
@@ -52,7 +51,6 @@ import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
-import java.util.ArrayList;
 
 /**
  * 
@@ -65,6 +63,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private static final Logger LOG = Logger.getLogger(ReflectionRegistry.class);
 
     private final ProtocolHandler protocol;
+    private final boolean useAbbrev;
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
     
@@ -75,8 +74,14 @@ public class ReflectionRegistry implements RpcRegistry {
 
     private boolean initialized;
 
-    public ReflectionRegistry(ProtocolHandler protocol) {
+    /**
+     * 
+     * @param protocol
+     * @param useAbbrev 
+     */
+    public ReflectionRegistry(ProtocolHandler protocol, boolean useAbbrev) {
         this.protocol = protocol;
+        this.useAbbrev = useAbbrev;
         modules = new ArrayList<>();
         methods = new LinkedHashMap<>(512);
         events = new LinkedHashMap<>(256);
@@ -166,7 +171,10 @@ public class ReflectionRegistry implements RpcRegistry {
      * @return the instance of ModuleHolder.
      */
     public <T> ModuleHolder<T> register(String moduleName, Class<T> interfaceType, T moduleInstance) {
-        ModuleHolder<T> module = new ModuleHolder<>(this, moduleName, interfaceType, moduleInstance);
+        ModuleHolder<T> module = new ModuleHolder<>(this,
+                                                    useAbbrev ? AbbrevDict.abbrev(moduleName) : moduleName,
+                                                    interfaceType,
+                                                    moduleInstance);
         if (initialized) {
             throw new IllegalStateException("This method can be called only before initializtion.");
         }
@@ -238,7 +246,8 @@ public class ReflectionRegistry implements RpcRegistry {
     private void registerMethod(ModuleHolder<?> module, Method method, RegistryNode<?> parentNode, int chainDepth) {
         // filter unusable methods
         Class<?> returnType = method.getReturnType();
-        String absoluteName = parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName();
+        String methodName = useAbbrev ? AbbrevDict.abbrev(method.getName()) : method.getName();
+        String absoluteName = parentNode.getAbsoluteName() + NODE_DELIMITER + methodName;
         if (chainDepth > 5) {
             LOG.error("##!!! Method chain depth are too long. Something is wrong!!"
                       + "\nmethod:" + absoluteName);
@@ -274,7 +283,7 @@ public class ReflectionRegistry implements RpcRegistry {
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     if (Logger.isDebugEnabled()) {
-                        LOG.debug("##!!! Bank Method returns unassinable bank item type!!"
+                        LOG.debug("##!!! Bank Method returns unassignable bank item type!!"
                                   + "\nmethod:" + absoluteName +
                                   " returnType:" + returnType +
                                   " replaceWith:" + bankItemType);
@@ -294,24 +303,32 @@ public class ReflectionRegistry implements RpcRegistry {
             ! isReturnTypeBitwigParameter;
         
         MethodHolder<?> mh = isEvent
-            ? new EventHolder(method, (Class<? extends Value>)returnType, parentNode, bankItemCount, host, protocol.getPushModel())
-            : new MethodHolder(method, returnType, parentNode, bankItemCount);
+            ? new EventHolder(methodName,
+                              method,
+                              (Class<? extends Value>)returnType,
+                              parentNode,
+                              bankItemCount,
+                              host,
+                              protocol.getPushModel())
+            : new MethodHolder(methodName,
+                               method,
+                               returnType,
+                               parentNode,
+                               bankItemCount);
         
         if (! isReturnTypeBitwigAPI ||
             (isReturnTypeBitwigAPI &&
              protocol.isSerializableBitwigType(returnType))) {
             // for debug
             if (Logger.isDebugEnabled()) {
-                EventHolder<?> duplicatedMethod = events.get(absoluteName);
+                MethodHolder<?> duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
                     LOG.debug("##!!! duplicated method!!"
                               + "\nevent:" + absoluteName
-                              + "\nold:" + duplicatedMethod.parentNode.getNodeType().getSimpleName() + "#" + duplicatedMethod.getNodeName()
-                              + "\nnew:" + mh.parentNode.getNodeType().getSimpleName() + "#" + mh.getNodeName());
+                              + "\nold:" + duplicatedMethod.getExpression(true)
+                              + "\nnew:" + mh.getExpression(true));
                 }
             }
-            
-            
             methods.put(mh.getIdentifier(), mh);
         }
         if (isEvent) {

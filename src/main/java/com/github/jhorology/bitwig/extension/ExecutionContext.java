@@ -41,12 +41,13 @@ public class ExecutionContext {
     
     /**
      * initialize the context
+     * @exception IllegalStateException throws when reentrant context.
      */
     static void init(AbstractExtension<? extends AbstractConfiguration> extension) {
         // for debug
         // checking re-entrant context
         if (instance != null) {
-            RuntimeException ex = new RuntimeException("re-entrant context.");
+            IllegalStateException ex = new IllegalStateException("re-entrant context.");
             LOG.error(ex);
             throw ex;
         }

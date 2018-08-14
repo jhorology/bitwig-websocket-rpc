@@ -24,8 +24,6 @@ package com.github.jhorology.bitwig.reflect;
 
 // jdk
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 // provided dependencies

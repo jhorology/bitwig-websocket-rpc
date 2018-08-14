@@ -30,7 +30,7 @@ public class InitEvent extends AbstractExtensionEvent {
      * Construct an instanice with extension.
      * @param extension 
      */
-    InitEvent(AbstractExtension extension) {
+    InitEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
         super(extension);
     }
 }

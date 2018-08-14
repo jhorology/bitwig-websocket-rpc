@@ -30,7 +30,7 @@ public class FlushEvent extends AbstractExtensionEvent {
      * Construct an instance with extension.
      * @param extension 
      */
-    FlushEvent(AbstractExtension extension) {
+    FlushEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
         super(extension);
     }
 }

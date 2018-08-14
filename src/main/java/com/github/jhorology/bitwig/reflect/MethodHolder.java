@@ -53,8 +53,6 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     private final RpcParamType[] rpcParamTypes;
     private final boolean staticMethod;
     private final boolean varargs;
-    private final boolean bitwigAPI;
-    private final boolean bitwigValue;
     private final MethodIdentifier identifier;
     private String error;
     private Map<List<Object>, T> instanceCache;
@@ -67,8 +65,8 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
      * @param bankItemCount
      */
     @SuppressWarnings("unchecked")
-    MethodHolder(Method method, Class<T>nodeType, RegistryNode<?> parentNode, int bankItemCount) {
-        super(method.getName(), nodeType,
+    MethodHolder(String nodeName, Method method, Class<T>nodeType, RegistryNode<?> parentNode, int bankItemCount) {
+        super(nodeName, nodeType,
               method.getGenericParameterTypes(), parentNode, bankItemCount);
         this.method = method;
         this.paramTypes = parentNode instanceof MethodHolder
@@ -79,8 +77,6 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
             .toArray(size -> new RpcParamType[size]);
         this.staticMethod = Modifier.isStatic(method.getModifiers());
         this.varargs = ReflectUtils.isVarargs(nodeParamTypes);
-        this.bitwigAPI = ReflectUtils.isBitwigAPI(nodeType);
-        this.bitwigValue = ReflectUtils.isBitwigValue(nodeType);
         this.identifier = new MethodIdentifier(absoluteName, rpcParamTypes);
     }
 
@@ -121,14 +117,10 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
             //  foobar1(a).foobar2(b).foobar3(c, d);
             //  rpc params:[a,b,c,d]
             //  reduce [a,b,c,d] -> [c,d]
-            int start = params.length - nodeParamTypes.length;
-            int end = params.length;
             Object[] thisMethodParams = ArrayUtils.subarray(params, params.length - nodeParamTypes.length, params.length);
             if (staticMethod) {
                 result = (T)invokeStaticMethod(thisMethodParams);
             } else {
-                start -= parentNode.nodeParamTypes.length;
-                end -= nodeParamTypes.length;
                 //  foobar1(a).foobar2(b).foobar3(c, d);
                 //  rpc params:[a,b,c,d]
                 //  reduce [a,b,c,d] -> [a,b]
@@ -184,14 +176,6 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     void clear() {
     }
     
-    /**
-     * Returns this method is usable for RPC method or not.
-     * @return
-     */
-    boolean isUsableForRpcMethod() {
-        return ! bitwigAPI || bitwigValue;
-    }
-
     /**
      * Return the identifier of this method.
      * @return 
@@ -269,16 +253,17 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     String getExpression(boolean withReturnType) {
         StringBuilder sb = new StringBuilder();
         if (withReturnType) {
-            sb.append(rpcNodeType.getExpression());
+            sb.append(nodeType.getSimpleName());
             sb.append(" ");
         }
         if (parentNode instanceof MethodHolder) {
             sb.append(((MethodHolder)parentNode).getExpression(false));
             sb.append(".");
-            sb.append(nodeName);
         } else {
-            sb.append(absoluteName);
+            sb.append(parentNode.nodeType.getSimpleName());
+            sb.append("#");
         }
+        sb.append(method.getName());
         sb.append("(");
         sb.append(Stream.of(nodeRpcParamTypes)
                   .map(t -> t.getExpression())
@@ -286,5 +271,4 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         sb.append(")");
         return sb.toString();
     }
-
 }

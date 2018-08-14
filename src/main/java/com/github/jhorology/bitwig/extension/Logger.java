@@ -417,8 +417,7 @@ public class Logger implements StringValue {
                 String logMessage = tailMessages.poll();
                 while(logMessage != null) {
                     final String msg = logMessage;
-                    subscribers.stream()
-                        .forEach((s)-> s.valueChanged(msg));
+                    subscribers.forEach((s)-> s.valueChanged(msg));
                     logMessage = tailMessages.poll();
                 }
             }

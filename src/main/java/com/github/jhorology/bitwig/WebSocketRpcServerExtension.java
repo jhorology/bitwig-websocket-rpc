@@ -76,8 +76,11 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
         ControllerHost host = getHost();
         ExtensionDefinition def = getExtensionDefinition();
         String id = def.getId().toString();
-        ProtocolHandler protocol = Protocols.newProtocolHandler(config.getRpcProtocol());
-        ReflectionRegistry registry = new ReflectionRegistry(protocol);
+        ProtocolHandler protocol =
+            Protocols.newProtocolHandler(config.getRpcProtocol());
+        ReflectionRegistry registry =
+            new ReflectionRegistry(protocol,
+                                   config.useAbbreviatedMethodNames());
         registry.register("rpc",  Rpc.class, new RpcImpl());
         // for test
         registry.register("test", Test.class, new TestImpl());

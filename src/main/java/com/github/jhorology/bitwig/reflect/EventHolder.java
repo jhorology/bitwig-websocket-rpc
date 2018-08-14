@@ -229,6 +229,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
     
     /**
      * 
+     * @param nodeName
      * @param method
      * @param nodeType
      * @param parantNode
@@ -236,8 +237,8 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
      * @param pushModel
      * @param host 
      */
-    EventHolder(Method method, Class<T> nodeType, RegistryNode<?> parantNode, int bankItemCount, ControllerHost host, PushModel pushModel) {
-        super(method, nodeType, parantNode, bankItemCount);
+    EventHolder(String nodeName, Method method, Class<T> nodeType, RegistryNode<?> parantNode, int bankItemCount, ControllerHost host, PushModel pushModel) {
+        super(nodeName, method, nodeType, parantNode, bankItemCount);
         // clients = new LinkedList<>();
         this.host = host;
         this.pushModel = pushModel;

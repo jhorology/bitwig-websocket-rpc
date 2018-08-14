@@ -83,8 +83,6 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
 @SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
     private static final Logger LOG = Logger.getLogger(ReflectUtils.class);
-    // TODO make it configurable
-    private static final boolean PUBLISH_SUBSCRIBABLE_METHODS = true;
 
     /**
      * empty array of Object.
@@ -126,7 +124,6 @@ public class ReflectUtils {
             SEMI_BANK_ITEM_TYPES.put(ParameterBank.class, Parameter.class);
 
             // bank methods
-            // null for returns ObjectProxy at runtime
             BANK_METHODS.add(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES));
             BANK_METHODS.add(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
             BANK_METHODS.add(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
@@ -334,10 +331,14 @@ public class ReflectUtils {
      * @param bankType the type of bank.
      * @return the type of bank item.
      */
+    @SuppressWarnings("unchecked")
     public static Class<?> getBankItemType(Class<?> bankType) {
-        Class<?> bankItemType = BANK_ITEM_TYPES.get(bankType);
-        if (bankItemType != null) {
-            return bankItemType;
+        Class<?> bankItemType;
+        if (Bank.class.isAssignableFrom(bankType)) {
+            bankItemType = BANK_ITEM_TYPES.get((Class<? extends Bank<?>>)bankType);
+            if (bankItemType != null) {
+                return bankItemType;
+            }
         }
         bankItemType = SEMI_BANK_ITEM_TYPES.get(bankType);
         if (bankItemType != null) {
@@ -376,7 +377,6 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !("markInterested".equals(m.getName())));
         }
-
 
         // WTF! fixing one by one
 

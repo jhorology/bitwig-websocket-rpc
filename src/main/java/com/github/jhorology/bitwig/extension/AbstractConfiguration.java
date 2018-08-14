@@ -34,6 +34,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 
 // dependencies
 import com.google.gson.annotations.Expose;
+import java.util.logging.Level;
 
 /**
  * A base class for managing extension's configuration.
@@ -49,8 +50,11 @@ public abstract class AbstractConfiguration {
     private Logger.Severity logLevel = Logger.Severity.ERROR;
     // <--
 
-    private boolean valueChanged;
+    private ControllerHost host;
+    private ControllerExtensionDefinition definition;
     private Path rcFilePath;
+    private boolean valueChanged;
+    private boolean requestedReset;
 
     /**
      * Initialize the this configuration.
@@ -68,8 +72,11 @@ public abstract class AbstractConfiguration {
      * @param extension 
      */
     void init(ControllerHost host, ControllerExtensionDefinition definition) {
+        this.host = host;
+        this.definition = definition;
+        
         if (USE_RC_FILE) {
-            rcFilePath = rcFilePath(definition);
+            rcFilePath = rcFilePath();
             if (Files.exists(rcFilePath)) {
                 try {
                     ExtensionUtils.populateJsonProperties(rcFilePath, this);
@@ -99,15 +106,21 @@ public abstract class AbstractConfiguration {
      * De-initialize the this configuration.
      */
     void exit() {
-        if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE && valueChanged) {
+        if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE &&
+            valueChanged &&
+            !requestedReset) {
             try {
                 ExtensionUtils.writeJsonFile(this, rcFilePath);
             } catch (IOException ex) {
                 LOG.error(ex);
             }
         }
+        if (requestedReset) {
+            deleteRcFiles();
+        }
         onExit();
     }
+    
     /**
      * Return a log level that defined as configuration value.
      * @return 
@@ -130,7 +143,29 @@ public abstract class AbstractConfiguration {
         valueChanged = true;
     }
 
-    private Path rcFilePath(ControllerExtensionDefinition definition) {
+    protected void requestReset() {
+        requestedReset = true;
+    }
+
+    private void deleteRcFiles() {
+        String prefix = ".bitwig.extension." + definition.getName(); 
+        try {
+            Files.list(Paths.get(System.getProperty("user.home")))
+                .filter(Files::isRegularFile)
+                .filter(path -> path.getFileName().startsWith(prefix))
+                .forEach((path) -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException ex) {
+                            LOG.error(ex);
+                        }
+                    });
+        } catch (IOException ex) {
+            LOG.error(ex);
+        }
+                   
+    }
+    private Path rcFilePath() {
         StringBuilder fileName = new StringBuilder(".bitwig.extension.");
         fileName.append(definition.getName());
         fileName.append("-");
