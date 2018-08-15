@@ -46,6 +46,7 @@ public class Config extends AbstractConfiguration {
     private static final int[] INT_OPTIONS_2TO16 = {2, 4, 8,16};
     private static final int[] INT_OPTIONS_4TO32 = {4, 8,16,32};
     private static final int[] INT_OPTIONS_8TO64 = {8,16,32,64};
+    private static final int[] INT_OPTIONS_16TO128 = {16,32,64,128};
     // populate from json -->
     @Expose
     private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
@@ -107,6 +108,27 @@ public class Config extends AbstractConfiguration {
     private boolean useMasterTrack;
     @Expose
     private int masterTrackNumScenes = 8;
+    
+    @Expose
+    private boolean useBrowser;
+    @Expose
+    private int browserSmartCollectionRows = 32;
+    @Expose
+    private int browserLocationRows = 32;
+    @Expose
+    private int browserDeviceRows =32;
+    @Expose
+    private int browserCategoryRows = 32;
+    @Expose
+    private int browserTagRows = 32;
+    @Expose
+    private int browserDeviceTypeRows = 16;
+    @Expose
+    private int browserFileTypeRows = 16;
+    @Expose
+    private int browserCreatorRows = 32;
+    @Expose
+    private int browserResultsRows = 32;
     // <--
 
     /**
@@ -349,6 +371,85 @@ public class Config extends AbstractConfiguration {
         return masterTrackNumScenes;
     }
 
+    /**
+     * Returns a configuration value of the use or not use PopupBrowser API.
+     * @return
+     */
+    public boolean useBrowser() {
+        return useBrowser;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of smart collection column
+     * @return
+     */
+    public int getBrowserSmartCollectionRows() {
+        return browserSmartCollectionRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of location column
+     * @return
+     */
+    public int getBrowserLocationRows() {
+        return browserLocationRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of device column
+     * @return
+     */
+    public int getBrowserDeviceRows() {
+        return browserDeviceRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of category column
+     * @return
+     */
+    public int getBrowserCategoryRows() {
+        return browserCategoryRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of tag column
+     * @return
+     */
+    public int getBrowserTagRows() {
+        return browserTagRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of device type column
+     * @return
+     */
+    public int getBrowserDeviceTypeRows() {
+        return browserDeviceTypeRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of file type column
+     * @return
+     */
+    public int getBrowserFileTypeRows() {
+        return browserDeviceTypeRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of file type column
+     * @return
+     */
+    public int getBrowserCreatorRows() {
+        return browserCreatorRows;
+    }
+    
+    /**
+     * Returns a configuration value of the number of rows of results column
+     * @return
+     */
+    public int getBrowserResultsRows() {
+        return browserResultsRows;
+    }
 
     /**
      * {@inheritDoc}
@@ -623,6 +724,88 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        // --> PopupBrowser
+        SettableBooleanValue useBrowserValue = pref.getBooleanSetting
+            ("Use", "PopupBrowser", useBrowser);
+        useBrowserValue.addValueObserver(v -> {
+                if (useBrowser != v) {
+                    useBrowser = v;
+                    valueChanged();
+                }
+            });
+
+        int browserSmartCollectionRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Smart collection rows", "PopupBrowser", browserSmartCollectionRows, INT_OPTIONS_16TO128, v -> {
+                if (browserSmartCollectionRows != v) {
+                    browserSmartCollectionRows = v;
+                    valueChanged();
+                }
+            });
+
+        int browserLocationRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Location rows", "PopupBrowser", browserLocationRows, INT_OPTIONS_16TO128, v -> {
+                if (browserLocationRows != v) {
+                    browserLocationRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserDeviceRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Device rows", "PopupBrowser", browserDeviceRows, INT_OPTIONS_16TO128, v -> {
+                if (browserDeviceRows != v) {
+                    browserDeviceRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserCategoryRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Category rows", "PopupBrowser", browserCategoryRows, INT_OPTIONS_16TO128, v -> {
+                if (browserCategoryRows != v) {
+                    browserCategoryRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserTagRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Tag rows", "PopupBrowser", browserTagRows, INT_OPTIONS_16TO128, v -> {
+                if (browserTagRows != v) {
+                    browserTagRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserDeviceTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Device type rows", "PopupBrowser", browserDeviceTypeRows, INT_OPTIONS_8TO64, v -> {
+                if (browserDeviceTypeRows != v) {
+                    browserDeviceTypeRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserFileTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "File type rows", "PopupBrowser", browserFileTypeRows, INT_OPTIONS_8TO64, v -> {
+                if (browserFileTypeRows != v) {
+                    browserFileTypeRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserCreatorRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Creator rows", "PopupBrowser", browserCreatorRows, INT_OPTIONS_16TO128, v -> {
+                if (browserCreatorRows != v) {
+                    browserCreatorRows = v;
+                    valueChanged();
+                }
+            });
+        
+        int browserResultsRowsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Results rows", "PopupBrowser", browserResultsRows, INT_OPTIONS_16TO128, v -> {
+                if (browserResultsRows != v) {
+                    browserResultsRows = v;
+                    valueChanged();
+                }
+            });
+        
         // for future use
         if (!USE_RC_FILE) {
             webSocketPort = (int)webSocketPortValue.getRaw();
@@ -664,6 +847,17 @@ public class Config extends AbstractConfiguration {
 
             useMasterTrack = useMasterTrackValue.get();
             masterTrackNumScenes = masterTrackNumScenesValue;
+            
+            useBrowser = useBrowserValue.get();
+            browserSmartCollectionRows = browserSmartCollectionRowsValue;
+            browserLocationRows = browserLocationRowsValue;
+            browserDeviceRows = browserDeviceRowsValue;
+            browserCategoryRows = browserCategoryRowsValue;
+            browserTagRows = browserTagRowsValue;
+            browserDeviceTypeRows = browserDeviceTypeRowsValue;
+            browserFileTypeRows = browserFileTypeRowsValue;
+            browserCreatorRows = browserCreatorRowsValue;
+            browserResultsRows = browserResultsRowsValue;
         }
 
         host.getPreferences().getSignalSetting

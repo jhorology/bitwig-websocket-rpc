@@ -386,7 +386,9 @@ public class ReflectUtils {
                 .filter(m -> !("get".equals(m.getName())
                                && Object[].class.equals(m.getReturnType())));
         }
-        // RemoteControlsPage/ParameterBank duplicated getParameter method
+        // RemoteControlsPage/ParameterBank has duplicated getParameter method
+        // RemoteControl getParameter(int)
+        // Paramater getParameter(int)
         if (RemoteControlsPage.class.isAssignableFrom(interfaceType)
             && ParameterBank.class.isAssignableFrom(interfaceType)) {
             methodsStream = methodsStream
@@ -416,7 +418,7 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !"getScene".equals(m.getName()));
         }
-
+        
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug
         if (Logger.isDebugEnabled()) {

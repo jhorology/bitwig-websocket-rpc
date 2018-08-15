@@ -15,7 +15,7 @@
     <extension.json>src/main/resources/bitwig-extension.json</extension.json>
     <!-- Bitwig extension definition -->
     <extension.name>WebSocket RPC</extension.name>
-    <extension.author>Masafumi</extension.author>
+    <extension.author>昌文</extension.author>
     <extension.version>0.1-SNAPSHOT</extension.version>
     <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
     <extension.requiredAPIVersion>7</extension.requiredAPIVersion>

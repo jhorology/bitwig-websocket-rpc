@@ -40,7 +40,6 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
 // source
-import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.extension.Logger;
@@ -56,7 +55,6 @@ public class WebSocketRpcServer
     implements SubscriberExceptionHandler {
     private static final Logger LOG = Logger.getLogger(WebSocketRpcServer.class);
 
-    private AbstractExtension extension;
     private AsyncEventBus eventBus;
     private ProtocolHandler protocol;
     private RpcRegistry registry;
@@ -114,6 +112,7 @@ public class WebSocketRpcServer
      * @param e
      */
     @Subscribe
+    @SuppressWarnings("UseSpecificCatch")
     public void onExit(ExitEvent e) {
         try {
             LOG.info("waiting for WebSocket RPC server stop.");
@@ -127,19 +126,18 @@ public class WebSocketRpcServer
                 LOG.info("AsyncEventBus has been full drained.");
             }
             // <--
-            stop(2000);
+            stop();
             // prevent Address in use error on restart extension.
             waitFor(() -> !running, 2000L);
             if (!running) {
                 LOG.info("WebSocketServer has been stopped.");
             }
             LOG.info("WebSocket RPC server stopped.");
-        } catch (InterruptedException ex) {
+        } catch (Exception ex) {
             LOG.error(ex);
         } finally {
             eventBus.unregister(this);
             eventBus.unregister(protocol);
-            extension = null;
         }
     }
     /**

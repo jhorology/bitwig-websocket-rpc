@@ -27,6 +27,12 @@ package com.github.jhorology.bitwig;
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.BrowserFilterColumn;
+import com.bitwig.extension.controller.api.BrowserFilterItem;
+import com.bitwig.extension.controller.api.BrowserFilterItemBank;
+import com.bitwig.extension.controller.api.BrowserResultsColumn;
+import com.bitwig.extension.controller.api.BrowserResultsItem;
+import com.bitwig.extension.controller.api.BrowserResultsItemBank;
 import com.bitwig.extension.controller.api.ChainSelector;
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
@@ -38,6 +44,7 @@ import com.bitwig.extension.controller.api.DrumPadBank;
 import com.bitwig.extension.controller.api.Groove;
 import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
+import com.bitwig.extension.controller.api.PopupBrowser;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.SendBank;
 import com.bitwig.extension.controller.api.TrackBank;
@@ -216,6 +223,47 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                                        config.getMasterTrackNumScenes());
         }
 
+        if (config.useBrowser()) {
+            PopupBrowser popupBrowser = host.createPopupBrowser();
+            registry.register("browser",
+                              PopupBrowser.class,
+                              popupBrowser);
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.smartCollectionColumn(),
+                                        "smartCollectionColumn",
+                                        config.getBrowserSmartCollectionRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.locationColumn(),
+                                        "locationColumn",
+                                        config.getBrowserLocationRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.deviceColumn(),
+                                        "deviceColumn",
+                                        config.getBrowserDeviceRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.categoryColumn(),
+                                        "categoryColumn",
+                                        config.getBrowserCategoryRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.tagColumn(),
+                                        "tagColumn",
+                                        config.getBrowserTagRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.deviceTypeColumn(),
+                                        "deviceTypeColumn",
+                                        config.getBrowserDeviceTypeRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.fileTypeColumn(),
+                                        "fileTypeColumn",
+                                        config.getBrowserFileTypeRows());
+            registerBrowserFilterColumn(registry,
+                                        popupBrowser.creatorColumn(),
+                                        "creatorColumn",
+                                        config.getBrowserCreatorRows());
+            registerBrowserResultsColumn(registry,
+                                         popupBrowser.resultsColumn(),
+                                         config.getBrowserResultsRows());
+        }
         // returns subscriber modules of extension event.
         return new Object[] {
             registry,
@@ -223,5 +271,40 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                                    protocol,
                                    registry)
         };
+    }
+
+    private void registerBrowserFilterColumn(ReflectionRegistry registry,
+                                             BrowserFilterColumn column,
+                                             String columnName,
+                                             int itemSize) {
+        // register cursor
+        BrowserFilterItem cursorItem = column.createCursorItem();
+        registry.register("browser." + columnName + ".cursorItem",
+                          BrowserFilterItem.class,
+                          cursorItem);
+        // register item bank
+        BrowserFilterItemBank itemBank = column.createItemBank(itemSize);
+        registry.register("browser." + columnName + ".itemBank",
+                          BrowserFilterItemBank.class,
+                          itemBank)
+            .registerBankItemCount(BrowserFilterItemBank.class,
+                                   itemSize);
+    }
+
+    private void registerBrowserResultsColumn(ReflectionRegistry registry,
+                                              BrowserResultsColumn column,
+                                              int itemSize) {
+        // register cursor
+        BrowserResultsItem cursorItem = column.createCursorItem();
+        registry.register("browser.resultsColumn.cursorItem",
+                          BrowserResultsItem.class,
+                          cursorItem);
+        // register item bank
+        BrowserResultsItemBank itemBank = column.createItemBank(itemSize);
+        registry.register("browser.resultsColumn.itemBank",
+                          BrowserResultsItemBank.class,
+                          itemBank)
+            .registerBankItemCount(BrowserResultsItemBank.class,
+                                   itemSize);
     }
 }

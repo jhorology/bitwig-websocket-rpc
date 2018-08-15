@@ -257,7 +257,7 @@ public class ReflectionRegistry implements RpcRegistry {
         if (ReflectUtils.isBank(returnType) &&
             module.getBankItemCount(returnType) == 0) {
             // maybe correct
-            // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't use.
+            // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
             if (Logger.isDebugEnabled()) {
                 LOG.debug("##!!! Bank type founded, but bankItemCount is not registered.!!"
                           + "\nmethod:" + absoluteName +
@@ -293,7 +293,6 @@ public class ReflectionRegistry implements RpcRegistry {
                 }
                 bankItemCount = module.getBankItemCount(parentNode.getNodeType());
             }
-            // correct conflicted methods
             methodsOfReturnType = ReflectUtils.getCleanMethods(returnType);
         }
 
@@ -338,8 +337,8 @@ public class ReflectionRegistry implements RpcRegistry {
                 if (duplicatedEvent != null) {
                     LOG.warn("##!!! duplicated event!!"
                              + "\nevent:" + absoluteName
-                             + "\nold:" + duplicatedEvent.parentNode.getNodeType().getSimpleName() + "#" + duplicatedEvent.getNodeName()
-                             + "\nnew:" + mh.parentNode.getNodeType().getSimpleName() + "#" + mh.getNodeName());
+                             + "\nold:" + duplicatedEvent.getExpression(true)
+                             + "\nnew:" + mh.getExpression(true));
                 }
             }
             events.put(absoluteName, (EventHolder)mh);

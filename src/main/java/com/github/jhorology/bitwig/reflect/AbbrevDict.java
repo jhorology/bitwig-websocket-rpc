@@ -38,10 +38,13 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"hasAudioInputSelected", "audioInSelected"});
         REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
         REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
+        REPLACES.add(new String[] {"([Ss]mart)Collection", "$1"});
+        REPLACES.add(new String[] {"([Cc]ol)umn", "$1"});
         REPLACES.add(new String[] {"^(.+)InsertionPoint", "$1"});
         REPLACES.add(new String[] {"canHoldAudioData", "canHoldAudio"});
         REPLACES.add(new String[] {"canHoldNoteData", "canHoldNote"});
         REPLACES.add(new String[] {"queuedForStop", "stopQueued"});
+        REPLACES.add(new String[] {"([Ii]nc)rease", "$1"});
         REPLACES.add(new String[] {"([Aa]ct)ive", "$1"});
         REPLACES.add(new String[] {"([Tt])ransport", "$1p"});
         REPLACES.add(new String[] {"^(.+)OfBank", "$1"});
