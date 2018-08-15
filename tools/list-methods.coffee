@@ -8,3 +8,4 @@ maxLength = 0
 maxLength = Math.max maxLength, m.method.length for m in methods;
 
 console.info "[#{m.method.padEnd maxLength}]", m.expression for m in methods
+console.info "total:", methods.length, "methods.", "max length of method name:", maxLength

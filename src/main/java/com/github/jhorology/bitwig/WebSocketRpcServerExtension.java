@@ -27,6 +27,7 @@ package com.github.jhorology.bitwig;
 // bitwig api
 import com.bitwig.extension.ExtensionDefinition;
 import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.Arranger;
 import com.bitwig.extension.controller.api.BrowserFilterColumn;
 import com.bitwig.extension.controller.api.BrowserFilterItem;
 import com.bitwig.extension.controller.api.BrowserFilterItemBank;
@@ -37,12 +38,14 @@ import com.bitwig.extension.controller.api.ChainSelector;
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.CueMarkerBank;
 import com.bitwig.extension.controller.api.CursorDeviceLayer;
 import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.DrumPadBank;
 import com.bitwig.extension.controller.api.Groove;
 import com.bitwig.extension.controller.api.MasterTrack;
+import com.bitwig.extension.controller.api.Mixer;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.PopupBrowser;
 import com.bitwig.extension.controller.api.SceneBank;
@@ -104,11 +107,30 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                               Transport.class,
                               transport);
         }
+        if (config.useArranger()) {
+            Arranger arranger = host.createArranger();
+            registry.register("arranger",
+                              Arranger.class,
+                              arranger);
+            CueMarkerBank cueMarkerBank =
+                arranger.createCueMarkerBank(config.getArrangerCueMakerSize());
+            registry.register("arranger.cueMarkerBank",
+                              CueMarkerBank.class,
+                              cueMarkerBank)
+                .registerBankItemCount(CueMarkerBank.class,
+                                       config.getArrangerCueMakerSize());
+        }
         if (config.useGroove()) {
             Groove groove = host.createGroove();
             registry.register("groove",
                               Groove.class,
                               groove);
+        }
+        if (config.useMixer()) {
+            Mixer mixer = host.createMixer();
+            registry.register("mixer",
+                              Mixer.class,
+                              mixer);
         }
         if (config.useCursorTrack()) {
             CursorTrack cursorTrack =

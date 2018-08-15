@@ -59,7 +59,13 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useTransport;
     @Expose
+    private boolean useArranger;
+    @Expose
+    private int arrangerCueMarkerSize = 16;
+    @Expose
     private boolean useGroove;
+    @Expose
+    private boolean useMixer;
     @Expose
     private boolean useCursorTrack;
     @Expose
@@ -170,13 +176,37 @@ public class Config extends AbstractConfiguration {
     public boolean useTransport() {
         return useTransport;
     }
+    
+    /**
+     * Returns a configuration value of the use or not use Arranger API.
+     * @return
+     */
+    public boolean useArranger() {
+        return useArranger;
+    }
 
+    /**
+     * Returns a configuration value of a number of cue maker of Arranger.
+     * @return
+     */
+    public int getArrangerCueMakerSize() {
+        return arrangerCueMarkerSize;
+    }
+    
     /**
      * Returns a configuration value of the use or not use Groove API.
      * @return
      */
     public boolean useGroove() {
         return useGroove;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use Mixer API.
+     * @return
+     */
+    public boolean useMixer() {
+        return useMixer;
     }
 
     /**
@@ -502,6 +532,23 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+        
+        SettableBooleanValue useArrangerValue = pref.getBooleanSetting
+            ("Use", "Arranger", useArranger);
+        useArrangerValue.addValueObserver(v -> {
+                if (useArranger != v) {
+                    useArranger = v;
+                    valueChanged();
+                }
+            });
+        
+        int arrangerCueMarkerSizeValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "cue markers", "Arranger", arrangerCueMarkerSize, INT_OPTIONS_8TO64, v -> {
+                if (arrangerCueMarkerSize != v) {
+                    arrangerCueMarkerSize = v;
+                    valueChanged();
+                }
+            });
 
         SettableBooleanValue useGrooveValue = pref.getBooleanSetting
             ("Use", "Groove", useGroove);
@@ -512,6 +559,15 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        SettableBooleanValue useMixerValue = pref.getBooleanSetting
+            ("Use", "Mixer", useMixer);
+        useMixerValue.addValueObserver(v -> {
+                if (useMixer != v) {
+                    useMixer = v;
+                    valueChanged();
+                }
+            });
+        
         // --> CursorTrack
         SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting
             ("Use", "CursorTrack", useCursorTrack);
@@ -521,6 +577,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+        
         int cursorTrackNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
             (pref, "Sends", "CursorTrack", cursorTrackNumSends, INT_OPTIONS_1TO8, v -> {
                 if (cursorTrackNumSends != v) {
@@ -812,7 +869,10 @@ public class Config extends AbstractConfiguration {
             rpcProtocol = protocol;
             useApplication = useApplicationValue.get();
             useTransport = useTransportValue.get();
+            useArranger = useArrangerValue.get();
+            arrangerCueMarkerSize = arrangerCueMarkerSizeValue;
             useGroove = useGrooveValue.get();
+            useMixer = useMixerValue.get();
 
             useCursorTrack = useCursorTrackValue.get();
             cursorTrackNumSends = cursorTrackNumSendsValue;
