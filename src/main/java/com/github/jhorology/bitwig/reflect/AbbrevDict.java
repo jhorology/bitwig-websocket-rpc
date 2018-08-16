@@ -119,7 +119,7 @@ public class AbbrevDict {
 
     private static String replace(String name) {
         for(String p[] : REPLACES) {
-            name = name.replaceFirst(p[0], p[1]);
+            name = name.replaceAll(p[0], p[1]);
         }
         if (Character.isUpperCase(name.charAt(0))) {
             name = Character.toLowerCase(name.charAt(0)) + name.substring(1);

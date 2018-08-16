@@ -418,6 +418,11 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !"getScene".equals(m.getName()));
         }
+        // DeviceBank is implemented Bank<Device>, should use Bank#getItemAt(int) instead of DeviceBank#getDevice(int)
+        if (DeviceBank.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> !"getDevice".equals(m.getName()));
+        }
         
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug

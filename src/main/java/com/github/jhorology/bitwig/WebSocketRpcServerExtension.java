@@ -254,8 +254,8 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                 }
                 if (config.useChainDeviceBank()) {
                     DeviceBank chainDeviceBank
-                        = cursorDevice.createSiblingsDeviceBank(config.getChainDeviceBankNumDevices());
-                    registry.register("chainDeviceBank",
+                        = cursorDevice.deviceChain().createDeviceBank(config.getChainDeviceBankNumDevices());
+                    registry.register("cursorDevice.deviceChain.deviceBank",
                                       DeviceBank.class,
                                       chainDeviceBank)
                         .registerBankItemCount(DeviceBank.class,
