@@ -32,36 +32,48 @@ public class AbbrevDict {
     private static final List<String[]> REPLACES;
     static {
         REPLACES = new ArrayList<>();
+        // too long
         REPLACES.add(new String[] {"isMasterTrackContentShownOnTrackGroups", "showGroupMasterContent"});
         REPLACES.add(new String[] {"isRemoteControlsSectionVisible", "showRemoteControls"});
         REPLACES.add(new String[] {"([Cc])ursorRemoteControlsPage", "$1ontrolsPage"});
         REPLACES.add(new String[] {"hasAudioInputSelected", "audioInSelected"});
         REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
         REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
-        REPLACES.add(new String[] {"([Ss]mart)Collection", "$1"});
-        REPLACES.add(new String[] {"([Cc]ol)umn", "$1"});
         REPLACES.add(new String[] {"^(.+)InsertionPoint", "$1"});
         REPLACES.add(new String[] {"canHoldAudioData", "canHoldAudio"});
         REPLACES.add(new String[] {"canHoldNoteData", "canHoldNote"});
         REPLACES.add(new String[] {"queuedForStop", "stopQueued"});
-        REPLACES.add(new String[] {"([Ii]nc)rease", "$1"});
-        REPLACES.add(new String[] {"([Aa]ct)ive", "$1"});
-        REPLACES.add(new String[] {"([Tt])ransport", "$1p"});
         REPLACES.add(new String[] {"^(.+)OfBank", "$1"});
+        REPLACES.add(new String[] {"([Cc]lip)LauncherSlot", "$1"});
+        REPLACES.add(new String[] {"([Cc]lip)Launcher", "$1"});
+        REPLACES.add(new String[] {"[Pp]laying(Notes)", "$1"});
+        REPLACES.add(new String[] {"[Ss]croll(Page.+)", "$1"});
+        REPLACES.add(new String[] {"[Ss]endChannel(Color)", "$1"});
+        // chainSelector
+        REPLACES.add(new String[] {"([Aa]ctive)Chain", "$1"});
+        REPLACES.add(new String[] {"[Cc]hain(Count)", "$1"});
+        // browser
+        REPLACES.add(new String[] {"([Ss]mart)Collection", "$1"});
+        REPLACES.add(new String[] {"([Ll]oc)ation", "$1"});
+        REPLACES.add(new String[] {"([Cc]at)egory", "$1"});
+        REPLACES.add(new String[] {"Column", ""});
+        REPLACES.add(new String[] {"^(.+)Item$", "$1"});
+        REPLACES.add(new String[] {"[Ii]tem(Count)", "$1"});
+        REPLACES.add(new String[] {"([Hh]it)Count", "$1"});
+        REPLACES.add(new String[] {"([Ee]ntry)Count", "$1"});
+        REPLACES.add(new String[] {"contentType", "tab"});
+        REPLACES.add(new String[] {"ContentType", "Tab"});
+        // words
+        REPLACES.add(new String[] {"([Pp]rev)ious", "$1"});
         REPLACES.add(new String[] {"EffectTrack", "FxTrack"});
         REPLACES.add(new String[] {"effectTrack", "fxTrack"});
         REPLACES.add(new String[] {"([Mm])aster", "$1st"});
-        REPLACES.add(new String[] {"getItemAt", "at"});
-        REPLACES.add(new String[] {"getParameter", "at"});
-        REPLACES.add(new String[] {"^setIs(\\p{Upper}.+)", "$1"});
-        REPLACES.add(new String[] {"^is(\\p{Upper}.+)", "$1"});
-        REPLACES.add(new String[] {"^get(\\p{Upper}.+)", "$1"});
-        REPLACES.add(new String[] {"^set(\\p{Upper}.+)", "$1"});
+        REPLACES.add(new String[] {"([Ii]nc)rease", "$1"});
+        REPLACES.add(new String[] {"([Aa]ct)ive", "$1"});
+        REPLACES.add(new String[] {"([Tt])ransport", "$1p"});
         REPLACES.add(new String[] {"([Mm]od)ulated", "$1"});
         REPLACES.add(new String[] {"([Dd]isp)layed", "$1"});
         REPLACES.add(new String[] {"([Vv]al)ue", "$1"});
-        REPLACES.add(new String[] {"([Cc]lip)LauncherSlot", "$1"});
-        REPLACES.add(new String[] {"([Cc]lip)Launcher", "$1"});
         REPLACES.add(new String[] {"([Vv]ol)ume", "$1"});
         REPLACES.add(new String[] {"([Aa]cc)ent", "$1"});
         REPLACES.add(new String[] {"Cross[fF]ade", "Xfade"});
@@ -71,7 +83,6 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"([Tt]r)ack", "$1"});
         REPLACES.add(new String[] {"([Dd]ev)ice", "$1"});
         REPLACES.add(new String[] {"([Cc]ur)sor", "$1"});
-        REPLACES.add(new String[] {"(.+)Bank", "$1s"});
         REPLACES.add(new String[] {"([Ff])orwards", "$1wd"});
         REPLACES.add(new String[] {"([Bb]ack)wards", "$1"});
         REPLACES.add(new String[] {"([Pp]os)ition", "$1"});
@@ -89,6 +100,14 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"([Ii]ns)ert", "$1"});
         REPLACES.add(new String[] {"([Mm]et)ronome", "$1"});
         REPLACES.add(new String[] {"([Rr]em)ote", "$1"});
+        //
+        REPLACES.add(new String[] {"getItemAt", "at"});
+        REPLACES.add(new String[] {"getParameter", "at"});
+        REPLACES.add(new String[] {"(.+)Bank", "$1s"});
+        REPLACES.add(new String[] {"^setIs(\\p{Upper}.+)", "$1"});
+        REPLACES.add(new String[] {"^is(\\p{Upper}.+)", "$1"});
+        REPLACES.add(new String[] {"^get(\\p{Upper}.+)", "$1"});
+        REPLACES.add(new String[] {"^set(\\p{Upper}.+)", "$1"});
         // TODO need more words
     }
     
