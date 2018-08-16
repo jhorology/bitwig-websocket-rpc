@@ -40,7 +40,7 @@ import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
 public class Config extends AbstractConfiguration {
     private static final Logger LOG = Logger.getLogger(Config.class);
-    private static final String WEBSOCKET_PREF_CATEGORY = "Websocket";
+    private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
     private static final int[] INT_OPTIONS_1TO8  = {1, 2, 4, 8};
     private static final int[] INT_OPTIONS_2TO16 = {2, 4, 8,16};
@@ -75,6 +75,20 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean cursorTrackShouldFollowSelection = true;
     @Expose
+    private boolean useSiblingsTrackBank;
+    @Expose
+    private int siblingsTrackBankNumTracks = 8;
+    @Expose
+    private boolean siblingsTrackBankIncludeEffectTracks;
+    @Expose
+    private boolean siblingsTrackBankIncludeMasterTrack;
+    @Expose
+    private boolean useChildTrackBank;
+    @Expose
+    private int childTrackBankNumTracks = 8;
+    @Expose
+    private boolean childTrackBankHasFlatList;
+    @Expose
     private boolean useCursorDevice;
     @Expose
     private int cursorDeviceNumSends = 2;
@@ -89,15 +103,29 @@ public class Config extends AbstractConfiguration {
     @Expose
     private int cursorRemoteControlsPageParameterCount = 8;
     @Expose
+    private boolean useDeviceLayerBank;
+    @Expose
+    private int deviceLayerBankNumChannels = 8;
+    @Expose
     private boolean useDrumPadBank;
     @Expose
     private int drumPadBankNumPads = 16;
+    @Expose
+    private boolean useSiblingsDeviceBank;
+    @Expose
+    private int siblingsDeviceBankNumDevices = 4;
+    @Expose
+    private boolean useChainDeviceBank;
+    @Expose
+    private int chainDeviceBankNumDevices = 4;
     @Expose
     private boolean useSceneBank;
     @Expose
     private int sceneBankNumScenes = 8;
     @Expose
     private boolean useMainTrackBank;
+    @Expose
+    private boolean mainTrackBankFollowCursorTrack;
     @Expose
     private int mainTrackBankNumTracks = 8;
     @Expose
@@ -114,7 +142,6 @@ public class Config extends AbstractConfiguration {
     private boolean useMasterTrack;
     @Expose
     private int masterTrackNumScenes = 8;
-    
     @Expose
     private boolean useBrowser;
     @Expose
@@ -242,7 +269,63 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Returns a configuration value of the use or not use CursorTrack API.
+     * Returns a configuration value of the use or not use SiblingsTrackBank of CursorTrack API.
+     * @return
+     */
+    public boolean useSiblingsTrackBank() {
+        return useSiblingsTrackBank;
+    }
+    
+    /**
+     * Returns a configuration value of number of tracks of SiblingsTrackBank
+     * @return
+     */
+    public int getSiblingsTrackBankNumTracks() {
+        return siblingsTrackBankNumTracks;
+    }
+
+    /**
+     * Returns a configuration value of SiblingsTrackBank include EffectTracks or not.
+     * @return
+     */
+    public boolean isSiblingsTrackBankIncludeEffectTracks() {
+        return siblingsTrackBankIncludeEffectTracks;
+    }
+    
+    /**
+     * Returns a configuration value of SiblingsTrackBank include EffectTracks or not.
+     * @return
+     */
+    public boolean isSiblingsTrackBankIncludeMasterTrack() {
+        return siblingsTrackBankIncludeMasterTrack;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use SiblingsTrackBank of CursorTrack API.
+     * @return
+     */
+    public boolean useChildTrackBank() {
+        return useChildTrackBank;
+    }
+    
+    /**
+     * Returns a configuration value of number of tracks of ChildTrackBank
+     * @return
+     */
+    public int getChildTrackBankNumTracks() {
+        return childTrackBankNumTracks;
+    }
+
+    /**
+     * Returns a configuration value of ChildTrackBank has flat list or not.
+     * @return
+     */
+    public boolean isChildTrackBankHasFlatList() {
+        return childTrackBankHasFlatList;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use CursorDevice API.
      * @return
      */
     public boolean useCursorDevice() {
@@ -298,7 +381,23 @@ public class Config extends AbstractConfiguration {
     };
 
     /**
-     * Returns a configuration value of the use or not use MasterTrack API.
+     * Returns a configuration value of the use or not use DeviceLayerBank API.
+     * @return
+     */
+    public boolean useDeviceLayerBank() {
+        return useDeviceLayerBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of channles of DeviceLayerBank.
+     * @return
+     */
+    public int getDeviceLayerBankNumChannels() {
+        return deviceLayerBankNumChannels;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use DrumPadBank API.
      * @return
      */
     public boolean useDrumPadBank() {
@@ -311,6 +410,38 @@ public class Config extends AbstractConfiguration {
      */
     public int getDrumPadBankNumPads() {
         return drumPadBankNumPads;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use MasterTrack API.
+     * @return
+     */
+    public boolean useSiblingsDeviceBank() {
+        return useSiblingsDeviceBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of pads of DrumPadBank.
+     * @return
+     */
+    public int getSiblingsDeviceBankNumDevices() {
+        return siblingsDeviceBankNumDevices;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use MasterTrack API.
+     * @return
+     */
+    public boolean useChainDeviceBank() {
+        return useChainDeviceBank;
+    }
+
+    /**
+     * Returns a configuration value of the number of pads of DrumPadBank.
+     * @return
+     */
+    public int getChainDeviceBankNumDevices() {
+        return chainDeviceBankNumDevices;
     }
 
     /**
@@ -335,6 +466,14 @@ public class Config extends AbstractConfiguration {
      */
     public boolean useMainTrackBank() {
         return useMainTrackBank;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use MainTrackBank API.
+     * @return
+     */
+    public boolean isMainTrackBankFollowCursorTrack() {
+        return mainTrackBankFollowCursorTrack;
     }
 
     /**
@@ -507,7 +646,7 @@ public class Config extends AbstractConfiguration {
             });
 
         SettableBooleanValue useAbbreviatedMethodNamesValue = pref.getBooleanSetting
-            ("Use", "Abbreviated method names", useAbbreviatedMethodNames);
+            ("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY, useAbbreviatedMethodNames);
         useAbbreviatedMethodNamesValue.addValueObserver(v -> {
                 if (useAbbreviatedMethodNames != v) {
                     useAbbreviatedMethodNames = v;
@@ -595,7 +734,7 @@ public class Config extends AbstractConfiguration {
             });
 
         SettableBooleanValue cursorTrackShouldFollowSelectionValue = pref.getBooleanSetting
-            ("Sshould follow selection", "CursorTrack", cursorTrackShouldFollowSelection);
+            ("Should follow selection", "CursorTrack", cursorTrackShouldFollowSelection);
         cursorTrackShouldFollowSelectionValue.addValueObserver(v -> {
                 if (cursorTrackShouldFollowSelection != v) {
                     cursorTrackShouldFollowSelection = v;
@@ -603,6 +742,69 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        // --> SiblingsTrackBank
+        SettableBooleanValue useSiblingsTrackBankValue = pref.getBooleanSetting
+            ("Use", "SiblingsTrackBank (needs CursorTrack)", useSiblingsTrackBank);
+        useSiblingsTrackBankValue.addValueObserver(v -> {
+                if (useSiblingsTrackBank != v) {
+                    useSiblingsTrackBank = v;
+                    valueChanged();
+                }
+            });
+        
+        int siblingsTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Tracks", "SiblingsTrackBank (needs CursorTrack)", siblingsTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
+                if (siblingsTrackBankNumTracks != v) {
+                    siblingsTrackBankNumTracks = v;
+                    valueChanged();
+                }
+            });
+        
+        SettableBooleanValue siblingsTrackBankIncludeEffectTracksValue = pref.getBooleanSetting
+            ("Include effect tracks", "SiblingsTrackBank (needs CursorTrack)", siblingsTrackBankIncludeEffectTracks);
+        siblingsTrackBankIncludeEffectTracksValue.addValueObserver(v -> {
+                if (siblingsTrackBankIncludeEffectTracks != v) {
+                    siblingsTrackBankIncludeEffectTracks = v;
+                    valueChanged();
+                }
+            });
+        
+        SettableBooleanValue siblingsTrackBankIncludeMasterTrackValue = pref.getBooleanSetting
+            ("Include master track", "SiblingsTrackBank (needs CursorTrack)", siblingsTrackBankIncludeMasterTrack);
+        siblingsTrackBankIncludeMasterTrackValue.addValueObserver(v -> {
+                if (siblingsTrackBankIncludeMasterTrack != v) {
+                    siblingsTrackBankIncludeMasterTrack = v;
+                    valueChanged();
+                }
+            });
+        
+        // --> SiblingsTrackBank
+        SettableBooleanValue useChildTrackBankValue = pref.getBooleanSetting
+            ("Use", "ChildTrackBank (needs CursorTrack)", useChildTrackBank);
+        useChildTrackBankValue.addValueObserver(v -> {
+                if (useChildTrackBank != v) {
+                    useChildTrackBank = v;
+                    valueChanged();
+                }
+            });
+        
+        int childTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Tracks", "ChildTrackBank (needs CursorTrack)", childTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
+                if (childTrackBankNumTracks != v) {
+                    childTrackBankNumTracks = v;
+                    valueChanged();
+                }
+            });
+        
+        SettableBooleanValue childTrackBankHasFlatListValue = pref.getBooleanSetting
+            ("Has flat track list", "ChildTrackBank (needs CursorTrack)", childTrackBankHasFlatList);
+        childTrackBankHasFlatListValue.addValueObserver(v -> {
+                if (childTrackBankHasFlatList != v) {
+                    childTrackBankHasFlatList = v;
+                    valueChanged();
+                }
+            });
+        
         // --> CursorDevice
         SettableBooleanValue useCursorDeviceValue = pref.getBooleanSetting
             ("Use", "CursorDevice (needs CursorTrack)", useCursorDevice);
@@ -667,6 +869,24 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        // --> DeviceLayerBank
+        SettableBooleanValue useDeviceLayerBankValue = pref.getBooleanSetting
+            ("Use", "DeviceLayerBank (needs CursorDevice)", useDeviceLayerBank);
+        useDeviceLayerBankValue.addValueObserver(v -> {
+                if (useDeviceLayerBank != v) {
+                    useDeviceLayerBank = v;
+                    valueChanged();
+                }
+            });
+
+        int deviceLayerBankNumChannelsValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Channels", "DeviceLayerBank (needs CursorDevice)", deviceLayerBankNumChannels, INT_OPTIONS_4TO32, v -> {
+                if (deviceLayerBankNumChannels != v) {
+                    deviceLayerBankNumChannels = v;
+                    valueChanged();
+                }
+            });
+        
         // --> DrumPadBank
         SettableBooleanValue useDrumPadBankValue = pref.getBooleanSetting
             ("Use", "DrumPadBank (needs CursorDevice)", useDrumPadBank);
@@ -685,6 +905,42 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        // --> SiblingsDeviceBank
+        SettableBooleanValue useSiblingsDeviceBankValue = pref.getBooleanSetting
+            ("Use", "SiblingsDeviceBank (needs CursorDevice)", useSiblingsDeviceBank);
+        useSiblingsDeviceBankValue.addValueObserver(v -> {
+                if (useSiblingsDeviceBank != v) {
+                    useSiblingsDeviceBank = v;
+                    valueChanged();
+                }
+            });
+
+        int siblingsDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Pads", "SiblingsDeviceBank (needs CursorDevice)", siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
+                if (siblingsDeviceBankNumDevices != v) {
+                    siblingsDeviceBankNumDevices = v;
+                    valueChanged();
+                }
+            });
+        
+        // --> ChainDeviceBank
+        SettableBooleanValue useChainDeviceBankValue = pref.getBooleanSetting
+            ("Use", "ChainDeviceBank (needs CursorDevice)", useChainDeviceBank);
+        useChainDeviceBankValue.addValueObserver(v -> {
+                if (useChainDeviceBank != v) {
+                    useChainDeviceBank = v;
+                    valueChanged();
+                }
+            });
+
+        int chainDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Pads", "ChainDeviceBank (needs CursorDevice)", chainDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
+                if (chainDeviceBankNumDevices != v) {
+                    chainDeviceBankNumDevices = v;
+                    valueChanged();
+                }
+            });
+        
         // --> SceneBank
         SettableBooleanValue useSceneBankValue = pref.getBooleanSetting
             ("Use", "SceneBank", useSceneBank);
@@ -712,7 +968,7 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
-
+        
         int mainTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
             (pref, "Tracks", "MainTrackBank", mainTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
                 if (mainTrackBankNumTracks != v) {
@@ -736,6 +992,16 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+        
+        SettableBooleanValue mainTrackBankFollowCursorTrackValue = pref.getBooleanSetting
+            ("Follow CursorTrack", "MainTrackBank", mainTrackBankFollowCursorTrack);
+        useMainTrackBankValue.addValueObserver(v -> {
+                if (mainTrackBankFollowCursorTrack != v) {
+                    mainTrackBankFollowCursorTrack = v;
+                    valueChanged();
+                }
+            });
+
 
         // --> EffectrackBank
         SettableBooleanValue useEffectTrackBankValue = pref.getBooleanSetting
@@ -878,7 +1144,16 @@ public class Config extends AbstractConfiguration {
             cursorTrackNumSends = cursorTrackNumSendsValue;
             cursorTrackNumScenes = cursorTrackNumScenesValue;
             cursorTrackShouldFollowSelection = cursorTrackShouldFollowSelectionValue.get();
+            
+            useSiblingsTrackBank = useSiblingsTrackBankValue.get();
+            siblingsTrackBankNumTracks = siblingsTrackBankNumTracksValue;
+            siblingsTrackBankIncludeEffectTracks = siblingsTrackBankIncludeEffectTracksValue.get();
+            siblingsTrackBankIncludeMasterTrack = siblingsTrackBankIncludeMasterTrackValue.get();
 
+            useChildTrackBank = useChildTrackBankValue.get();
+            childTrackBankNumTracks = childTrackBankNumTracksValue;
+            childTrackBankHasFlatList = childTrackBankHasFlatListValue.get();
+            
             useCursorDevice = useCursorDeviceValue.get();
             cursorDeviceNumSends = cursorDeviceNumSendsValue;
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
@@ -890,9 +1165,18 @@ public class Config extends AbstractConfiguration {
             useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
             cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;
 
+            useDeviceLayerBank = useDeviceLayerBankValue.get();
+            deviceLayerBankNumChannels = deviceLayerBankNumChannelsValue;
+
             useDrumPadBank = useDrumPadBankValue.get();
             drumPadBankNumPads = drumPadBankNumPadsValue;
+            
+            useSiblingsDeviceBank = useSiblingsDeviceBankValue.get();
+            siblingsDeviceBankNumDevices = siblingsDeviceBankNumDevicesValue;
 
+            useChainDeviceBank = useChainDeviceBankValue.get();
+            chainDeviceBankNumDevices = chainDeviceBankNumDevicesValue;
+            
             useSceneBank = useSceneBankValue.get();
             sceneBankNumScenes = sceneBankNumScenesValue;
 
@@ -900,6 +1184,7 @@ public class Config extends AbstractConfiguration {
             mainTrackBankNumTracks = mainTrackBankNumTracksValue;
             mainTrackBankNumSends = mainTrackBankNumSendsValue;
             mainTrackBankNumScenes = mainTrackBankNumScenesValue;
+            mainTrackBankFollowCursorTrack = mainTrackBankFollowCursorTrackValue.get();
 
             useEffectTrackBank = useEffectTrackBankValue.get();
             effectTrackBankNumTracks = effectTrackBankNumTracksValue;

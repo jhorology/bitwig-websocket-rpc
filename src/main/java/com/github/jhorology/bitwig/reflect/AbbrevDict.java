@@ -64,6 +64,7 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"contentType", "tab"});
         REPLACES.add(new String[] {"ContentType", "Tab"});
         // words
+        REPLACES.add(new String[] {"([Ss]ib)lings", "$1s"});
         REPLACES.add(new String[] {"([Pp]rev)ious", "$1"});
         REPLACES.add(new String[] {"EffectTrack", "FxTrack"});
         REPLACES.add(new String[] {"effectTrack", "fxTrack"});
