@@ -916,7 +916,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int siblingsDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Pads", "SiblingsDeviceBank (needs CursorDevice)", siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
+            (pref, "Devices", "SiblingsDeviceBank (needs CursorDevice)", siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
                 if (siblingsDeviceBankNumDevices != v) {
                     siblingsDeviceBankNumDevices = v;
                     valueChanged();
@@ -934,7 +934,7 @@ public class Config extends AbstractConfiguration {
             });
 
         int chainDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Pads", "ChainDeviceBank (needs CursorDevice)", chainDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
+            (pref, "Devices", "ChainDeviceBank (needs CursorDevice)", chainDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
                 if (chainDeviceBankNumDevices != v) {
                     chainDeviceBankNumDevices = v;
                     valueChanged();

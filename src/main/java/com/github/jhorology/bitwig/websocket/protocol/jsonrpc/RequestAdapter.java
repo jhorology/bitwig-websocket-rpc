@@ -104,7 +104,10 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             }
             req.setRpcMethod(rpcMethod);
             
-            if (params != null) {
+            // TODO rpc-websockets client send null as empty params.
+            if (params == null || params.isJsonNull()) {
+                req.setParams(new Object[0]);
+            } else {
                 Type[] paramTypes = rpcMethod.getParamTypes();
                 if (params.isJsonArray() && !ReflectUtils.isVarargs(paramTypes)) {
                     JsonArray ja = params.getAsJsonArray();
@@ -126,7 +129,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
     }
 
     private RpcParamType[] toRpcParamTypes(final JsonElement json) {
-        if (json == null) {
+        if (json == null || json.isJsonNull()) {
             return new RpcParamType[0];
         }
         // array paramters "params":[1,2,3]
@@ -141,7 +144,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         if(json.isJsonObject()) {
             if (json.getAsJsonObject().entrySet().isEmpty())
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
-            return  new RpcParamType[] {RpcParamType.OBJECT};
+            return new RpcParamType[] {RpcParamType.OBJECT};
         }
         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported type of 'params' property.");
     }

@@ -15,3 +15,4 @@ node_modules/
 .settings/
 nbaction.xml
 rpc-implementation-spec.json
+try-and-error.coffee

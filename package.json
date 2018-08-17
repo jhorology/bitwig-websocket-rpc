@@ -9,6 +9,7 @@
   "scripts": {
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
+    "try": "coffee try-and-error.coffee",
     "report": "coffee tools/report.coffee",
     "logConsole": "coffee tools/log-console.coffee",
     "eventMonitor": "coffee tools/event-monitor.coffee",
@@ -38,7 +39,7 @@
     "js-beautify": "^1.7.5",
     "mocha": "^5.2.0",
     "nyan": "^1.1.0",
-    "rpc-websockets": "^4.2.6",
+    "rpc-websockets": "^4.3.0",
     "underscore": "^1.9.1"
   }
 }
