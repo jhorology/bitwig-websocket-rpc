@@ -97,6 +97,10 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
         // for test
         registry.register("test", Test.class, new TestImpl());
 
+        registry.register("host",
+                          ControllerHost.class,
+                          host);
+        
         if (config.useApplication()) {
             Application application = host.createApplication();
             registry.register("application",
@@ -255,7 +259,7 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                 if (config.useChainDeviceBank()) {
                     DeviceBank chainDeviceBank
                         = cursorDevice.deviceChain().createDeviceBank(config.getChainDeviceBankNumDevices());
-                    registry.register("cursorDevice.deviceChain.deviceBank",
+                    registry.register("chainDeviceBank",
                                       DeviceBank.class,
                                       chainDeviceBank)
                         .registerBankItemCount(DeviceBank.class,

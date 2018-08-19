@@ -34,7 +34,6 @@ import com.bitwig.extension.controller.api.ControllerHost;
 
 // dependencies
 import com.google.gson.annotations.Expose;
-import java.util.logging.Level;
 
 /**
  * A base class for managing extension's configuration.
@@ -87,7 +86,7 @@ public abstract class AbstractConfiguration {
         }
         
         Logger.Severity severity = ExtensionUtils.getPreferenceAsEnum
-            (host, "Log Level", "Debug", logLevel, v -> {
+            (host, "Log Level", "Debug", Logger.Severity.WARN, logLevel, v -> {
                 if (logLevel != v) {
                     logLevel = v;
                     Logger.setLevel(v);

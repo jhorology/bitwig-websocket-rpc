@@ -38,7 +38,6 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"([Cc])ursorRemoteControlsPage", "$1ontrolsPage"});
         REPLACES.add(new String[] {"hasAudioInputSelected", "audioInSelected"});
         REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
-        REPLACES.add(new String[] {"hasNoteInputSelected", "noteInSelected"});
         REPLACES.add(new String[] {"^(.+)InsertionPoint", "$1"});
         REPLACES.add(new String[] {"canHoldAudioData", "canHoldAudio"});
         REPLACES.add(new String[] {"canHoldNoteData", "canHoldNote"});
@@ -49,6 +48,13 @@ public class AbbrevDict {
         REPLACES.add(new String[] {"[Pp]laying(Notes)", "$1"});
         REPLACES.add(new String[] {"[Ss]croll(Page.+)", "$1"});
         REPLACES.add(new String[] {"[Ss]endChannel(Color)", "$1"});
+        REPLACES.add(new String[] {"([Ss]tartOf)Device(Chain)", "$1$2"});
+        REPLACES.add(new String[] {"([Ee]ndOf)Device(Chain)", "$1$2"});
+        // notification
+        REPLACES.add(new String[] {"([Nn]otification)Settings", "$1"});
+        REPLACES.add(new String[] {"setShouldShow(.+)Notifications", "$1"});
+        REPLACES.add(new String[] {"getUserNotificationsEnabled", "user"});
+        REPLACES.add(new String[] {"showPopupNotification", "popupMsg"});
         // chainSelector
         REPLACES.add(new String[] {"([Aa]ctive)Chain", "$1"});
         REPLACES.add(new String[] {"[Cc]hain(Count)", "$1"});

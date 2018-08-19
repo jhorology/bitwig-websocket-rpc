@@ -57,12 +57,14 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
                                                             String label, String category,
-                                                            T initialValue) {
-        return getPreferenceAsEnum(host, label, category, null, initialValue, null);
+                                                            T initialValue,
+                                                            T settingValue) {
+        return getPreferenceAsEnum(host, label, category, null, initialValue, settingValue, null);
     }
     
     /**
@@ -72,12 +74,14 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
                                                             String label, String category,
-                                                            T initialValue) {
-        return getPreferenceAsEnum(preferences, label, category, null, initialValue, null);
+                                                            T initialValue,
+                                                            T settingValue) {
+        return getPreferenceAsEnum(preferences, label, category, null, initialValue, settingValue, null);
     }
     
     /**
@@ -89,13 +93,15 @@ public class ExtensionUtils {
      * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
      *                      return value should be unique.
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
                                                             String label, String category,
                                                             Function<T, String> mapper,
-                                                            T initialValue) {
-        return getPreferenceAsEnum(host, label, category, mapper, initialValue, null);
+                                                            T initialValue,
+                                                            T settingValue) {
+        return getPreferenceAsEnum(host, label, category, mapper, initialValue, settingValue, null);
     }
     
     /**
@@ -107,13 +113,15 @@ public class ExtensionUtils {
      * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
      *                      return value should be unique.
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
                                                             String label, String category,
                                                             Function<T, String> mapper,
-                                                            T initialValue) {
-        return getPreferenceAsEnum(preferences, label, category, mapper, initialValue, null);
+                                                            T initialValue,
+                                                            T settingValue) {
+        return getPreferenceAsEnum(preferences, label, category, mapper, initialValue, settingValue, null);
     }
 
     /**
@@ -123,14 +131,16 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(ControllerHost host,
                                                             String label, String category,
                                                             T initialValue,
+                                                            T settingValue,
                                                             Consumer<T> onChange) {
-        return getPreferenceAsEnum(host, label, category, null, initialValue, onChange);
+        return getPreferenceAsEnum(host, label, category, null, initialValue, settingValue, onChange);
     }
     
     /**
@@ -140,14 +150,16 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
      */
     public static <T extends Enum<T>> T getPreferenceAsEnum(Preferences preferences,
                                                             String label, String category,
                                                             T initialValue,
+                                                            T settingValue,
                                                             Consumer<T> onChange) {
-        return getPreferenceAsEnum(preferences, label, category, null, initialValue, onChange);
+        return getPreferenceAsEnum(preferences, label, category, null, initialValue, settingValue, onChange);
     }
 
     /**
@@ -159,6 +171,7 @@ public class ExtensionUtils {
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
      * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
      *                      return value should be unique.
+     * @param settingValue
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
      */
@@ -166,9 +179,10 @@ public class ExtensionUtils {
                                                             String label, String category,
                                                             Function<T, String> mapper,
                                                             T initialValue,
+                                                            T settingValue,
                                                             Consumer<T> onChange) {
         return getPreferenceAsEnum
-            (host.getPreferences(), label, category, mapper, initialValue, onChange);
+            (host.getPreferences(), label, category, mapper, initialValue, settingValue, onChange);
     }
     
     /**
@@ -180,6 +194,7 @@ public class ExtensionUtils {
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
      * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
      *                      return value should be unique.
+     * @param settingValue
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
      */
@@ -187,6 +202,7 @@ public class ExtensionUtils {
                                                             String label, String category,
                                                             Function<T, String> mapper,
                                                             T initialValue,
+                                                            T settingValue,
                                                             Consumer<T> onChange) {
         Class<T> enumClass = initialValue.getDeclaringClass();
         T[] values = enumClass.getEnumConstants();
@@ -212,8 +228,14 @@ public class ExtensionUtils {
 
         SettableEnumValue value =
             preferences.getEnumSetting(label, category, strValues, strInitialValue);
+        if (settingValue != null) {
+            value.set(settingValue.name());
+        }
         if (onChange != null) {
             value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
+        }
+        if (settingValue != null) {
+            return settingValue;
         }
         return valueOf.apply(value.get());
     }
@@ -224,6 +246,7 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @param options       the array of value options.
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
@@ -231,10 +254,11 @@ public class ExtensionUtils {
     public static int getPreferenceAsIntOptions(ControllerHost host,
                                                 String label, String category,
                                                 int initialValue,
+                                                int settingValue,
                                                 int[] options,
                                                 Consumer<Integer> onChange) {
         return getPreferenceAsIntOptions
-            (host.getPreferences(), label, category, initialValue, options, onChange);
+            (host.getPreferences(), label, category, initialValue, settingValue, options, onChange);
     }
     
     /**
@@ -243,6 +267,7 @@ public class ExtensionUtils {
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param initialValue  the initial string value, must be one of the items specified with the option argument
+     * @param settingValue
      * @param options       the array of value options.
      * @param onChange      the lamda consumer to be called on value has changed
      * @return the preference value
@@ -250,6 +275,7 @@ public class ExtensionUtils {
     public static int getPreferenceAsIntOptions(Preferences preferences,
                                                 String label, String category,
                                                 int initialValue,
+                                                int settingValue,
                                                 int[] options,
                                                 Consumer<Integer> onChange) {
         // host thrown exception
@@ -264,16 +290,11 @@ public class ExtensionUtils {
         String strInitialValue = String.valueOf(initialValue);
         SettableEnumValue value =
             preferences.getEnumSetting(label, category, strOptions, strInitialValue);
+        value.set(String.valueOf(settingValue));
         if (onChange != null) {
             value.addValueObserver((String s) -> onChange.accept(Integer.valueOf(s)));
         }
-        String strValue = value.get();
-        try {
-            return Integer.valueOf(value.get());
-        } catch (NumberFormatException ex) {
-            // never occurred
-            return initialValue;
-        }
+        return settingValue;
     }
     
     /**

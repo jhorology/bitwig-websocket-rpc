@@ -25,9 +25,6 @@ package com.github.jhorology.bitwig.rpc;
 // dependencies
 import org.java_websocket.WebSocket;
 
-// source
-import com.github.jhorology.bitwig.websocket.protocol.PushModel;
-
 /**
  * An interface for RPC registry model.
  */

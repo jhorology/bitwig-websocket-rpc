@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -49,6 +49,7 @@ import com.bitwig.extension.controller.api.ClipLauncherSlot;
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrScene;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
+import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.CueMarker;
 import com.bitwig.extension.controller.api.CueMarkerBank;
 import com.bitwig.extension.controller.api.Device;
@@ -115,7 +116,7 @@ public class ReflectUtils {
             BANK_ITEM_TYPES.put(DrumPadBank.class, DrumPad.class);
             BANK_ITEM_TYPES.put(TrackBank.class, Track.class);
             BANK_ITEM_TYPES.put(ChannelBank.class, Channel.class);
-            // public interface ClipLauncherSlotOrSceneBank<ItemType extends ClipLauncherSlotOrScene> extends Bank<ItemType> 
+            // public interface ClipLauncherSlotOrSceneBank<ItemType extends ClipLauncherSlotOrScene> extends Bank<ItemType>
             BANK_ITEM_TYPES.put(ClipLauncherSlotBank.class, ClipLauncherSlot.class);
             BANK_ITEM_TYPES.put(SceneBank.class, Scene.class);
             BANK_ITEM_TYPES.put(ClipLauncherSlotOrSceneBank.class, ClipLauncherSlotOrScene.class);
@@ -128,7 +129,7 @@ public class ReflectUtils {
             BANK_METHODS.add(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
             BANK_METHODS.add(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
             // TODO need more methods...
-            
+
         } catch (Exception ex) {
         }
     }
@@ -316,7 +317,7 @@ public class ReflectUtils {
             SEMI_BANK_ITEM_TYPES.keySet().stream()
             .anyMatch(c -> c.isAssignableFrom(interfaceType));
     }
-    
+
     /**
      * Secified interfaceType is implemented Bank or not ?
      * @param method
@@ -378,6 +379,14 @@ public class ReflectUtils {
                 .filter(m -> !("markInterested".equals(m.getName())));
         }
 
+        // TODO limit host methods
+        if (ControllerHost.class.isAssignableFrom(interfaceType)) {
+            methodsStream = methodsStream
+                .filter(m -> "getNotificationSettings".equals(m.getName()) ||
+                        "showPopupNotification".equals(m.getName()));
+        }
+
+
         // WTF! fixing one by one
 
         // StringArrayValue has two get() methods.  Object[] get()/String[] get()
@@ -406,7 +415,7 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !"sendBank".equals(m.getName()));
         }
-        
+
         // Scene has two name() methods. returnType: StringValue/SettableStringValue
         if (Scene.class.isAssignableFrom(interfaceType)) {
             methodsStream = methodsStream
@@ -423,7 +432,7 @@ public class ReflectUtils {
             methodsStream = methodsStream
                 .filter(m -> !"getDevice".equals(m.getName()));
         }
-        
+
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug
         if (Logger.isDebugEnabled()) {
