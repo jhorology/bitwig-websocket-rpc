@@ -60,8 +60,11 @@ import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
 
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // source
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
 import java.lang.reflect.Method;
 
@@ -69,7 +72,7 @@ import java.lang.reflect.Method;
  * A utility class for creating all known callbacks of Bitwig API.
  */
 public class BitwigCallbacks {
-    private static final Logger LOG = Logger.getLogger(BitwigCallbacks.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BitwigCallbacks.class);
     
     // TODO make it configurable
     private static final boolean PREFER_NAMED_PARAMS = true;
@@ -336,7 +339,7 @@ public class BitwigCallbacks {
     public static <T> ObjectValueChangedCallback<T> newObjectValueChangedCallback(Consumer<Object> lambda) {
         return (T value) -> {
             // for debug
-            if (Logger.isWarnEnabled() &&
+            if (LOG.isWarnEnabled() &&
                 value != null &&
                 ReflectUtils.isBitwigAPI(value.getClass()) &&
                 !BitwigAdapters.isAdapted(value)) {

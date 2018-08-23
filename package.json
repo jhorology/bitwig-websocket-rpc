@@ -2,6 +2,7 @@
   "name": "bitwig-websocket-rpc",
   "version": "1.0.0",
   "description": "Currentlly under construction, no use at all.",
+  "private": true,
   "main": "index.js",
   "directories": {
     "test": "test"
@@ -21,7 +22,7 @@
     "type": "git",
     "url": "git+https://github.com/jhorology/bitwig-websocket-rpc.git"
   },
-  "author": "",
+  "author": "jhorology2014@gmail.com",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jhorology/bitwig-websocket-rpc/issues"

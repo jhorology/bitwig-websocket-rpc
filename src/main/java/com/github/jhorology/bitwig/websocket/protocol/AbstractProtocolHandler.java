@@ -22,15 +22,20 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol;
 
+// jdk
 import java.net.InetSocketAddress;
 import java.util.Collection;
 
+// bitwig api
 import com.google.common.eventbus.Subscribe;
 
+// dependencies
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.github.jhorology.bitwig.extension.Logger;
+// source
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.BinaryMessageEvent;
 import com.github.jhorology.bitwig.websocket.CloseEvent;
@@ -47,7 +52,7 @@ import java.util.List;
  * handling websocket in 'Control Surface Session' thread.
  */
 public abstract class AbstractProtocolHandler implements ProtocolHandler {
-    private static final Logger LOG = Logger.getLogger(AbstractProtocolHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractProtocolHandler.class);
     
     /**
      * an instance of WebSocketServer
@@ -77,7 +82,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onOpen(OpenEvent e) {
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("new connection. conn:" + e.getConnection() +
                       "\nremoteAddress:" + remoteAddress(e.getConnection()) +
                       "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
@@ -87,7 +92,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public void onColse(CloseEvent e) {
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             WebSocket conn = e.getConnection();
             LOG.trace("connection closed. conn:" + e.getConnection() +
                       "\ncode:" + e.getCode() +
@@ -102,7 +107,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(TextMessageEvent e) {
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
@@ -114,7 +119,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onMessage(BinaryMessageEvent e) {
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
                       "\n --> " + e.getMessage());
         }
@@ -145,7 +150,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
      */
     protected void send(String message, WebSocket conn) {
         conn.send(message);
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("message sended to " + conn.getRemoteSocketAddress() +
                       "\n <-- " + message);
         }
@@ -158,7 +163,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
      */
     protected void push(String message, Collection<WebSocket> clients) {
         server.broadcast(message, clients);
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("broadcast message to " + clients.size() + " clients." +
                       "\n <-- " + message);
         }
@@ -170,7 +175,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
      */
     protected void broadcast(String message) {
         server.broadcast(message);
-        if (Logger.isTraceEnabled()) {
+        if (LOG.isTraceEnabled()) {
             LOG.trace("broadcast message to all " + server.getConnections().size() + " clients." +
                       "\n <-- " + message);
         }

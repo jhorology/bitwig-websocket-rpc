@@ -29,12 +29,16 @@ import java.util.HashMap;
 // bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
 
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * A context holder for executor task state. <br>
  * This class assumes that all methods are called from within "Control Surface Session" thread.
  */
 public class ExecutionContext {
-    private static final Logger LOG = Logger.getLogger(ExecutionContext.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ExecutionContext.class);
     private static ExecutionContext instance;
     private AbstractExtension<? extends AbstractConfiguration> extension;
     private final Map<String, Object> values;
@@ -48,7 +52,7 @@ public class ExecutionContext {
         // checking re-entrant context
         if (instance != null) {
             IllegalStateException ex = new IllegalStateException("re-entrant context.");
-            LOG.error(ex);
+            LOG.error("Error re-entrant context.");
             throw ex;
         }
         instance = new ExecutionContext(extension);

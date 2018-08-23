@@ -30,11 +30,16 @@ import java.util.concurrent.Executor;
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
 
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
 public class FlushExecutor implements Executor {
-    private static final Logger LOG = Logger.getLogger(FlushExecutor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FlushExecutor.class);
 
     private static final int IDLE = 0;
     private static final int REQUESTED = 1;
@@ -88,7 +93,7 @@ public class FlushExecutor implements Executor {
             extension.getHost().requestFlush();
             state = REQUESTED;
         }
-        if (Logger.isWarnEnabled()) {
+        if (LOG.isWarnEnabled()) {
             if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
                 LOG.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
             }

@@ -73,7 +73,10 @@ import com.bitwig.extension.controller.api.StringValue;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Value;
-import com.github.jhorology.bitwig.extension.Logger;
+
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
@@ -83,7 +86,7 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
  */
 @SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
-    private static final Logger LOG = Logger.getLogger(ReflectUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ReflectUtils.class);
 
     /**
      * empty array of Object.
@@ -300,7 +303,7 @@ public class ReflectUtils {
         boolean result = method.getName().startsWith("create")
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
-        if (result && Logger.isDebugEnabled()) {
+        if (result && LOG.isDebugEnabled()) {
             LOG.debug("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
                       + "] has been ignored as factory method for core module.");
         }
@@ -435,7 +438,7 @@ public class ReflectUtils {
 
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug
-        if (Logger.isDebugEnabled()) {
+        if (LOG.isDebugEnabled()) {
             methods.stream().forEach(m0 -> {
                     methods.stream().forEach(m1 -> {
                             if (m0 != m1) {

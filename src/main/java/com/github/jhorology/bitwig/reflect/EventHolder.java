@@ -42,9 +42,10 @@ import org.apache.commons.lang3.ArrayUtils;
 
 // dependencies
 import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcException;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
@@ -57,7 +58,7 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  * @param <T>
  */
 public class EventHolder<T extends Value> extends MethodHolder<T> implements RpcEvent {
-    private static final Logger LOG = Logger.getLogger(EventHolder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(EventHolder.class);
     
     // gurantee the posting current value on 'subscibe' is called.
     private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
@@ -96,7 +97,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
                     BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
                 value.unsubscribe();
                 // for debug
-                if (Logger.isDebugEnabled() && ObjectValueChangedCallback.class.equals(callback.getClass())) {
+                if (LOG.isDebugEnabled() && ObjectValueChangedCallback.class.equals(callback.getClass())) {
                     LOG.debug(event() + " event usess ObjectValueChangedCallback.");
                 }
                 // addValueObserver raise callback calls even after call unsubscribe()
@@ -129,7 +130,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
                 // should send a current value to the client comming after the first one.
                 notifyCurrentValue();
             }
-            if (Logger.isDebugEnabled())  {
+            if (LOG.isDebugEnabled())  {
                 LOG.debug(event() + " event has been subscribed by " + client(client));
             }
         }
@@ -272,7 +273,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
             } else {
                 bankedEvents.stream().forEach(e -> e.internalSubscribe(client));
             }
-            if (Logger.isDebugEnabled())  {
+            if (LOG.isDebugEnabled())  {
                 LOG.debug("[" + absoluteName + "] event has been subscribed by " + client(client));
             }
         }
@@ -288,7 +289,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
         }
         if (clients.remove(client)) {
             syncSubscribedState();
-            if (Logger.isTraceEnabled())  {
+            if (LOG.isTraceEnabled())  {
                 LOG.trace("[" + absoluteName + "] event has been unsubscribed by " + client(client));
             }
         }
@@ -299,7 +300,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
         boolean removed = clients.remove(client);
         if (removed) {
             syncSubscribedState();
-            if (Logger.isTraceEnabled())  {
+            if (LOG.isTraceEnabled())  {
                 LOG.trace("subscriber of [" + absoluteName + "] event has been disconnected. client:" + client(client));
             }
         }

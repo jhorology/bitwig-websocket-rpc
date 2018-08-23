@@ -41,11 +41,12 @@ import com.google.common.eventbus.Subscribe;
 
 // dependencies
 import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
@@ -56,11 +57,12 @@ import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
  * 
  */
 public class ReflectionRegistry implements RpcRegistry {
+    private static final Logger LOG = LoggerFactory.getLogger(ReflectionRegistry.class);
+    
     /**
      * the delimitter for method chain.
      */
     public static final String NODE_DELIMITER = ".";
-    private static final Logger LOG = Logger.getLogger(ReflectionRegistry.class);
 
     private final ProtocolHandler protocol;
     private final boolean useAbbrev;
@@ -258,7 +260,7 @@ public class ReflectionRegistry implements RpcRegistry {
             module.getBankItemCount(returnType) == 0) {
             // maybe correct
             // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
-            if (Logger.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 LOG.debug("##!!! Bank type founded, but bankItemCount is not registered.!!"
                           + "\nmethod:" + absoluteName +
                           " bankType:" + returnType);
@@ -282,7 +284,7 @@ public class ReflectionRegistry implements RpcRegistry {
             if (bankItemType != null) { 
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
-                    if (Logger.isDebugEnabled()) {
+                    if (LOG.isDebugEnabled()) {
                         LOG.debug("##!!! Bank Method returns unassignable bank item type!!"
                                   + "\nmethod:" + absoluteName +
                                   " returnType:" + returnType +
@@ -319,7 +321,7 @@ public class ReflectionRegistry implements RpcRegistry {
             (isReturnTypeBitwigAPI &&
              protocol.isSerializableBitwigType(returnType))) {
             // for debug
-            if (Logger.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 MethodHolder<?> duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
                     LOG.debug("##!!! duplicated method!!"
@@ -332,7 +334,7 @@ public class ReflectionRegistry implements RpcRegistry {
         }
         if (isEvent) {
             // for debug
-            if (Logger.isDebugEnabled()) {
+            if (LOG.isDebugEnabled()) {
                 EventHolder<?> duplicatedEvent = events.get(absoluteName);
                 if (duplicatedEvent != null) {
                     LOG.warn("##!!! duplicated event!!"

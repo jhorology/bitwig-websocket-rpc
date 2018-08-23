@@ -34,9 +34,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
@@ -44,7 +45,7 @@ import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 
 public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements PushModel {
     public static final String JSONRPC_VERSION = "2.0";
-    private static final Logger LOG = Logger.getLogger(JsonRpcProtocolHandler.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JsonRpcProtocolHandler.class);
         
     private Gson gson;
     
@@ -206,7 +207,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         try {
             result = method.invoke(req.getArgs());
         } catch (Exception ex) {
-            LOG.error("rpc method invoking error.", ex);
+            LOG.error("Error RPC method invoking.", ex);
             return createErrorResponse(ErrorEnum.INTERNAL_ERROR, ex.getMessage(), req.getId());
         }
         if (!req.isNotify()) {

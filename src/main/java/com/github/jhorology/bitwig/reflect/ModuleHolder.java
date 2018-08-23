@@ -26,12 +26,14 @@ package com.github.jhorology.bitwig.reflect;
 import java.util.HashMap;
 import java.util.Map;
 
-// source
-import com.github.jhorology.bitwig.extension.Logger;
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ModuleHolder<T> extends RegistryNode<T> {
     // Logger
-    private static final Logger LOG = Logger.getLogger(ModuleHolder.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ModuleHolder.class);
 
     protected final ReflectionRegistry owner;
     

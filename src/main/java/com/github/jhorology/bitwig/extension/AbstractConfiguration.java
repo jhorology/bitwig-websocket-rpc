@@ -34,19 +34,26 @@ import com.bitwig.extension.controller.api.ControllerHost;
 
 // dependencies
 import com.google.gson.annotations.Expose;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+// source
+import org.slf4j.impl.LogSeverity;
+import org.slf4j.impl.ScriptConsoleLogger;
 
 /**
  * A base class for managing extension's configuration.
  */
 public abstract class AbstractConfiguration {
-    private final static Logger LOG = Logger.getLogger(AbstractConfiguration.class);
+    private final static Logger LOG = LoggerFactory.getLogger(AbstractConfiguration.class);
+    
     // options for future use.
     protected static final boolean USE_RC_FILE = true;
     private static final boolean WRITE_THROUGHT_RC_FILE = false;
     
     // populate from json -->
     @Expose
-    private Logger.Severity logLevel = Logger.Severity.ERROR;
+    private LogSeverity logLevel = LogSeverity.ERROR;
     // <--
 
     private ControllerHost host;
@@ -85,11 +92,11 @@ public abstract class AbstractConfiguration {
             }
         }
         
-        Logger.Severity severity = ExtensionUtils.getPreferenceAsEnum
-            (host, "Log Level", "Debug", Logger.Severity.WARN, logLevel, v -> {
+        LogSeverity severity = ExtensionUtils.getPreferenceAsEnum
+            (host, "Log Level", "Debug", LogSeverity.WARN, logLevel, v -> {
                 if (logLevel != v) {
                     logLevel = v;
-                    Logger.setLevel(v);
+                    ScriptConsoleLogger.setDefaultLogLevel(v);
                     valueChanged();
                 }
             });
@@ -111,7 +118,7 @@ public abstract class AbstractConfiguration {
             try {
                 ExtensionUtils.writeJsonFile(this, rcFilePath);
             } catch (IOException ex) {
-                LOG.error(ex);
+                LOG.error("Error writing JSON file.",ex);
             }
         }
         if (requestedReset) {
@@ -124,7 +131,7 @@ public abstract class AbstractConfiguration {
      * Return a log level that defined as configuration value.
      * @return 
      */
-    Logger.Severity getLogLevel() {
+    LogSeverity getLogLevel() {
         return logLevel;
     }
 
@@ -136,7 +143,7 @@ public abstract class AbstractConfiguration {
             try {
                 ExtensionUtils.writeJsonFile(this, rcFilePath);
             } catch (IOException ex) {
-                LOG.error(ex);
+                LOG.error("Error writing JSON file.", ex);
             }
         }
         valueChanged = true;
@@ -156,11 +163,11 @@ public abstract class AbstractConfiguration {
                         try {
                             Files.delete(path);
                         } catch (IOException ex) {
-                            LOG.error(ex);
+                            LOG.error("Error deleting RC file.", ex);
                         }
                     });
         } catch (IOException ex) {
-            LOG.error(ex);
+            LOG.error("Error deleting RC file.", ex);
         }
                    
     }

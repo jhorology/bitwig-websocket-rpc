@@ -3,12 +3,13 @@ colors = require 'colors'
 
 $ =
   url: 'ws://localhost:8887'
-  theme: colors.setTheme
-    D: 'green'   # debug
-    T: 'cyan'    # trace
-    I: 'gray'    # info
-    W: 'yellow'  # warn
-    E: 'red'     # error
+
+colors.setTheme
+  TRACE: 'cyan'
+  DEBUG: 'green'
+  INFO:  'gray' 
+  WARN:  'yellow'
+  ERROR: 'red'
 
 ws = new WebSocket($.url)
 error = undefined
@@ -39,5 +40,5 @@ process.on 'exit', ->
 
 
 logFormat = (s) ->
-  severity = (s.split '|')[1]
+  severity = (/\[(.+)\]/.exec s)[1]
   s[severity]

@@ -37,6 +37,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.ScriptConsoleLogger;
+
 // source
 
 /**
@@ -46,7 +51,7 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 public abstract class AbstractExtension<T extends AbstractConfiguration>
         extends ControllerExtension
         implements SubscriberExceptionHandler {
-    private static final Logger LOG = Logger.getLogger(AbstractExtension.class);
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractExtension.class);
 
     protected final T config;
     private EventBus eventBus;
@@ -92,7 +97,8 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         ControllerHost host = getHost();
         // always return intial value at this time.
         config.init(host, getExtensionDefinition());
-        Logger.init(host, config.getLogLevel());
+        ScriptConsoleLogger.setDefaultLogLevel(config.getLogLevel());
+        ScriptConsoleLogger.setControllerHost(host);
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
         asyncExecutor = new FlushExecutor();
@@ -101,7 +107,6 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         flushEvent = new FlushEvent(this);
         extensionModules = new Stack<>();
         // register internal core module first
-        register(new Logger());
         register(asyncExecutor);
         try {
             Object[] modules = createModules();
@@ -111,7 +116,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
             eventBus.post(initEvent);
             LOG.trace("Extension has been initialized.");
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Error registering extension modules.", ex);
         }
     }
     
@@ -149,7 +154,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
         if (log != null) {
-            LOG.error( "extension event handling error. event:" +  context.getEvent().toString(), ex);
+            LOG.error( "Error handling extension event:" +  context.getEvent().toString(), ex);
         }
     }
 

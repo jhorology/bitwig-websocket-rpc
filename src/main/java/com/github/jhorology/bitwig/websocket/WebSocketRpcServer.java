@@ -38,11 +38,12 @@ import com.google.common.eventbus.SubscriberExceptionContext;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 
@@ -53,7 +54,7 @@ import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 public class WebSocketRpcServer
     extends WebSocketServer
     implements SubscriberExceptionHandler {
-    private static final Logger LOG = Logger.getLogger(WebSocketRpcServer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketRpcServer.class);
 
     private AsyncEventBus eventBus;
     private ProtocolHandler protocol;
@@ -90,6 +91,24 @@ public class WebSocketRpcServer
         super(address, DECODERS <= 4 ? DECODERS : 4);
         this.protocol = protocol;
         this.registry = registry;
+
+        // ServerSocket#setReuseAddress()
+        //
+        // When a TCP connection is closed the connection may remain in a timeout state for a
+        // period of time after the connection is closed (typically known as the TIME_WAIT state
+        // or 2MSL wait state). For applications using a well known socket address or port it may
+        // not be possible to bind a socket to the required SocketAddress if there is a connection
+        // in the timeout state involving the socket address or port.
+        //
+        // Enabling SO_REUSEADDR prior to binding the socket using bind(SocketAddress) allows the 
+        // socket to be bound even though a previous connection is in a timeout state.
+        //
+        // When a ServerSocket is created the initial setting of SO_REUSEADDR is not defined. 
+        // Applications can use getReuseAddress() to determine the initial setting of SO_REUSEADDR.
+        //
+        //The behaviour when SO_REUSEADDR is enabled or disabled after a socket is bound
+        // (See isBound()) is not defined.
+        this.setReuseAddr(true);
     }
 
     /**
@@ -134,7 +153,7 @@ public class WebSocketRpcServer
             }
             LOG.info("WebSocket RPC server stopped.");
         } catch (Exception ex) {
-            LOG.error(ex);
+            LOG.error("Error on onExit().", ex);
         } finally {
             eventBus.unregister(this);
             eventBus.unregister(protocol);
@@ -265,7 +284,7 @@ public class WebSocketRpcServer
             try {
                 Thread.sleep(50L);
             } catch (InterruptedException ex) {
-                LOG.error(ex);
+                LOG.error("", ex);
             } finally {
                 elapsedTime = System.currentTimeMillis() - startTime;
             }

@@ -1,14 +1,17 @@
 package com.github.jhorology.bitwig.rpc.test;
 
+// jdk
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.github.jhorology.bitwig.extension.Logger;
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestImpl implements Test {
-    private static final Logger LOG = Logger.getLogger(TestImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(TestImpl.class);
 
     @Override
     public void nop() {

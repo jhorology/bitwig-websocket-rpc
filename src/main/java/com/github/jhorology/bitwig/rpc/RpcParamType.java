@@ -26,51 +26,51 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 
 /**
- * RPC paramater type enum that is used for lazy matching parameters.
+ * RPC paramater type enum that is used for loose matching parameters.
  */
 public enum RpcParamType {
     /**
-     * lazy identifier  of void type.
+     * void type.
      */
     VOID("void", false, null),
     
     /**
-     * lazy identifier  of bool type.
+     * bool type.
      */
     BOOLEAN("boolean", false, null),
     
     /**
-     * lazy identifier  of number type.
+     * number type.
      */
     NUMBER("Number", false, null),
     
     /**
-     * lazy identifier  of string type.
+     * string type.
      */
     STRING("String", false, null),
     
     /**
-     * lazy identifier  of object type.
+     * object type.
      */
     OBJECT("Object", false, null),
     
     /**
-     * lazy identifier  of array of BOOLEANs type.
+     * array of BOOLEANs type.
      */
     BOOLEAN_ARRAY("boolean[]", true, BOOLEAN),
     
     /**
-     * lazy identifier  of array of NUMBERs type.
+     * array of NUMBERs type.
      */
     NUMBER_ARRAY("Number[]", true, NUMBER),
     
     /**
-     * lazy identifier  of array of STRINGs type.
+     *  array of STRINGs type.
      */
     STRING_ARRAY("String[]", true, STRING),
     
     /**
-     * lazy identifier  of array of OBJECTs type.
+     * array of OBJECTs type.
      */
     OBJECT_ARRAY("Object[]", true, OBJECT);
 

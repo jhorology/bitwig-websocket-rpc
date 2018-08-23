@@ -36,9 +36,10 @@ import org.apache.commons.lang3.StringUtils;
 
 // dependencies
 import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // source
-import com.github.jhorology.bitwig.extension.Logger;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
@@ -47,7 +48,7 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  * An imnplementation of the core RPC methods.
  */
 public class RpcImpl implements Rpc {
-    private static final Logger LOG = Logger.getLogger(RpcImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);
     
     /**
      * Add the remote connection to subscriber list of each event.
@@ -76,9 +77,9 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public StringValue log() {
-        Logger log = Logger.getLogger("rpc.log");
+        Logger log = LoggerFactory.getLogger("rpc.log");
         log.info("Hello!");
-        return log;
+        return (StringValue)log;
     }
     
     /**
@@ -133,10 +134,10 @@ public class RpcImpl implements Rpc {
             lambda.accept(event, client);
             return new String[] {eventName, OK};
         } catch (RpcException ex) {
-            LOG.error(ex);
+            LOG.error("Error on acceptEvents()", ex);
             return new String [] {eventName, ex.getMessage()};
         } catch (Throwable ex) {
-            LOG.error(ex);
+            LOG.error("Error on acceptEvents()", ex);
             return new String [] {eventName, error(ex, ERROR_INTERNAL_ERROR)};
         }
     }
