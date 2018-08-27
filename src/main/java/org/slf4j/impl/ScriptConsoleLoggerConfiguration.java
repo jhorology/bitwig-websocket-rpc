@@ -43,7 +43,7 @@ public class ScriptConsoleLoggerConfiguration {
     @Expose
     boolean showLogName = false;
     @Expose
-    boolean showShortLogName = false;
+    boolean showShortLogName = true;
     @Expose
     String dateTimeFormat = null;
     @Expose

@@ -12,7 +12,6 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <extension.json>src/main/resources/bitwig-extension.json</extension.json>
     <!-- Bitwig extension definition -->
     <extension.name>WebSocket RPC</extension.name>
     <extension.author>昌文</extension.author>
@@ -24,7 +23,7 @@
     <extension.hardwareVendor>WebSocket RPC</extension.hardwareVendor>
     <extension.hardwareModel>WebSocket RPC</extension.hardwareModel>
     <!-- default configuration values -->
-    <extension.config.logLevel>DEBUG</extension.config.logLevel>
+    <extension.config.logLevel>TRACE</extension.config.logLevel>
     <extension.config.webSocketPort>8887</extension.config.webSocketPort>
   </properties>
   
@@ -150,6 +149,7 @@
           <source>1.8</source>
           <target>1.8</target>
           <encoding>UTF-8</encoding>
+          <showDeprecation>true</showDeprecation>
         </configuration>
       </plugin>
 

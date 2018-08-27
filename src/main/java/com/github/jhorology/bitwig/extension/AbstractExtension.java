@@ -97,7 +97,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         ControllerHost host = getHost();
         // always return intial value at this time.
         config.init(host, getExtensionDefinition());
-        ScriptConsoleLogger.setDefaultLogLevel(config.getLogLevel());
+        ScriptConsoleLogger.setGlobalLogLevel(config.getLogLevel());
         ScriptConsoleLogger.setControllerHost(host);
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);

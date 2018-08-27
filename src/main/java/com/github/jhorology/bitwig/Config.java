@@ -43,7 +43,7 @@ import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
 public class Config extends AbstractConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(Config.class);
-    
+
     private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
     private static final int[] INT_OPTIONS_1TO8  = {1, 2, 4, 8};
@@ -53,11 +53,11 @@ public class Config extends AbstractConfiguration {
     private static final int[] INT_OPTIONS_16TO128 = {16,32,64,128};
     // populate from json -->
     @Expose
-    private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
+    private int webSocketPort;
     @Expose
-    private Protocols rpcProtocol = Protocols.JSONRPC20;
+    private Protocols rpcProtocol;
     @Expose
-    private boolean useAbbreviatedMethodNames = true;
+    private boolean useAbbreviatedMethodNames;
     @Expose
     private boolean useProject;
     @Expose
@@ -67,7 +67,7 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useArranger;
     @Expose
-    private int arrangerCueMarkerSize = 16;
+    private int arrangerCueMarkerSize;
     @Expose
     private boolean useGroove;
     @Expose
@@ -75,15 +75,15 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useCursorTrack;
     @Expose
-    private int cursorTrackNumSends = 2;
+    private int cursorTrackNumSends;
     @Expose
-    private int cursorTrackNumScenes = 8;
+    private int cursorTrackNumScenes;
     @Expose
-    private boolean cursorTrackShouldFollowSelection = true;
+    private boolean cursorTrackShouldFollowSelection;
     @Expose
     private boolean useSiblingsTrackBank;
     @Expose
-    private int siblingsTrackBankNumTracks = 8;
+    private int siblingsTrackBankNumTracks;
     @Expose
     private boolean siblingsTrackBankIncludeEffectTracks;
     @Expose
@@ -91,15 +91,15 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useChildTrackBank;
     @Expose
-    private int childTrackBankNumTracks = 8;
+    private int childTrackBankNumTracks;
     @Expose
     private boolean childTrackBankHasFlatList;
     @Expose
     private boolean useCursorDevice;
     @Expose
-    private int cursorDeviceNumSends = 2;
+    private int cursorDeviceNumSends;
     @Expose
-    private CursorDeviceFollowMode cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
+    private CursorDeviceFollowMode cursorDeviceFollowMode;
     @Expose
     private boolean useChainSelector;
     @Expose
@@ -107,67 +107,67 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useCursorRemoteControlsPage;
     @Expose
-    private int cursorRemoteControlsPageParameterCount = 8;
+    private int cursorRemoteControlsPageParameterCount;
     @Expose
     private boolean useDeviceLayerBank;
     @Expose
-    private int deviceLayerBankNumChannels = 8;
+    private int deviceLayerBankNumChannels;
     @Expose
     private boolean useDrumPadBank;
     @Expose
-    private int drumPadBankNumPads = 16;
+    private int drumPadBankNumPads;
     @Expose
     private boolean useSiblingsDeviceBank;
     @Expose
-    private int siblingsDeviceBankNumDevices = 4;
+    private int siblingsDeviceBankNumDevices;
     @Expose
     private boolean useChainDeviceBank;
     @Expose
-    private int chainDeviceBankNumDevices = 4;
+    private int chainDeviceBankNumDevices;
     @Expose
     private boolean useSceneBank;
     @Expose
-    private int sceneBankNumScenes = 8;
+    private int sceneBankNumScenes;
     @Expose
     private boolean useMainTrackBank;
     @Expose
     private boolean mainTrackBankFollowCursorTrack;
     @Expose
-    private int mainTrackBankNumTracks = 8;
+    private int mainTrackBankNumTracks;
     @Expose
-    private int mainTrackBankNumSends = 2;
+    private int mainTrackBankNumSends;
     @Expose
-    private int mainTrackBankNumScenes = 8;
+    private int mainTrackBankNumScenes;
     @Expose
     private boolean useEffectTrackBank;
     @Expose
-    private int effectTrackBankNumTracks = 2;
+    private int effectTrackBankNumTracks;
     @Expose
-    private int effectTrackBankNumScenes = 8;
+    private int effectTrackBankNumScenes;
     @Expose
     private boolean useMasterTrack;
     @Expose
-    private int masterTrackNumScenes = 8;
+    private int masterTrackNumScenes;
     @Expose
     private boolean useBrowser;
     @Expose
-    private int browserSmartCollectionRows = 32;
+    private int browserSmartCollectionRows;
     @Expose
-    private int browserLocationRows = 32;
+    private int browserLocationRows;
     @Expose
-    private int browserDeviceRows =32;
+    private int browserDeviceRows;
     @Expose
-    private int browserCategoryRows = 32;
+    private int browserCategoryRows;
     @Expose
-    private int browserTagRows = 32;
+    private int browserTagRows;
     @Expose
-    private int browserDeviceTypeRows = 16;
+    private int browserDeviceTypeRows;
     @Expose
-    private int browserFileTypeRows = 16;
+    private int browserFileTypeRows;
     @Expose
-    private int browserCreatorRows = 32;
+    private int browserCreatorRows;
     @Expose
-    private int browserResultsRows = 32;
+    private int browserResultsRows;
     // <--
 
     /**
@@ -193,7 +193,7 @@ public class Config extends AbstractConfiguration {
     public boolean useAbbreviatedMethodNames() {
         return useAbbreviatedMethodNames;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use Project API.
      * @return
@@ -201,7 +201,7 @@ public class Config extends AbstractConfiguration {
     public boolean useProject() {
         return useProject;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use Application API.
      * @return
@@ -217,7 +217,7 @@ public class Config extends AbstractConfiguration {
     public boolean useTransport() {
         return useTransport;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use Arranger API.
      * @return
@@ -233,7 +233,7 @@ public class Config extends AbstractConfiguration {
     public int getArrangerCueMakerSize() {
         return arrangerCueMarkerSize;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use Groove API.
      * @return
@@ -241,7 +241,7 @@ public class Config extends AbstractConfiguration {
     public boolean useGroove() {
         return useGroove;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use Mixer API.
      * @return
@@ -289,7 +289,7 @@ public class Config extends AbstractConfiguration {
     public boolean useSiblingsTrackBank() {
         return useSiblingsTrackBank;
     }
-    
+
     /**
      * Returns a configuration value of number of tracks of SiblingsTrackBank
      * @return
@@ -305,7 +305,7 @@ public class Config extends AbstractConfiguration {
     public boolean isSiblingsTrackBankIncludeEffectTracks() {
         return siblingsTrackBankIncludeEffectTracks;
     }
-    
+
     /**
      * Returns a configuration value of SiblingsTrackBank include EffectTracks or not.
      * @return
@@ -313,7 +313,7 @@ public class Config extends AbstractConfiguration {
     public boolean isSiblingsTrackBankIncludeMasterTrack() {
         return siblingsTrackBankIncludeMasterTrack;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use SiblingsTrackBank of CursorTrack API.
      * @return
@@ -321,7 +321,7 @@ public class Config extends AbstractConfiguration {
     public boolean useChildTrackBank() {
         return useChildTrackBank;
     }
-    
+
     /**
      * Returns a configuration value of number of tracks of ChildTrackBank
      * @return
@@ -337,7 +337,7 @@ public class Config extends AbstractConfiguration {
     public boolean isChildTrackBankHasFlatList() {
         return childTrackBankHasFlatList;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use CursorDevice API.
      * @return
@@ -409,7 +409,7 @@ public class Config extends AbstractConfiguration {
     public int getDeviceLayerBankNumChannels() {
         return deviceLayerBankNumChannels;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use DrumPadBank API.
      * @return
@@ -425,7 +425,7 @@ public class Config extends AbstractConfiguration {
     public int getDrumPadBankNumPads() {
         return drumPadBankNumPads;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use MasterTrack API.
      * @return
@@ -441,7 +441,7 @@ public class Config extends AbstractConfiguration {
     public int getSiblingsDeviceBankNumDevices() {
         return siblingsDeviceBankNumDevices;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use MasterTrack API.
      * @return
@@ -481,7 +481,7 @@ public class Config extends AbstractConfiguration {
     public boolean useMainTrackBank() {
         return useMainTrackBank;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use MainTrackBank API.
      * @return
@@ -561,7 +561,7 @@ public class Config extends AbstractConfiguration {
     public boolean useBrowser() {
         return useBrowser;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of smart collection column
      * @return
@@ -569,7 +569,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserSmartCollectionRows() {
         return browserSmartCollectionRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of location column
      * @return
@@ -577,7 +577,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserLocationRows() {
         return browserLocationRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of device column
      * @return
@@ -585,7 +585,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserDeviceRows() {
         return browserDeviceRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of category column
      * @return
@@ -593,7 +593,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserCategoryRows() {
         return browserCategoryRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of tag column
      * @return
@@ -601,7 +601,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserTagRows() {
         return browserTagRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of device type column
      * @return
@@ -609,7 +609,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserDeviceTypeRows() {
         return browserDeviceTypeRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of file type column
      * @return
@@ -617,7 +617,7 @@ public class Config extends AbstractConfiguration {
     public int getBrowserFileTypeRows() {
         return browserDeviceTypeRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of file type column
      * @return
@@ -625,13 +625,94 @@ public class Config extends AbstractConfiguration {
     public int getBrowserCreatorRows() {
         return browserCreatorRows;
     }
-    
+
     /**
      * Returns a configuration value of the number of rows of results column
      * @return
      */
     public int getBrowserResultsRows() {
         return browserResultsRows;
+    }
+
+    /**
+     * Reset to defaults.
+     */
+    protected void resetToDefaults() {
+        super.resetToDefaults();
+        webSocketPort = DEFAULT_WEBSOCKET_PORT;
+        rpcProtocol = Protocols.JSONRPC20;
+        useAbbreviatedMethodNames = true;
+        useProject = false;
+        useApplication = false;
+        useTransport = false;
+        useArranger = false;
+        arrangerCueMarkerSize = 16;
+        useGroove = false;
+        useMixer = false;
+
+        useCursorTrack = false;
+        cursorTrackNumSends = 2;
+        cursorTrackNumScenes = 8;
+        cursorTrackShouldFollowSelection = true;
+
+        useSiblingsTrackBank = false;
+        siblingsTrackBankNumTracks = 8;
+        siblingsTrackBankIncludeEffectTracks = false;
+        siblingsTrackBankIncludeMasterTrack = false;
+
+        useChildTrackBank = false;
+        childTrackBankNumTracks = 8;
+        childTrackBankHasFlatList = false;
+
+        useCursorDevice = false;
+        cursorDeviceNumSends = 2;
+        cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
+
+        useChainSelector = false;
+
+        useCursorDeviceLayer = false;
+
+        useCursorRemoteControlsPage = false;
+        cursorRemoteControlsPageParameterCount = 8;
+
+        useDeviceLayerBank = false;
+        deviceLayerBankNumChannels = 8;
+
+        useDrumPadBank = false;
+        drumPadBankNumPads = 16;
+
+        useSiblingsDeviceBank = false;
+        siblingsDeviceBankNumDevices = 4;
+
+        useChainDeviceBank = false;
+        chainDeviceBankNumDevices = 4;
+
+        useSceneBank = false;
+        sceneBankNumScenes = 8;
+
+        useMainTrackBank = false;
+        mainTrackBankFollowCursorTrack = true;
+        mainTrackBankNumTracks = 8;
+        mainTrackBankNumSends = 2;
+        mainTrackBankNumScenes = 8;
+
+        useEffectTrackBank = false;
+        effectTrackBankNumTracks = 2;
+        effectTrackBankNumScenes = 8;
+
+        useMasterTrack = false;
+        masterTrackNumScenes = 8;
+
+        useBrowser = false;
+        browserSmartCollectionRows = 32;
+        browserLocationRows = 32;
+        browserDeviceRows =32;
+        browserCategoryRows = 32;
+        browserTagRows = 32;
+        browserDeviceTypeRows = 16;
+        browserFileTypeRows = 16;
+        browserCreatorRows = 32;
+        browserResultsRows = 32;
     }
 
     /**
@@ -642,9 +723,10 @@ public class Config extends AbstractConfiguration {
         Preferences pref = host.getPreferences();
         SettableRangedValue webSocketPortValue = pref.getNumberSetting
             ("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, 1, "", DEFAULT_WEBSOCKET_PORT);
-        webSocketPortValue.setRaw(webSocketPort);
         webSocketPortValue.addRawValueObserver(v -> {
-                if (webSocketPort != (int)v) {
+                if (ignoreValueChanged) {
+                    webSocketPortValue.setRaw(webSocketPort);
+                } else if (webSocketPort != (int)v) {
                     webSocketPort = (int)v;
                     valueChanged();
                 }
@@ -653,8 +735,10 @@ public class Config extends AbstractConfiguration {
         Protocols protocol = ExtensionUtils.getPreferenceAsEnum
             (pref, "Protocol", WEBSOCKET_PREF_CATEGORY,
              e -> e.getDisplayName(), Protocols.JSONRPC20, rpcProtocol,
-             e -> {
-                if (rpcProtocol != e) {
+             (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(Protocols.JSONRPC20.getDisplayName());
+                } else if (rpcProtocol != e) {
                     rpcProtocol = e;
                     valueChanged();
                 }
@@ -662,14 +746,15 @@ public class Config extends AbstractConfiguration {
 
         SettableBooleanValue useAbbreviatedMethodNamesValue = pref.getBooleanSetting
             ("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY, true);
-        useAbbreviatedMethodNamesValue.set(useAbbreviatedMethodNames);
         useAbbreviatedMethodNamesValue.addValueObserver(v -> {
-                if (useAbbreviatedMethodNames != v) {
+                if (ignoreValueChanged) {
+                    useAbbreviatedMethodNamesValue.set(useAbbreviatedMethodNames);
+                } else if (useAbbreviatedMethodNames != v) {
                     useAbbreviatedMethodNames = v;
                     valueChanged();
                 }
             });
-        
+
         // SettableBooleanValue useProjectValue = pref.getBooleanSetting
         //     ("Use", "Project", false);
         // useProjectValue.set(useProject);
@@ -679,12 +764,13 @@ public class Config extends AbstractConfiguration {
         //             valueChanged();
         //         }
         //     });
-        
+
         SettableBooleanValue useApplicationValue = pref.getBooleanSetting
             ("Use", "Application", false);
-        useApplicationValue.set(useApplication);
         useApplicationValue.addValueObserver(v -> {
-                if (useApplication != v) {
+                if (ignoreValueChanged) {
+                    useApplicationValue.set(useApplication);
+                } else if (useApplication != v) {
                     useApplication = v;
                     valueChanged();
                 }
@@ -692,37 +778,43 @@ public class Config extends AbstractConfiguration {
 
         SettableBooleanValue useTransportValue = pref.getBooleanSetting
             ("Use", "Transport", false);
-        useTransportValue.set(useTransport);
         useTransportValue.addValueObserver(v -> {
-                if (useTransport != v) {
+                if (ignoreValueChanged) {
+                    useTransportValue.set(useTransport);
+                } else if (useTransport != v) {
                     useTransport = v;
                     valueChanged();
                 }
             });
-        
+
         SettableBooleanValue useArrangerValue = pref.getBooleanSetting
             ("Use", "Arranger", false);
-        useArrangerValue.set(useArranger);
         useArrangerValue.addValueObserver(v -> {
-                if (useArranger != v) {
+                if (ignoreValueChanged) {
+                    useArrangerValue.set(useArranger);
+                } else if (useArranger != v) {
                     useArranger = v;
                     valueChanged();
                 }
             });
-        
+
         int arrangerCueMarkerSizeValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "cue markers", "Arranger", INT_OPTIONS_8TO64[1], arrangerCueMarkerSize, INT_OPTIONS_8TO64, v -> {
-                if (arrangerCueMarkerSize != v) {
-                    arrangerCueMarkerSize = v;
+            (pref, "cue markers", "Arranger", INT_OPTIONS_8TO64[1], arrangerCueMarkerSize,
+             INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(arrangerCueMarkerSize));
+                } else if (arrangerCueMarkerSize != i) {
+                    arrangerCueMarkerSize = i;
                     valueChanged();
                 }
             });
 
         SettableBooleanValue useGrooveValue = pref.getBooleanSetting
             ("Use", "Groove", false);
-        useGrooveValue.set(useGroove);
         useGrooveValue.addValueObserver(v -> {
-                if (useGroove != v) {
+                if (ignoreValueChanged) {
+                    useGrooveValue.set(useGroove);
+                } else if (useGroove != v) {
                     useGroove = v;
                     valueChanged();
                 }
@@ -730,46 +822,55 @@ public class Config extends AbstractConfiguration {
 
         SettableBooleanValue useMixerValue = pref.getBooleanSetting
             ("Use", "Mixer", false);
-        useMixerValue.set(useMixer);
         useMixerValue.addValueObserver(v -> {
-                if (useMixer != v) {
+                if (ignoreValueChanged) {
+                    useMixerValue.set(useMixer);
+                } else if (useMixer != v) {
                     useMixer = v;
                     valueChanged();
                 }
             });
-        
+
         // --> CursorTrack
         SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting
             ("Use", "CursorTrack", false);
-        useCursorTrackValue.set(useCursorTrack);
         useCursorTrackValue.addValueObserver(v -> {
-                if (useCursorTrack != v) {
+                if (ignoreValueChanged) {
+                    useCursorTrackValue.set(useCursorTrack);
+                } else if (useCursorTrack != v) {
                     useCursorTrack = v;
                     valueChanged();
                 }
             });
-        
+
         int cursorTrackNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Sends", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumSends, INT_OPTIONS_1TO8, v -> {
-                if (cursorTrackNumSends != v) {
-                    cursorTrackNumSends = v;
+            (pref, "Sends", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumSends,
+             INT_OPTIONS_1TO8, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(cursorTrackNumSends));
+                } else if (cursorTrackNumSends != i) {
+                    cursorTrackNumSends = i;
                     valueChanged();
                 }
             });
 
         int cursorTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumScenes, INT_OPTIONS_1TO8, v -> {
-                if (cursorTrackNumScenes != v) {
-                    cursorTrackNumScenes = v;
+            (pref, "Scenes", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumScenes,
+             INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(cursorTrackNumScenes));
+                } else if (cursorTrackNumScenes != i) {
+                    cursorTrackNumScenes = i;
                     valueChanged();
                 }
             });
 
         SettableBooleanValue cursorTrackShouldFollowSelectionValue = pref.getBooleanSetting
             ("Should follow selection", "CursorTrack", false);
-        cursorTrackShouldFollowSelectionValue.set(cursorTrackShouldFollowSelection);
         cursorTrackShouldFollowSelectionValue.addValueObserver(v -> {
-                if (cursorTrackShouldFollowSelection != v) {
+                if (ignoreValueChanged) {
+                    cursorTrackShouldFollowSelectionValue.set(cursorTrackShouldFollowSelection);
+                } else if (cursorTrackShouldFollowSelection != v) {
                     cursorTrackShouldFollowSelection = v;
                     valueChanged();
                 }
@@ -778,94 +879,112 @@ public class Config extends AbstractConfiguration {
         // --> SiblingsTrackBank
         SettableBooleanValue useSiblingsTrackBankValue = pref.getBooleanSetting
             ("Use", "SiblingsTrackBank (needs CursorTrack)", false);
-        useSiblingsTrackBankValue.set(useSiblingsTrackBank);
         useSiblingsTrackBankValue.addValueObserver(v -> {
-                if (useSiblingsTrackBank != v) {
+                if (ignoreValueChanged) {
+                    useSiblingsTrackBankValue.set(useSiblingsTrackBank);
+                } else  if (useSiblingsTrackBank != v) {
                     useSiblingsTrackBank = v;
                     valueChanged();
                 }
             });
-        
+
         int siblingsTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "SiblingsTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1], siblingsTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
-                if (siblingsTrackBankNumTracks != v) {
-                    siblingsTrackBankNumTracks = v;
+            (pref, "Tracks", "SiblingsTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1],
+             siblingsTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(siblingsTrackBankNumTracks));
+                } else if (siblingsTrackBankNumTracks != i) {
+                    siblingsTrackBankNumTracks = i;
                     valueChanged();
                 }
             });
-        
+
         SettableBooleanValue siblingsTrackBankIncludeEffectTracksValue = pref.getBooleanSetting
             ("Include effect tracks", "SiblingsTrackBank (needs CursorTrack)", false);
-        siblingsTrackBankIncludeEffectTracksValue.set(siblingsTrackBankIncludeEffectTracks);
         siblingsTrackBankIncludeEffectTracksValue.addValueObserver(v -> {
-                if (siblingsTrackBankIncludeEffectTracks != v) {
+                if (ignoreValueChanged) {
+                    siblingsTrackBankIncludeEffectTracksValue.set(siblingsTrackBankIncludeEffectTracks);
+                } else if (siblingsTrackBankIncludeEffectTracks != v) {
                     siblingsTrackBankIncludeEffectTracks = v;
                     valueChanged();
                 }
             });
-        
+
         SettableBooleanValue siblingsTrackBankIncludeMasterTrackValue = pref.getBooleanSetting
             ("Include master track", "SiblingsTrackBank (needs CursorTrack)", false);
-        siblingsTrackBankIncludeMasterTrackValue.set(siblingsTrackBankIncludeMasterTrack);
         siblingsTrackBankIncludeMasterTrackValue.addValueObserver(v -> {
-                if (siblingsTrackBankIncludeMasterTrack != v) {
+                if (ignoreValueChanged) {
+                    siblingsTrackBankIncludeMasterTrackValue.set(siblingsTrackBankIncludeMasterTrack);
+                } else  if (siblingsTrackBankIncludeMasterTrack != v) {
                     siblingsTrackBankIncludeMasterTrack = v;
                     valueChanged();
                 }
             });
-        
+
         // --> SiblingsTrackBank
         SettableBooleanValue useChildTrackBankValue = pref.getBooleanSetting
             ("Use", "ChildTrackBank (needs CursorTrack)", false);
-        useChildTrackBankValue.set(useChildTrackBank);
         useChildTrackBankValue.addValueObserver(v -> {
-                if (useChildTrackBank != v) {
+                if (ignoreValueChanged) {
+                    useChildTrackBankValue.set(useChildTrackBank);
+                } else if (useChildTrackBank != v) {
                     useChildTrackBank = v;
                     valueChanged();
                 }
             });
-        
+
         int childTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "ChildTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1], childTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
-                if (childTrackBankNumTracks != v) {
-                    childTrackBankNumTracks = v;
+            (pref, "Tracks", "ChildTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1],
+             childTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(childTrackBankNumTracks));
+                } else if (childTrackBankNumTracks != i) {
+                    childTrackBankNumTracks = i;
                     valueChanged();
                 }
             });
-        
+
         SettableBooleanValue childTrackBankHasFlatListValue = pref.getBooleanSetting
             ("Has flat track list", "ChildTrackBank (needs CursorTrack)", false);
-        childTrackBankHasFlatListValue.set(childTrackBankHasFlatList);
         childTrackBankHasFlatListValue.addValueObserver(v -> {
-                if (childTrackBankHasFlatList != v) {
+                if (ignoreValueChanged) {
+                    childTrackBankHasFlatListValue.set(childTrackBankHasFlatList);
+                } else if (childTrackBankHasFlatList != v) {
                     childTrackBankHasFlatList = v;
                     valueChanged();
                 }
             });
-        
+
         // --> CursorDevice
         SettableBooleanValue useCursorDeviceValue = pref.getBooleanSetting
             ("Use", "CursorDevice (needs CursorTrack)", false);
-        useCursorDeviceValue.set(useCursorDevice);
         useCursorDeviceValue.addValueObserver(v -> {
-                if (useCursorDevice != v) {
+                if (ignoreValueChanged) {
+                    useCursorDeviceValue.set(useCursorDevice);
+                } else if (useCursorDevice != v) {
                     useCursorDevice = v;
                     valueChanged();
                 }
             });
 
         int cursorDeviceNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8[1], cursorDeviceNumSends, INT_OPTIONS_1TO8, v -> {
-                if (cursorDeviceNumSends != v) {
-                    cursorDeviceNumSends = v;
+            (pref, "sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8[1],
+             cursorDeviceNumSends, INT_OPTIONS_1TO8, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(cursorDeviceNumSends));
+                } else if (cursorDeviceNumSends != i) {
+                    cursorDeviceNumSends = i;
                     valueChanged();
                 }
             });
 
         CursorDeviceFollowMode cursorDeviceFollowModeValue = ExtensionUtils.getPreferenceAsEnum
-            (pref, "Follow mode", "CursorDevice (needs CursorTrack)", CursorDeviceFollowMode.FOLLOW_SELECTION, cursorDeviceFollowMode, v -> {
-                if (cursorDeviceFollowMode != v) {
-                    cursorDeviceFollowMode = v;
+            (pref, "Follow mode", "CursorDevice (needs CursorTrack)", CursorDeviceFollowMode.FOLLOW_SELECTION,
+             cursorDeviceFollowMode, (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(cursorDeviceFollowMode.name());
+                } else if (cursorDeviceFollowMode != e) {
+                    cursorDeviceFollowMode = e;
                     valueChanged();
                 }
             });
@@ -873,9 +992,10 @@ public class Config extends AbstractConfiguration {
         // --> ChainSelector
         SettableBooleanValue useChainSelectorValue = pref.getBooleanSetting
             ("Use", "ChainSelector (needs CursorDevice)", false);
-        useChainSelectorValue.set(useChainSelector);
         useChainSelectorValue.addValueObserver(v -> {
-                if (useChainSelector != v) {
+                if (ignoreValueChanged) {
+                    useChainSelectorValue.set(useChainSelector);
+                } else if (useChainSelector != v) {
                     useChainSelector = v;
                     valueChanged();
                 }
@@ -884,9 +1004,10 @@ public class Config extends AbstractConfiguration {
         // --> CursorDeviceLayer
         SettableBooleanValue useCursorDeviceLayerValue = pref.getBooleanSetting
             ("Use", "CursorDeviceLayer (needs CursorDevice)", false);
-        useChainSelectorValue.set(useCursorDeviceLayer);
         useCursorDeviceLayerValue.addValueObserver(v -> {
-                if (useCursorDeviceLayer != v) {
+                if (ignoreValueChanged) {
+                    useChainSelectorValue.set(useCursorDeviceLayer);
+                } else if (useCursorDeviceLayer != v) {
                     useCursorDeviceLayer = v;
                     valueChanged();
                 }
@@ -895,18 +1016,22 @@ public class Config extends AbstractConfiguration {
         // --> CursorRemoteControlPage
         SettableBooleanValue useCursorRemoteControlsPageValue = pref.getBooleanSetting
             ("Use", "CursorRemoteControlPage (needs CursorDevice)", false);
-        useCursorRemoteControlsPageValue.set(useCursorRemoteControlsPage);
         useCursorRemoteControlsPageValue.addValueObserver(v -> {
-                if (useCursorRemoteControlsPage != v) {
+                if (ignoreValueChanged) {
+                    useCursorRemoteControlsPageValue.set(useCursorRemoteControlsPage);
+                } else if (useCursorRemoteControlsPage != v) {
                     useCursorRemoteControlsPage = v;
                     valueChanged();
                 }
             });
 
         int cursorRemoteControlsPageParameterCountValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Controls", "CursorRemoteControlPage (needs CursorDevice)", INT_OPTIONS_4TO32[1], cursorRemoteControlsPageParameterCount, INT_OPTIONS_4TO32, v -> {
-                if (cursorRemoteControlsPageParameterCount != v) {
-                    cursorRemoteControlsPageParameterCount = v;
+            (pref, "Controls", "CursorRemoteControlPage (needs CursorDevice)", INT_OPTIONS_4TO32[1],
+             cursorRemoteControlsPageParameterCount, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(cursorRemoteControlsPageParameterCount));
+                } else if (cursorRemoteControlsPageParameterCount != i) {
+                    cursorRemoteControlsPageParameterCount = i;
                     valueChanged();
                 }
             });
@@ -914,37 +1039,45 @@ public class Config extends AbstractConfiguration {
         // --> DeviceLayerBank
         SettableBooleanValue useDeviceLayerBankValue = pref.getBooleanSetting
             ("Use", "DeviceLayerBank (needs CursorDevice)", false);
-        useDeviceLayerBankValue.set(useDeviceLayerBank);
         useDeviceLayerBankValue.addValueObserver(v -> {
-                if (useDeviceLayerBank != v) {
+                if (ignoreValueChanged) {
+                    useDeviceLayerBankValue.set(useDeviceLayerBank);
+                } else if (useDeviceLayerBank != v) {
                     useDeviceLayerBank = v;
                     valueChanged();
                 }
             });
 
         int deviceLayerBankNumChannelsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Channels", "DeviceLayerBank (needs CursorDevice)", INT_OPTIONS_4TO32[1], deviceLayerBankNumChannels, INT_OPTIONS_4TO32, v -> {
-                if (deviceLayerBankNumChannels != v) {
-                    deviceLayerBankNumChannels = v;
+            (pref, "Channels", "DeviceLayerBank (needs CursorDevice)", INT_OPTIONS_4TO32[1],
+             deviceLayerBankNumChannels, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(deviceLayerBankNumChannels));
+                } else if (deviceLayerBankNumChannels != i) {
+                    deviceLayerBankNumChannels = i;
                     valueChanged();
                 }
             });
-        
+
         // --> DrumPadBank
         SettableBooleanValue useDrumPadBankValue = pref.getBooleanSetting
             ("Use", "DrumPadBank (needs CursorDevice)", false);
-        useDrumPadBankValue.set(useDrumPadBank);
         useDrumPadBankValue.addValueObserver(v -> {
-                if (useDrumPadBank != v) {
+                if (ignoreValueChanged) {
+                    useDrumPadBankValue.set(useDrumPadBank);
+                } else if (useDrumPadBank != v) {
                     useDrumPadBank = v;
                     valueChanged();
                 }
             });
 
         int drumPadBankNumPadsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Pads", "DrumPadBank (needs CursorDevice)", INT_OPTIONS_8TO64[1], drumPadBankNumPads, INT_OPTIONS_8TO64, v -> {
-                if (drumPadBankNumPads != v) {
-                    drumPadBankNumPads = v;
+            (pref, "Pads", "DrumPadBank (needs CursorDevice)", INT_OPTIONS_8TO64[1],
+             drumPadBankNumPads, INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(drumPadBankNumPads));
+                } else if (drumPadBankNumPads != i) {
+                    drumPadBankNumPads = i;
                     valueChanged();
                 }
             });
@@ -952,56 +1085,68 @@ public class Config extends AbstractConfiguration {
         // --> SiblingsDeviceBank
         SettableBooleanValue useSiblingsDeviceBankValue = pref.getBooleanSetting
             ("Use", "SiblingsDeviceBank (needs CursorDevice)", false);
-        useSiblingsDeviceBankValue.set(useSiblingsDeviceBank);
         useSiblingsDeviceBankValue.addValueObserver(v -> {
-                if (useSiblingsDeviceBank != v) {
+                if (ignoreValueChanged) {
+                    useSiblingsDeviceBankValue.set(useSiblingsDeviceBank);
+                } else if (useSiblingsDeviceBank != v) {
                     useSiblingsDeviceBank = v;
                     valueChanged();
                 }
             });
 
         int siblingsDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Devices", "SiblingsDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1], siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
-                if (siblingsDeviceBankNumDevices != v) {
-                    siblingsDeviceBankNumDevices = v;
+            (pref, "Devices", "SiblingsDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1],
+             siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(siblingsDeviceBankNumDevices));
+                } else if (siblingsDeviceBankNumDevices != i) {
+                    siblingsDeviceBankNumDevices = i;
                     valueChanged();
                 }
             });
-        
+
         // --> ChainDeviceBank
         SettableBooleanValue useChainDeviceBankValue = pref.getBooleanSetting
             ("Use", "ChainDeviceBank (needs CursorDevice)", false);
-        useChainDeviceBankValue.set(useChainDeviceBank);
         useChainDeviceBankValue.addValueObserver(v -> {
-                if (useChainDeviceBank != v) {
+                if (ignoreValueChanged) {
+                    useChainDeviceBankValue.set(useChainDeviceBank);
+                } else if (useChainDeviceBank != v) {
                     useChainDeviceBank = v;
                     valueChanged();
                 }
             });
 
         int chainDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Devices", "ChainDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1], chainDeviceBankNumDevices, INT_OPTIONS_2TO16, v -> {
-                if (chainDeviceBankNumDevices != v) {
-                    chainDeviceBankNumDevices = v;
+            (pref, "Devices", "ChainDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1],
+             chainDeviceBankNumDevices, INT_OPTIONS_2TO16, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(chainDeviceBankNumDevices));
+                } else if (chainDeviceBankNumDevices != i) {
+                    chainDeviceBankNumDevices = i;
                     valueChanged();
                 }
             });
-        
+
         // --> SceneBank
         SettableBooleanValue useSceneBankValue = pref.getBooleanSetting
             ("Use", "SceneBank", false);
-        useSceneBankValue.set(useSceneBank);
         useSceneBankValue.addValueObserver(v -> {
-                if (useSceneBank != v) {
+                if (ignoreValueChanged) {
+                    useSceneBankValue.set(useSceneBank);
+                } else if (useSceneBank != v) {
                     useSceneBank = v;
                     valueChanged();
                 }
             });
 
         int sceneBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "SceneBank", INT_OPTIONS_4TO32[1], sceneBankNumScenes, INT_OPTIONS_4TO32, v -> {
-                if (sceneBankNumScenes != v) {
-                    sceneBankNumScenes = v;
+            (pref, "Scenes", "SceneBank", INT_OPTIONS_4TO32[1],
+             sceneBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(sceneBankNumScenes));
+                } else if (sceneBankNumScenes != i) {
+                    sceneBankNumScenes = i;
                     valueChanged();
                 }
             });
@@ -1009,43 +1154,54 @@ public class Config extends AbstractConfiguration {
         // --> MainTrackBank
         SettableBooleanValue useMainTrackBankValue = pref.getBooleanSetting
             ("Use", "MainTrackBank", false);
-        useMainTrackBankValue.set(useMainTrackBank);
         useMainTrackBankValue.addValueObserver(v -> {
-                if (useMainTrackBank != v) {
+                if (ignoreValueChanged) {
+                    useMainTrackBankValue.set(useMainTrackBank);
+                } else if (useMainTrackBank != v) {
                     useMainTrackBank = v;
                     valueChanged();
                 }
             });
-        
+
         int mainTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "MainTrackBank", INT_OPTIONS_4TO32[1], mainTrackBankNumTracks, INT_OPTIONS_4TO32, v -> {
-                if (mainTrackBankNumTracks != v) {
-                    mainTrackBankNumTracks = v;
+            (pref, "Tracks", "MainTrackBank", INT_OPTIONS_4TO32[1],
+             mainTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(mainTrackBankNumTracks));
+                } else if (mainTrackBankNumTracks != i) {
+                    mainTrackBankNumTracks = i;
                     valueChanged();
                 }
             });
 
         int mainTrackBankNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Sends", "MainTrackBank", INT_OPTIONS_1TO8[1], mainTrackBankNumSends, INT_OPTIONS_1TO8, v -> {
-                if (mainTrackBankNumSends != v) {
-                    mainTrackBankNumSends = v;
+            (pref, "Sends", "MainTrackBank", INT_OPTIONS_1TO8[1],
+             mainTrackBankNumSends, INT_OPTIONS_1TO8, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(mainTrackBankNumSends));
+                } else if (mainTrackBankNumSends != i) {
+                    mainTrackBankNumSends = i;
                     valueChanged();
                 }
             });
 
         int mainTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "MainTrackBank", INT_OPTIONS_4TO32[1], mainTrackBankNumScenes, INT_OPTIONS_4TO32, v -> {
-                if (mainTrackBankNumScenes != v) {
-                    mainTrackBankNumScenes = v;
+            (pref, "Scenes", "MainTrackBank", INT_OPTIONS_4TO32[1],
+             mainTrackBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(mainTrackBankNumScenes));
+                } else if (mainTrackBankNumScenes != i) {
+                    mainTrackBankNumScenes = i;
                     valueChanged();
                 }
             });
-        
+
         SettableBooleanValue mainTrackBankFollowCursorTrackValue = pref.getBooleanSetting
             ("Follow CursorTrack", "MainTrackBank", false);
-        mainTrackBankFollowCursorTrackValue.set(mainTrackBankFollowCursorTrack);
         useMainTrackBankValue.addValueObserver(v -> {
-                if (mainTrackBankFollowCursorTrack != v) {
+                if (ignoreValueChanged) {
+                    mainTrackBankFollowCursorTrackValue.set(mainTrackBankFollowCursorTrack);
+                } else if (mainTrackBankFollowCursorTrack != v) {
                     mainTrackBankFollowCursorTrack = v;
                     valueChanged();
                 }
@@ -1055,26 +1211,33 @@ public class Config extends AbstractConfiguration {
         // --> EffectrackBank
         SettableBooleanValue useEffectTrackBankValue = pref.getBooleanSetting
             ("Use", "EffectTrackBank", false);
-        useEffectTrackBankValue.set(useEffectTrackBank);
         useEffectTrackBankValue.addValueObserver(v -> {
-                if (useEffectTrackBank != v) {
+                if (ignoreValueChanged) {
+                    useEffectTrackBankValue.set(useEffectTrackBank);
+                } else if (useEffectTrackBank != v) {
                     useEffectTrackBank = v;
                     valueChanged();
                 }
             });
 
         int effectTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "EffectTrackBank", INT_OPTIONS_1TO8[1], effectTrackBankNumTracks, INT_OPTIONS_1TO8, v -> {
-                if (effectTrackBankNumTracks != v) {
-                    effectTrackBankNumTracks = v;
+            (pref, "Tracks", "EffectTrackBank", INT_OPTIONS_1TO8[1],
+             effectTrackBankNumTracks, INT_OPTIONS_1TO8, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(effectTrackBankNumTracks));
+                } else if (effectTrackBankNumTracks != i) {
+                    effectTrackBankNumTracks = i;
                     valueChanged();
                 }
             });
 
         int effectTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "EffectTrackBank", INT_OPTIONS_4TO32[1], effectTrackBankNumScenes, INT_OPTIONS_4TO32, v -> {
-                if (effectTrackBankNumScenes != v) {
-                    effectTrackBankNumScenes = v;
+            (pref, "Scenes", "EffectTrackBank", INT_OPTIONS_4TO32[1],
+             effectTrackBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(effectTrackBankNumScenes));
+                } else if (effectTrackBankNumScenes != i) {
+                    effectTrackBankNumScenes = i;
                     valueChanged();
                 }
             });
@@ -1082,112 +1245,146 @@ public class Config extends AbstractConfiguration {
         // --> MasterTrack
         SettableBooleanValue useMasterTrackValue = pref.getBooleanSetting
             ("Use", "MasterTrack", false);
-        useMasterTrackValue.set(useMasterTrack);
         useMasterTrackValue.addValueObserver(v -> {
-                if (useMasterTrack != v) {
+                if (ignoreValueChanged) {
+                    useMasterTrackValue.set(useMasterTrack);
+                } else if (useMasterTrack != v) {
                     useMasterTrack = v;
                     valueChanged();
                 }
             });
 
         int masterTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "MasterTrack", INT_OPTIONS_4TO32[1], masterTrackNumScenes, INT_OPTIONS_4TO32, v -> {
-                if (masterTrackNumScenes != v) {
-                    masterTrackNumScenes = v;
-                    valueChanged();
+            (pref, "Scenes", "MasterTrack", INT_OPTIONS_4TO32[1],
+             masterTrackNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(masterTrackNumScenes));
+                } else {
+                    if (masterTrackNumScenes != i) {
+                        masterTrackNumScenes = i;
+                        valueChanged();
+                    }
                 }
             });
 
         // --> PopupBrowser
         SettableBooleanValue useBrowserValue = pref.getBooleanSetting
             ("Use", "PopupBrowser", false);
-        useBrowserValue.set(useBrowser);
         useBrowserValue.addValueObserver(v -> {
-                if (useBrowser != v) {
+                if (ignoreValueChanged) {
+                    useBrowserValue.set(useBrowser);
+                } else if (useBrowser != v) {
                     useBrowser = v;
                     valueChanged();
                 }
             });
 
         int browserSmartCollectionRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Smart collection rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserSmartCollectionRows, INT_OPTIONS_16TO128, v -> {
-                if (browserSmartCollectionRows != v) {
-                    browserSmartCollectionRows = v;
+            (pref, "Smart collection rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserSmartCollectionRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserSmartCollectionRows));
+                } else if (browserSmartCollectionRows != i) {
+                    browserSmartCollectionRows = i;
                     valueChanged();
                 }
             });
 
         int browserLocationRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Location rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserLocationRows, INT_OPTIONS_16TO128, v -> {
-                if (browserLocationRows != v) {
-                    browserLocationRows = v;
+            (pref, "Location rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserLocationRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserLocationRows));
+                } else if (browserLocationRows != i) {
+                    browserLocationRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserDeviceRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Device rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserDeviceRows, INT_OPTIONS_16TO128, v -> {
-                if (browserDeviceRows != v) {
-                    browserDeviceRows = v;
+            (pref, "Device rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserDeviceRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserDeviceRows));
+                } else if (browserDeviceRows != i) {
+                    browserDeviceRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserCategoryRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Category rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserCategoryRows, INT_OPTIONS_16TO128, v -> {
-                if (browserCategoryRows != v) {
-                    browserCategoryRows = v;
+            (pref, "Category rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserCategoryRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserCategoryRows));
+                } else if (browserCategoryRows != i) {
+                    browserCategoryRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserTagRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tag rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserTagRows, INT_OPTIONS_16TO128, v -> {
-                if (browserTagRows != v) {
-                    browserTagRows = v;
+            (pref, "Tag rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserTagRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserTagRows));
+                } else if (browserTagRows != i) {
+                    browserTagRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserDeviceTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Device type rows", "PopupBrowser", INT_OPTIONS_8TO64[1], browserDeviceTypeRows, INT_OPTIONS_8TO64, v -> {
-                if (browserDeviceTypeRows != v) {
-                    browserDeviceTypeRows = v;
+            (pref, "Device type rows", "PopupBrowser", INT_OPTIONS_8TO64[1],
+             browserDeviceTypeRows, INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserDeviceTypeRows));
+                } else if (browserDeviceTypeRows != i) {
+                    browserDeviceTypeRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserFileTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "File type rows", "PopupBrowser", INT_OPTIONS_8TO64[1], browserFileTypeRows, INT_OPTIONS_8TO64, v -> {
-                if (browserFileTypeRows != v) {
-                    browserFileTypeRows = v;
+            (pref, "File type rows", "PopupBrowser", INT_OPTIONS_8TO64[1],
+             browserFileTypeRows, INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserFileTypeRows));
+                } else if (browserFileTypeRows != i) {
+                    browserFileTypeRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserCreatorRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Creator rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserCreatorRows, INT_OPTIONS_16TO128, v -> {
-                if (browserCreatorRows != v) {
-                    browserCreatorRows = v;
+            (pref, "Creator rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserCreatorRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserCreatorRows));
+                } else if (browserCreatorRows != i) {
+                    browserCreatorRows = i;
                     valueChanged();
                 }
             });
-        
+
         int browserResultsRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Results rows", "PopupBrowser", INT_OPTIONS_16TO128[1], browserResultsRows, INT_OPTIONS_16TO128, v -> {
-                if (browserResultsRows != v) {
-                    browserResultsRows = v;
+            (pref, "Results rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
+             browserResultsRows, INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(browserResultsRows));
+                } else if (browserResultsRows != i) {
+                    browserResultsRows = i;
                     valueChanged();
                 }
             });
-        
+
         // for future use
         if (!USE_RC_FILE) {
             webSocketPort = (int)webSocketPortValue.getRaw();
             rpcProtocol = protocol;
-            
+
             // useProject = useProjectValue.get();
-            
+
             useApplication = useApplicationValue.get();
             useTransport = useTransportValue.get();
             useArranger = useArrangerValue.get();
@@ -1199,7 +1396,7 @@ public class Config extends AbstractConfiguration {
             cursorTrackNumSends = cursorTrackNumSendsValue;
             cursorTrackNumScenes = cursorTrackNumScenesValue;
             cursorTrackShouldFollowSelection = cursorTrackShouldFollowSelectionValue.get();
-            
+
             useSiblingsTrackBank = useSiblingsTrackBankValue.get();
             siblingsTrackBankNumTracks = siblingsTrackBankNumTracksValue;
             siblingsTrackBankIncludeEffectTracks = siblingsTrackBankIncludeEffectTracksValue.get();
@@ -1208,7 +1405,7 @@ public class Config extends AbstractConfiguration {
             useChildTrackBank = useChildTrackBankValue.get();
             childTrackBankNumTracks = childTrackBankNumTracksValue;
             childTrackBankHasFlatList = childTrackBankHasFlatListValue.get();
-            
+
             useCursorDevice = useCursorDeviceValue.get();
             cursorDeviceNumSends = cursorDeviceNumSendsValue;
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
@@ -1225,13 +1422,13 @@ public class Config extends AbstractConfiguration {
 
             useDrumPadBank = useDrumPadBankValue.get();
             drumPadBankNumPads = drumPadBankNumPadsValue;
-            
+
             useSiblingsDeviceBank = useSiblingsDeviceBankValue.get();
             siblingsDeviceBankNumDevices = siblingsDeviceBankNumDevicesValue;
 
             useChainDeviceBank = useChainDeviceBankValue.get();
             chainDeviceBankNumDevices = chainDeviceBankNumDevicesValue;
-            
+
             useSceneBank = useSceneBankValue.get();
             sceneBankNumScenes = sceneBankNumScenesValue;
 
@@ -1247,7 +1444,7 @@ public class Config extends AbstractConfiguration {
 
             useMasterTrack = useMasterTrackValue.get();
             masterTrackNumScenes = masterTrackNumScenesValue;
-            
+
             useBrowser = useBrowserValue.get();
             browserSmartCollectionRows = browserSmartCollectionRowsValue;
             browserLocationRows = browserLocationRowsValue;
@@ -1259,17 +1456,6 @@ public class Config extends AbstractConfiguration {
             browserCreatorRows = browserCreatorRowsValue;
             browserResultsRows = browserResultsRowsValue;
         }
-
-        host.getPreferences().getSignalSetting
-            ("Apply new settings", "Restart (new settings need restart)", "Restart")
-            .addSignalObserver(() -> host.restart());
-        // TODO preference panel dosen't update at restat.
-        host.getPreferences().getSignalSetting
-            ("Reset to defaults", "Restart (new settings need restart)", "Restart")
-            .addSignalObserver(() -> {
-                    requestReset();
-                    host.restart();
-                });
     }
 
     /**

@@ -23,7 +23,7 @@
 package com.github.jhorology.bitwig.extension;
 
 // jdk
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.io.IOException;
@@ -139,7 +139,7 @@ public class ExtensionUtils {
                                                             String label, String category,
                                                             T initialValue,
                                                             T settingValue,
-                                                            Consumer<T> onChange) {
+                                                            BiConsumer<T, SettableEnumValue> onChange) {
         return getPreferenceAsEnum(host, label, category, null, initialValue, settingValue, onChange);
     }
     
@@ -158,7 +158,7 @@ public class ExtensionUtils {
                                                             String label, String category,
                                                             T initialValue,
                                                             T settingValue,
-                                                            Consumer<T> onChange) {
+                                                            BiConsumer<T, SettableEnumValue> onChange) {
         return getPreferenceAsEnum(preferences, label, category, null, initialValue, settingValue, onChange);
     }
 
@@ -180,7 +180,7 @@ public class ExtensionUtils {
                                                             Function<T, String> mapper,
                                                             T initialValue,
                                                             T settingValue,
-                                                            Consumer<T> onChange) {
+                                                            BiConsumer<T, SettableEnumValue> onChange) {
         return getPreferenceAsEnum
             (host.getPreferences(), label, category, mapper, initialValue, settingValue, onChange);
     }
@@ -203,7 +203,7 @@ public class ExtensionUtils {
                                                             Function<T, String> mapper,
                                                             T initialValue,
                                                             T settingValue,
-                                                            Consumer<T> onChange) {
+                                                            BiConsumer<T, SettableEnumValue> onChange) {
         Class<T> enumClass = initialValue.getDeclaringClass();
         T[] values = enumClass.getEnumConstants();
 
@@ -232,7 +232,7 @@ public class ExtensionUtils {
             value.set(settingValue.name());
         }
         if (onChange != null) {
-            value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s)));
+            value.addValueObserver((String s) -> onChange.accept(valueOf.apply(s), value));
         }
         if (settingValue != null) {
             return settingValue;
@@ -256,7 +256,7 @@ public class ExtensionUtils {
                                                 int initialValue,
                                                 int settingValue,
                                                 int[] options,
-                                                Consumer<Integer> onChange) {
+                                                BiConsumer<Integer,SettableEnumValue> onChange) {
         return getPreferenceAsIntOptions
             (host.getPreferences(), label, category, initialValue, settingValue, options, onChange);
     }
@@ -277,7 +277,7 @@ public class ExtensionUtils {
                                                 int initialValue,
                                                 int settingValue,
                                                 int[] options,
-                                                Consumer<Integer> onChange) {
+                                                BiConsumer<Integer, SettableEnumValue> onChange) {
         // host thrown exception
         // Enum settings should have at least two options.
         if (options == null || options.length <= 1) {
@@ -292,7 +292,7 @@ public class ExtensionUtils {
             preferences.getEnumSetting(label, category, strOptions, strInitialValue);
         value.set(String.valueOf(settingValue));
         if (onChange != null) {
-            value.addValueObserver((String s) -> onChange.accept(Integer.valueOf(s)));
+            value.addValueObserver((String s) -> onChange.accept(Integer.valueOf(s), value));
         }
         return settingValue;
     }

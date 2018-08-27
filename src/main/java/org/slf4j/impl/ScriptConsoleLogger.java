@@ -1,5 +1,5 @@
 /*
- * This source code is based on Based on https://github.com/qos-ch/slf4j/blob/v_1.7.25/slf4j-simple/src/main/java/org/slf4j/impl/SimpleLogger.java.
+ * This source code is based on https://github.com/qos-ch/slf4j/blob/v_1.7.25/slf4j-simple/src/main/java/org/slf4j/impl/SimpleLogger.java.
  */
 
 /*
@@ -69,7 +69,7 @@ public class ScriptConsoleLogger
     private static Queue<String> tailMessages;
     private static boolean reentrantLock;
     private static int indentColumnSize;
-    private static LogSeverity defaultLogLevel;
+    private static LogSeverity globalLogLevel;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -84,20 +84,19 @@ public class ScriptConsoleLogger
     static void init() {
         CONFIG_PARAMS = new ScriptConsoleLoggerConfiguration();
         CONFIG_PARAMS.init();
-        controlSurfaceSession = Thread.currentThread();
         subscribers = new ArrayList<>();
         tailMessages = new ArrayDeque<>(TAIL_QUEUE_SIZE);
         reentrantLock = false;
         indentColumnSize = CONFIG_PARAMS.columnSize - CONFIG_PARAMS.indentPrefix.length();
-        defaultLogLevel = CONFIG_PARAMS.defaultLogLevel;
+        globalLogLevel = CONFIG_PARAMS.defaultLogLevel;
     }
     
     /**
      * set a severity level of logger.
      * @param level
      */
-    public static void setDefaultLogLevel(LogSeverity level) {
-        defaultLogLevel = level;
+    public static void setGlobalLogLevel(LogSeverity level) {
+        globalLogLevel = level;
     }
     
     /**
@@ -106,10 +105,11 @@ public class ScriptConsoleLogger
      */
     public static void setControllerHost(ControllerHost host) {
         ScriptConsoleLogger.host = host;
+        controlSurfaceSession = Thread.currentThread();
     }
 
     /** The current log level */
-    private LogSeverity currentLogLevel = LogSeverity.INFO;
+    private LogSeverity logLevel = LogSeverity.INFO;
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
     
@@ -119,13 +119,7 @@ public class ScriptConsoleLogger
      */
     ScriptConsoleLogger(String name) {
         this.name = name;
-
-        LogSeverity level = recursivelyComputeLevel();
-        if (level != null) {
-            this.currentLogLevel = level;
-        } else {
-            this.currentLogLevel = defaultLogLevel;
-        }
+        this.logLevel= recursivelyComputeLevel();
     }
 
     // ------------------------------- implementation of Logger
@@ -672,10 +666,10 @@ public class ScriptConsoleLogger
      *            is this level enabled?
      * @return 
      */
-    private boolean isLevelEnabled(LogSeverity logLevel) {
+    private boolean isLevelEnabled(LogSeverity level) {
         // log level are numerically ordered so can use simple numeric
         // comparison
-        return currentLogLevel.compareTo(logLevel) <= 0;
+        return globalLogLevel.compareTo(level) <= 0 || (logLevel != null && logLevel.compareTo(level) <= 0);
     }
     
     private String createStackTraceString(Throwable ex) {

@@ -24,7 +24,7 @@ ws.on 'open', ->
       error = err
       ws.close()
   ws.on event, (log) ->
-    console.info logFormat log
+    console.info log
       
   ws.on 'error', (err) ->
     error = err

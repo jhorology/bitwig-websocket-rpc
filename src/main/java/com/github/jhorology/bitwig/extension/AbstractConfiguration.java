@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -46,41 +46,55 @@ import org.slf4j.impl.ScriptConsoleLogger;
  */
 public abstract class AbstractConfiguration {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractConfiguration.class);
-    
+
     // options for future use.
     protected static final boolean USE_RC_FILE = true;
     private static final boolean WRITE_THROUGHT_RC_FILE = false;
-    
+
     // populate from json -->
     @Expose
-    private LogSeverity logLevel = LogSeverity.ERROR;
+    private LogSeverity logLevel;;
     // <--
 
+    protected boolean ignoreValueChanged;
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
     private Path rcFilePath;
     private boolean valueChanged;
-    private boolean requestedReset;
+    private boolean requestReset;
+
+    /**
+     * Default constructor.
+     */
+    public AbstractConfiguration() {
+        resetToDefaults();
+    }
 
     /**
      * Initialize the this configuration.
      * @param host
      */
     protected abstract void onInit(ControllerHost host);
-    
+
     /**
      * De-initialize the this configuration.
      */
     protected abstract void onExit();
-    
+
+    /**
+     * Reset to defaults.
+     */
+    protected void resetToDefaults() {
+        logLevel = LogSeverity.ERROR;
+    }
+
     /**
      * Initialize the this configuration.
-     * @param extension 
+     * @param extension
      */
     void init(ControllerHost host, ControllerExtensionDefinition definition) {
         this.host = host;
         this.definition = definition;
-        
         if (USE_RC_FILE) {
             rcFilePath = rcFilePath();
             if (Files.exists(rcFilePath)) {
@@ -90,22 +104,41 @@ public abstract class AbstractConfiguration {
                     throw new RuntimeException(ex);
                 }
             }
+            ignoreValueChanged = true;
+            host.scheduleTask(() -> {
+                    ignoreValueChanged = false;
+                },
+                500L);
         }
-        
+
         LogSeverity severity = ExtensionUtils.getPreferenceAsEnum
-            (host, "Log Level", "Debug", LogSeverity.WARN, logLevel, v -> {
-                if (logLevel != v) {
-                    logLevel = v;
-                    ScriptConsoleLogger.setDefaultLogLevel(v);
+            (host, "Log Level", "Debug", LogSeverity.WARN, logLevel, (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(logLevel.name());
+                } else if (logLevel != e) {
+                    logLevel = e;
+                    ScriptConsoleLogger.setGlobalLogLevel(e);
                     valueChanged();
                 }
             });
-        
+
         if (!USE_RC_FILE) {
             logLevel = severity;
         }
+        requestReset = false;
         valueChanged = false;
         onInit(host);
+
+        host.getPreferences().getSignalSetting
+            ("Apply new settings", "Restart (new settings need restart)", "Restart")
+            .addSignalObserver(() -> host.restart());
+        // TODO preference panel dosen't update at restat.
+        host.getPreferences().getSignalSetting
+            ("Reset to defaults", "Restart (new settings need restart)", "Restart")
+            .addSignalObserver(() -> {
+                    requestReset = true;;
+                    host.restart();
+                });
     }
 
     /**
@@ -114,22 +147,23 @@ public abstract class AbstractConfiguration {
     void exit() {
         if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE &&
             valueChanged &&
-            !requestedReset) {
+            !requestReset) {
             try {
                 ExtensionUtils.writeJsonFile(this, rcFilePath);
             } catch (IOException ex) {
                 LOG.error("Error writing JSON file.",ex);
             }
         }
-        if (requestedReset) {
+        if (requestReset) {
+            resetToDefaults();
             deleteRcFiles();
         }
         onExit();
     }
-    
+
     /**
      * Return a log level that defined as configuration value.
-     * @return 
+     * @return
      */
     LogSeverity getLogLevel() {
         return logLevel;
@@ -150,15 +184,18 @@ public abstract class AbstractConfiguration {
     }
 
     protected void requestReset() {
-        requestedReset = true;
+        requestReset = true;
     }
 
     private void deleteRcFiles() {
-        String prefix = ".bitwig.extension." + definition.getName(); 
+        String prefix = ".bitwig.extension." + definition.getName();
         try {
             Files.list(Paths.get(System.getProperty("user.home")))
                 .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().startsWith(prefix))
+                .filter(path -> {
+                        LOG.info(path.getFileName().toString());
+                        return path.getFileName().toString().startsWith(prefix);
+                    })
                 .forEach((path) -> {
                         try {
                             Files.delete(path);
@@ -169,7 +206,7 @@ public abstract class AbstractConfiguration {
         } catch (IOException ex) {
             LOG.error("Error deleting RC file.", ex);
         }
-                   
+
     }
     private Path rcFilePath() {
         StringBuilder fileName = new StringBuilder(".bitwig.extension.");
