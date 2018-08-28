@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.rpc;
 
 // jdk
+import com.bitwig.extension.controller.api.ControllerHost;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -30,6 +31,8 @@ import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.controller.api.StringValue;
+import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.extension.ExecutionContext;
 
 // provided dependencies
 import org.apache.commons.lang3.StringUtils;
@@ -116,6 +119,19 @@ public class RpcImpl implements Rpc {
         return registry.report();
     }
 
+    /**
+     * remote configuration
+     * @param config
+     */
+    @Override
+    public void config(Config config) {
+        ExecutionContext context = ExecutionContext.getContext();
+        ControllerHost host = context.getHost();
+        config.writeRcFile();
+        host.restart();
+    }
+
+    
     private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
         return Stream.of(eventNames)
             .map(s -> acceptEvent(s, lambda))

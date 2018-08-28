@@ -637,6 +637,7 @@ public class Config extends AbstractConfiguration {
     /**
      * Reset to defaults.
      */
+    @Override
     protected void resetToDefaults() {
         super.resetToDefaults();
         webSocketPort = DEFAULT_WEBSOCKET_PORT;

@@ -66,8 +66,20 @@ public abstract class AbstractConfiguration {
     /**
      * Default constructor.
      */
+    @SuppressWarnings("OverridableMethodCallInConstructor")
     public AbstractConfiguration() {
         resetToDefaults();
+    }
+
+    /**
+     * write configuration to rc file.
+     */
+    public void writeRcFile() {
+        try {
+            ExtensionUtils.writeJsonFile(this, rcFilePath);
+        } catch (IOException ex) {
+            LOG.error("Error writing rc file.", ex);
+        }
     }
 
     /**
@@ -192,10 +204,7 @@ public abstract class AbstractConfiguration {
         try {
             Files.list(Paths.get(System.getProperty("user.home")))
                 .filter(Files::isRegularFile)
-                .filter(path -> {
-                        LOG.info(path.getFileName().toString());
-                        return path.getFileName().toString().startsWith(prefix);
-                    })
+                .filter(path -> path.getFileName().toString().startsWith(prefix))
                 .forEach((path) -> {
                         try {
                             Files.delete(path);
@@ -206,8 +215,8 @@ public abstract class AbstractConfiguration {
         } catch (IOException ex) {
             LOG.error("Error deleting RC file.", ex);
         }
-
     }
+
     private Path rcFilePath() {
         StringBuilder fileName = new StringBuilder(".bitwig.extension.");
         fileName.append(definition.getName());

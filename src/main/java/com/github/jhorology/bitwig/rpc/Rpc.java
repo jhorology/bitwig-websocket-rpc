@@ -26,9 +26,8 @@ package com.github.jhorology.bitwig.rpc;
 import java.util.Map;
 
 // bitwig api
-import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.StringValue;
-import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.Config;
 
 /**
  * An interface for core RPC methods.
@@ -79,4 +78,10 @@ public interface Rpc {
      * @return latest log message.
      */
      StringValue log();
+    
+    /**
+     * remote configuration
+     * @param config
+     */
+     void config(Config config);
 }
