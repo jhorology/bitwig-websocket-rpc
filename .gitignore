@@ -17,3 +17,12 @@ nbaction.xml
 nb-configuration.xml
 rpc-implementation-spec.json
 try-and-error.coffee
+/.idea/
+/node_modules/
+/.next/
+.eslintcache
+coverage
+.vscode
+npm-debug.log
+yarn-error.log
+package-lock.json
