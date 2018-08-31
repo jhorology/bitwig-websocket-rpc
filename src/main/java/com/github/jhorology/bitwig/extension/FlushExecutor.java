@@ -46,16 +46,20 @@ public class FlushExecutor implements Executor {
     private static final int SHUTDOWN = 2;
     private static final int QUEUE_SIZE = 64;
 
-    private Thread controlSurfaceSession;
-    private Queue<Runnable> tasks;
-    private AbstractExtension<? extends AbstractConfiguration> extension;
+    private final Thread controlSurfaceSession;
+    private final Queue<Runnable> tasks;
+    private final AbstractExtension<? extends AbstractConfiguration> extension;
     private int state = IDLE;
-    @Subscribe
-    public void onInit(InitEvent e) {
-        tasks = new ArrayDeque<>(QUEUE_SIZE);
-        extension = e.getExtension();
-        controlSurfaceSession = Thread.currentThread();
-        state = IDLE;
+    
+    /**
+     * Constructor.
+     * @param extension 
+     */
+    public FlushExecutor(AbstractExtension<? extends AbstractConfiguration>  extension) {
+        this.tasks = new ArrayDeque<>(QUEUE_SIZE);
+        this.extension = extension;
+        this.controlSurfaceSession = Thread.currentThread();
+        this.state = IDLE;
     }
     
     @Subscribe

@@ -303,7 +303,7 @@ public class ReflectUtils {
         boolean result = method.getName().startsWith("create")
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
-        if (result && LOG.isDebugEnabled()) {
+        if (false && result && LOG.isDebugEnabled()) {
             LOG.debug("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
                       + "] has been ignored as factory method for core module.");
         }
