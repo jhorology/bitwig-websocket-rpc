@@ -87,8 +87,7 @@ public class WebSocketRpcServer
      * @param registry
      */
     public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, RpcRegistry registry) {
-        // the maximum 4 worker threads is enougn for purpose.
-        super(address, DECODERS <= 4 ? DECODERS : 4);
+        super(address, Math.min(Runtime.getRuntime().availableProcessors(), 4));
         this.protocol = protocol;
         this.registry = registry;
 
@@ -108,7 +107,7 @@ public class WebSocketRpcServer
         //
         //The behaviour when SO_REUSEADDR is enabled or disabled after a socket is bound
         // (See isBound()) is not defined.
-        this.setReuseAddr(true);
+        setReuseAddr(true);
     }
 
     /**

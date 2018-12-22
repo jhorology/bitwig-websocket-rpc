@@ -1,5 +1,5 @@
 #!/bin/sh
-BITWIG_VERSION="2.4 Beta 3"
+BITWIG_VERSION="2.5 Beta 2"
 BITWIG_PREFS="${HOME}/Library/Application Support/Bitwig/Bitwig Studio/prefs"
 
 for arg in "$@"; do
@@ -16,4 +16,4 @@ if [[ -n $clean ]]; then
     cp "${BITWIG_PREFS}/${BITWIG_VERSION}.prefs.clean" "${BITWIG_PREFS}/${BITWIG_VERSION}.prefs"
 fi
 
-BITWIG_DEBUG_PORT=8989 ~/Applications/Bitwig\ Studio\ Beta/Bitwig\ Studio.app/Contents/MacOS/BitwigStudio
+BITWIG_DEBUG_PORT=8989 ${HOME}/Applications/Bitwig\ Studio.app/Contents/MacOS/BitwigStudio

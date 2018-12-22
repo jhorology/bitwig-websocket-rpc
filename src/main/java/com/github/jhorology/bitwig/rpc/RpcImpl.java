@@ -127,7 +127,7 @@ public class RpcImpl implements Rpc {
     public void config(Config config) {
         ExecutionContext context = ExecutionContext.getContext();
         ControllerHost host = context.getHost();
-        config.writeRcFile();
+        config.writeRcFile(context.getExtensionDefinition());
         host.restart();
     }
 

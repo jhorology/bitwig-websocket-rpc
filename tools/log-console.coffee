@@ -24,7 +24,7 @@ ws.on 'open', ->
       error = err
       ws.close()
   ws.on event, (log) ->
-    console.info log
+    console.info logFormat log
       
   ws.on 'error', (err) ->
     error = err
@@ -40,5 +40,5 @@ process.on 'exit', ->
 
 
 logFormat = (s) ->
-  severity = (/\[(.+)\]/.exec s)[1]
+  severity = (/\[(.+?)\]/.exec s)[1]
   s[severity]

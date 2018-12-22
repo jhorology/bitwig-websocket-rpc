@@ -74,9 +74,9 @@ public abstract class AbstractConfiguration {
     /**
      * write configuration to rc file.
      */
-    public void writeRcFile() {
+    public void writeRcFile(ControllerExtensionDefinition definition) {
         try {
-            ExtensionUtils.writeJsonFile(this, rcFilePath);
+            ExtensionUtils.writeJsonFile(this, getRcFilePath(definition));
         } catch (IOException ex) {
             LOG.error("Error writing rc file.", ex);
         }
@@ -107,8 +107,8 @@ public abstract class AbstractConfiguration {
     void init(ControllerHost host, ControllerExtensionDefinition definition) {
         this.host = host;
         this.definition = definition;
+        this.rcFilePath = getRcFilePath(definition);
         if (USE_RC_FILE) {
-            rcFilePath = rcFilePath();
             if (Files.exists(rcFilePath)) {
                 try {
                     ExtensionUtils.populateJsonProperties(rcFilePath, this);
@@ -217,11 +217,11 @@ public abstract class AbstractConfiguration {
         }
     }
 
-    private Path rcFilePath() {
+    private Path getRcFilePath(ControllerExtensionDefinition def) {
         StringBuilder fileName = new StringBuilder(".bitwig.extension.");
-        fileName.append(definition.getName());
+        fileName.append(def.getName());
         fileName.append("-");
-        fileName.append(definition.getVersion());
+        fileName.append(def.getVersion());
         return Paths.get(System.getProperty("user.home"), fileName.toString());
     }
 }

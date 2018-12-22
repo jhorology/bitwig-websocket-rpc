@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 // bitwig api
+import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
 // dependencies
@@ -89,6 +90,14 @@ public class ExecutionContext {
      */
     public AbstractExtension<? extends AbstractConfiguration> getExtension() {
         return extension;
+    }
+    
+    /**
+     * get a ControllerExtensionDefinition interface.
+     * @return 
+     */
+    public ControllerExtensionDefinition getExtensionDefinition() {
+        return extension.getExtensionDefinition();
     }
     
     /**
