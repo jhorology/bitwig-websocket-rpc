@@ -1,18 +1,73 @@
-testUtils = require '../test/test-utils'
+WebSocket = (require 'rpc-websockets').Client
 beautify  = require 'js-beautify'
 fs        = require 'fs'
-wsRequest = testUtils.wsRequest
 
 $ =
   reportFile: 'rpc-implementation-spec.json'
+  url: 'ws://localhost:8887'
+  config:
+    useProject: on
+    useApplication: on
+    useTransport: on
+    useArranger: on
+    useGroove: on
+    useMixer: on
+    useCursorTrack: on
+    useSiblingsTrackBank: on
+    useChildTrackBank: on
+    useCursorDevice: on
+    useChainSelector: on
+    useCursorDeviceLayer: on
+    useCursorRemoteControlsPage: on
+    useDeviceLayerBank: on
+    useDrumPadBank: on
+    useSiblingsDeviceBank: on
+    useChainDeviceBank: on
+    useSceneBank: on
+    useMainTrackBank: on
+    useEffectTrackBank: on
+    useMasterTrack: on
+    useBrowser: on
+
+
+configure = (config) ->
+  return new Promise (resolve, reject) ->
+    error = undefined
+    ws = new WebSocket $.url,
+      autoconnect: on
+      reconnect: off
+    ws.once 'open', ->
+      ws.notify 'rpc.config', $.config
+    ws.once 'error', (err) ->
+      ws.close()
+      error = err;
+    ws.once 'close', ->
+      if error
+        reject error
+      else
+        ws = new WebSocket $.url,
+          autoconnect: on
+          reconnect: on
+        ws.once 'open', ->
+          resolve ws
+        ws.once 'error', (err) ->
+          error = err;
+          ws.close()
+        ws.once 'close', -> 
+         if error
+            reject error
   
-wsRequest undefined, {jsonrpc: '2.0', method:'rpc.report', id:1}
-  .then (res) ->
-    if res.error
-      console.error res.error
-    else
-      report = beautify (JSON.stringify res.result), indent_size: 2
-      console.info report
-      fs.writeFileSync $.reportFile, report
-  , (err) ->
+conn = undefined
+(configure $.config)
+  .then (ws) ->
+    conn = ws
+    error = undefined
+    ws.call 'rpc.report'
+  .then (result) ->
+    report = beautify (JSON.stringify result), indent_size: 2
+    console.info report
+    fs.writeFileSync $.reportFile, report
+  .catch (err) ->
     console.error err
+  .finally ->
+    conn.close() if conn 

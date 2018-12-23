@@ -11,7 +11,7 @@ configure = (config) ->
   return new Promise (resolve, reject) ->
     error = undefined
     ws = new WebSocket $.url,
-      autoconnect: off
+      autoconnect: on
       reconnect: off
     ws.once 'open', ->
       ws.notify 'rpc.config', $.config
@@ -20,29 +20,29 @@ configure = (config) ->
       error = err;
     ws.once 'close', ->
       if error
-        reject err
+        reject error
       else
-        resolve()
-    ws.connect()
+        ws = new WebSocket $.url,
+          autoconnect: on
+          reconnect: on
+        ws.once 'open', ->
+          resolve ws
+        ws.once 'error', (err) ->
+          error = err;
+          ws.close()
+        ws.once 'close', -> 
+         if error
+            reject error
     
-(configure $.config).then ->
-  error = undefined
-  ws = new WebSocket $.url,
-    autoconnect: on
-    reconnect: on
-  ws.once 'open', ->
+conn = undefined
+(configure $.config)
+  .then (ws) ->
+    conn = ws
+    error = undefined
     ws.call 'app.actions'
-      .then (result) ->
-        console.info beautify (JSON.stringify result), indent_size: 2
-        error = undefined
-      .catch (err) ->
-        error = err
-      .finally ->
-        ws.close()
-  ws.once 'error', (err) ->
-    ws.close()
-    error = err;
-  ws.once 'close', ->
-    if error
-      console.error error
-  ws.connect()
+  .then (result) ->
+    console.info beautify (JSON.stringify result), indent_size: 2
+  .catch (err) ->
+    console.error err
+  .finally ->
+    conn.close() if conn 
