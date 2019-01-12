@@ -35,6 +35,7 @@ import com.bitwig.extension.controller.api.BrowserResultsColumn;
 import com.bitwig.extension.controller.api.BrowserResultsItem;
 import com.bitwig.extension.controller.api.BrowserResultsItemBank;
 import com.bitwig.extension.controller.api.ChainSelector;
+import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
 import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
 import com.bitwig.extension.controller.api.ControllerHost;
@@ -138,6 +139,21 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
                               Mixer.class,
                               mixer);
         }
+        if (config.useArrangerCursorClip()) {
+            Clip arrangerCursorClip = host.createArrangerCursorClip(config.getArrangerCursorClipGridWidth(),
+                                                                    config.getArrangerCursorClipGridHeight());
+            registry.register("arrangerCursorClip",
+                              Clip.class,
+                              arrangerCursorClip);
+        }
+        if (config.useLauncherCursorClip()) {
+            Clip launcherCursorClip = host.createLauncherCursorClip(config.getLauncherCursorClipGridWidth(),
+                                                                    config.getLauncherCursorClipGridHeight());
+            registry.register("launcherCursorClip",
+                              Clip.class,
+                              launcherCursorClip);
+        }
+        
         CursorTrack cursorTrack = null;
         if (config.useCursorTrack()) {
             cursorTrack =

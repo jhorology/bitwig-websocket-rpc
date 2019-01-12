@@ -12,6 +12,8 @@ $ =
     useArranger: on
     useGroove: on
     useMixer: on
+    useArrangerCursorClip: on
+    useLauncherCursorClip: on
     useCursorTrack: on
     useSiblingsTrackBank: on
     useChildTrackBank: on

@@ -1,5 +1,5 @@
 #!/bin/sh
-BITWIG_VERSION="2.5 Beta 2"
+BITWIG_VERSION="2.5 Beta 3"
 BITWIG_PREFS="${HOME}/Library/Application Support/Bitwig/Bitwig Studio/prefs"
 
 for arg in "$@"; do

@@ -73,6 +73,18 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useMixer;
     @Expose
+    private boolean useArrangerCursorClip;
+    @Expose
+    private int arrangerCursorClipGridWidth;
+    @Expose
+    private int arrangerCursorClipGridHeight;
+    @Expose
+    private boolean useLauncherCursorClip;
+    @Expose
+    private int launcherCursorClipGridWidth;
+    @Expose
+    private int launcherCursorClipGridHeight;
+    @Expose
     private boolean useCursorTrack;
     @Expose
     private int cursorTrackNumSends;
@@ -248,6 +260,54 @@ public class Config extends AbstractConfiguration {
      */
     public boolean useMixer() {
         return useMixer;
+    }
+
+    /**
+     * Returns a configuration value of the use or not use ArrangerCursorClip API.
+     * @return
+     */
+    public boolean useArrangerCursorClip() {
+        return useArrangerCursorClip;
+    }
+    
+    /**
+     * Returns a configuration value of a grid width of ArrangerCursorClip
+     * @return
+     */
+    public int getArrangerCursorClipGridWidth() {
+        return arrangerCursorClipGridWidth;
+    }
+    
+    /**
+     * Returns a configuration value of a grid height of ArrangerCursorClip
+     * @return
+     */
+    public int getArrangerCursorClipGridHeight() {
+        return arrangerCursorClipGridHeight;
+    }
+    
+    /**
+     * Returns a configuration value of the use or not use LauncherCursorClip API.
+     * @return
+     */
+    public boolean useLauncherCursorClip() {
+        return useLauncherCursorClip;
+    }
+
+    /**
+     * Returns a configuration value of a grid width of LauncherCursorClip
+     * @return
+     */
+    public int getLauncherCursorClipGridWidth() {
+        return launcherCursorClipGridWidth;
+    }
+    
+    /**
+     * Returns a configuration value of a grid height of LauncherCursorClip
+     * @return
+     */
+    public int getLauncherCursorClipGridHeight() {
+        return launcherCursorClipGridHeight;
     }
 
     /**
@@ -650,7 +710,13 @@ public class Config extends AbstractConfiguration {
         arrangerCueMarkerSize = 16;
         useGroove = false;
         useMixer = false;
-
+        useArrangerCursorClip = false;
+        arrangerCursorClipGridWidth = 16;
+        arrangerCursorClipGridHeight = 16;
+        useLauncherCursorClip = false;
+        launcherCursorClipGridWidth = 16;
+        launcherCursorClipGridHeight = 16;
+            
         useCursorTrack = false;
         cursorTrackNumSends = 2;
         cursorTrackNumScenes = 8;
@@ -831,6 +897,73 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+        
+        SettableBooleanValue useArrangerCursorClipValue = pref.getBooleanSetting
+            ("Use", "ArrangerCursorClip", false);
+        useArrangerCursorClipValue.addValueObserver(v -> {
+                if (ignoreValueChanged) {
+                    useArrangerCursorClipValue.set(useArrangerCursorClip);
+                } else if (useArrangerCursorClip != v) {
+                    useArrangerCursorClip = v;
+                    valueChanged();
+                }
+            });
+
+        int arrangerCursorClipGridWidthValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Grid Width", "ArrangerCursorClip", INT_OPTIONS_8TO64[1], arrangerCursorClipGridWidth,
+             INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(arrangerCursorClipGridWidth));
+                } else if (arrangerCursorClipGridWidth != i) {
+                    arrangerCursorClipGridWidth = i;
+                    valueChanged();
+                }
+            });
+
+        int arrangerCursorClipGridHeightValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Grid Height", "ArrangerCursorClip", INT_OPTIONS_8TO64[1], arrangerCursorClipGridHeight,
+             INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(arrangerCursorClipGridHeight));
+                } else if (arrangerCursorClipGridHeight != i) {
+                    arrangerCursorClipGridHeight = i;
+                    valueChanged();
+                }
+            });
+        
+        SettableBooleanValue useLauncherCursorClipValue = pref.getBooleanSetting
+            ("Use", "LauncherCursorClip", false);
+        useLauncherCursorClipValue.addValueObserver(v -> {
+                if (ignoreValueChanged) {
+                    useLauncherCursorClipValue.set(useLauncherCursorClip);
+                } else if (useLauncherCursorClip != v) {
+                    useLauncherCursorClip = v;
+                    valueChanged();
+                }
+            });
+
+        int launcherCursorClipGridWidthValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Grid Width", "LauncherCursorClip", INT_OPTIONS_8TO64[1], launcherCursorClipGridWidth,
+             INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(launcherCursorClipGridWidth));
+                } else if (launcherCursorClipGridWidth != i) {
+                    launcherCursorClipGridWidth = i;
+                    valueChanged();
+                }
+            });
+
+        int launcherCursorClipGridHeightValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "Grid Height", "LauncherCursorClip", INT_OPTIONS_8TO64[1], launcherCursorClipGridHeight,
+             INT_OPTIONS_8TO64, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(launcherCursorClipGridHeight));
+                } else if (launcherCursorClipGridHeight != i) {
+                    launcherCursorClipGridHeight = i;
+                    valueChanged();
+                }
+            });
+            
 
         // --> CursorTrack
         SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting

@@ -17,7 +17,7 @@
     <extension.author>昌文</extension.author>
     <extension.version>0.1-SNAPSHOT</extension.version>
     <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
-    <extension.requiredAPIVersion>7</extension.requiredAPIVersion>
+    <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
     <extension.usingBetaAPI>true</extension.usingBetaAPI>
     <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
     <extension.hardwareVendor>WebSocket RPC</extension.hardwareVendor>
