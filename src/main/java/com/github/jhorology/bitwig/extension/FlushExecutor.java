@@ -64,6 +64,7 @@ public class FlushExecutor implements Executor {
     
     @Subscribe
     public void onFlush(FlushEvent e) {
+        long timeMillis = System.currentTimeMillis();
         synchronized(this) {
             runAllQueuedTasks();
         }
@@ -90,7 +91,7 @@ public class FlushExecutor implements Executor {
             if (Thread.currentThread() == controlSurfaceSession) {
                 runAllQueuedTasks();
             }
-        } else if (state == IDLE) {
+        } else if (state == IDLE){
             // TODO
             // is this safe?
             // maybe not callable from other than control surface session thread.
@@ -105,17 +106,24 @@ public class FlushExecutor implements Executor {
     }
 
     private void runAllQueuedTasks() {
-        Runnable task = tasks.poll();
-        while(task != null) {
-            ExecutionContext.init(extension);
-            ExecutionContext context = ExecutionContext.getContext();
-            try {
-                task.run();
-            } finally {
-                task = tasks.poll();
-                ExecutionContext.destroy();
+        try {
+            Runnable task = tasks.poll();
+            while(task != null) {
+                ExecutionContext.init(extension);
+                ExecutionContext context = ExecutionContext.getContext();
+                try {
+                    task.run();
+                } catch (Exception ex) {
+                    LOG.error("Executer task execution error.", ex);
+                } finally {
+                    task = tasks.poll();
+                    ExecutionContext.destroy();
+                }
             }
+        } catch (Exception ex) {
+            LOG.error("Executer task execution error.", ex);
+        } finally {
+            if (state == REQUESTED) state = IDLE;
         }
-        if (state == REQUESTED) state = IDLE;
     }
 }
