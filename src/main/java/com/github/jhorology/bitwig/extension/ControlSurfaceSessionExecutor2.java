@@ -42,22 +42,23 @@ public class ControlSurfaceSessionExecutor2 implements Executor, Runnable {
 
     private static final int QUEUE_SIZE = 64;
     
+    private final AbstractExtension<? extends AbstractConfiguration> extension;
+    private final ConcurrentLinkedQueue<Runnable> tasks;
     private Thread controlSurfaceSession;
-    private ConcurrentLinkedQueue<Runnable> tasks;
-    private AbstractExtension<? extends AbstractConfiguration> extension;
     
     /**
      * Constructor.
+     * @param extension
      */
-    public ControlSurfaceSessionExecutor2() {
+    public ControlSurfaceSessionExecutor2(AbstractExtension<? extends AbstractConfiguration> extension) {
         this.tasks = new ConcurrentLinkedQueue<>();
+        this.extension = extension;
     }
     
     @Subscribe
     public void onInit(InitEvent e) {
         e.getHost().scheduleTask(this, 0L);
         this.controlSurfaceSession = Thread.currentThread();
-        this.extension = e.getExtension();
     }
     
     @Subscribe

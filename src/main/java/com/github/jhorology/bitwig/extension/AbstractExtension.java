@@ -101,7 +101,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         ScriptConsoleLogger.setControllerHost(host);
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
-        asyncExecutor = new ControlSurfaceSessionExecutor2();
+        asyncExecutor = new ControlSurfaceSessionExecutor2(this);
         initEvent = new InitEvent(this);
         exitEvent = new ExitEvent(this);
         flushEvent = new FlushEvent(this);
