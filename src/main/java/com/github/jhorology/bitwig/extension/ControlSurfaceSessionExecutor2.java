@@ -23,8 +23,7 @@
 package com.github.jhorology.bitwig.extension;
 
 // jdk
-import java.util.ArrayDeque;
-import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 // provided dependencies
@@ -38,43 +37,37 @@ import org.slf4j.LoggerFactory;
 /**
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
-public class FlushExecutor implements Executor {
+public class ControlSurfaceSessionExecutor2 implements Executor, Runnable {
     private static final Logger LOG = LoggerFactory.getLogger(FlushExecutor.class);
 
-    private static final int IDLE = 0;
-    private static final int REQUESTED = 1;
-    private static final int SHUTDOWN = 2;
     private static final int QUEUE_SIZE = 64;
-
-    private final Thread controlSurfaceSession;
-    private final Queue<Runnable> tasks;
-    private final AbstractExtension<? extends AbstractConfiguration> extension;
-    private int state = IDLE;
+    
+    private Thread controlSurfaceSession;
+    private ConcurrentLinkedQueue<Runnable> tasks;
+    private AbstractExtension<? extends AbstractConfiguration> extension;
     
     /**
      * Constructor.
-     * @param extension 
      */
-    public FlushExecutor(AbstractExtension<? extends AbstractConfiguration>  extension) {
-        this.tasks = new ArrayDeque<>(QUEUE_SIZE);
-        this.extension = extension;
+    public ControlSurfaceSessionExecutor2() {
+        this.tasks = new ConcurrentLinkedQueue<>();
+    }
+    
+    @Subscribe
+    public void onInit(InitEvent e) {
+        e.getHost().scheduleTask(this, 0L);
         this.controlSurfaceSession = Thread.currentThread();
-        this.state = IDLE;
+        this.extension = e.getExtension();
     }
     
     @Subscribe
     public void onFlush(FlushEvent e) {
-        synchronized(this) {
-            runAllQueuedTasks();
-        }
+        runAllQueuedTasks();
     }
     
     @Subscribe
     public void onExit(ExitEvent e) {
-        synchronized(this) {
-            runAllQueuedTasks();
-            state = SHUTDOWN;
-        }
+        runAllQueuedTasks();
     }
     
     /**
@@ -82,22 +75,12 @@ public class FlushExecutor implements Executor {
      * @param command 
      */
     @Override
-    public synchronized void execute(Runnable command) {
-        tasks.add(command);
-        // after 'exit' was called, 'flush'is no more called from host.
-        if (state == SHUTDOWN) {
-            // to available to execute event that triggerd from another module's onExit.
-            if (Thread.currentThread() == controlSurfaceSession) {
-                runAllQueuedTasks();
-            }
-        } else if (state == IDLE) {
-            // TODO
-            // is this safe?
-            // maybe not callable from other than control surface session thread.
-            extension.getHost().requestFlush();
-            state = REQUESTED;
+    public void execute(Runnable command) {
+        tasks.offer(command);
+        if (Thread.currentThread() == controlSurfaceSession) {
+            runAllQueuedTasks();
         } else {
-            LOG.warn("unexpected state:" + state);
+            extension.getHost().requestFlush();
         }
         if (LOG.isWarnEnabled()) {
             if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
@@ -107,24 +90,27 @@ public class FlushExecutor implements Executor {
     }
 
     private void runAllQueuedTasks() {
-        try {
-            Runnable task = tasks.poll();
-            while(task != null) {
-                ExecutionContext.init(extension);
-                ExecutionContext context = ExecutionContext.getContext();
-                try {
-                    task.run();
-                } catch (Exception ex) {
-                    LOG.error("Executer task execution error.", ex);
-                } finally {
-                    task = tasks.poll();
-                    ExecutionContext.destroy();
-                }
+        Runnable task = tasks.poll();
+        while(task != null) {
+            ExecutionContext.init(extension);
+            ExecutionContext context = ExecutionContext.getContext();
+            try {
+                task.run();
+            } catch (Exception ex) {
+                LOG.error("Executer task execution error.", ex);
+            } finally {
+                task = tasks.poll();
+                ExecutionContext.destroy();
             }
-        } catch (Exception ex) {
-            LOG.error("Executer task execution error.", ex);
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            runAllQueuedTasks();
         } finally {
-            if (state == REQUESTED) state = IDLE;
+            extension.getHost().scheduleTask(this, 0L);
         }
     }
 }
