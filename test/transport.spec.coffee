@@ -1,5 +1,7 @@
 chai   = require 'chai'
 utils  = require './test-utils'
+bitwig  = require '../lib/bitwig-websocket-rpc'
+
 
 assert = chai.assert
 chai.use require 'chai-as-promised'
@@ -18,8 +20,12 @@ $ =
 describe 'Transport Module', ->
   ws = undefined
   before ->
-    wsConnect().then (conn) ->
-      ws = conn
+    await bitwig 'ws://localhost:8887',
+      useAbbreviatedMethodNames: on
+      useTransport: on
+    # wait for restart extension
+    await wait 300
+    ws = await wsConnect()
   after ->
     wsClose ws
     

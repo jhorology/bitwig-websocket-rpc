@@ -7,10 +7,11 @@
     "install-debug-extension": "cd mvn && mvn clean integration-test",
     "install-production-extension": "cd mvn && mvn -P production clean integration-test",
     "build-production-extension": "cd mvn && mvn -P production clean post-integration-test",
+    "build-browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
+    "test-browser": "npm run build-browser-test && open test/test.html",
     "coffeelint": "coffeelint -f coffeelint.json test/",
-    "build-browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
     "prepublish": "npm run build-production-extension"
   },
   "repository": {

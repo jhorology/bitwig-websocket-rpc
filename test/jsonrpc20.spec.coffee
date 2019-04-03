@@ -20,9 +20,7 @@ describe 'JSON-RPC 2.0 Specification, see https://www.jsonrpc.org/specification'
       ws = undefined
       if test.connect
         before ->
-          wsConnect().then (conn) ->
-            ws = conn
-            @
+          ws = await wsConnect()
 
         after ->
           wsClose ws
