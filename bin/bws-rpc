@@ -136,14 +136,14 @@ program
   .description('Configuration and helper tools for bitwig-websocket-rpc.')
   .usage('[options]')
   .option('-u, --url <url>', `URL of websockets server. (default: ${defaultUrl})`)
-  .option('-c, --config <path>', 'Config file(.js|.json) path.')
-  .option('-a, --all', 'Enable all RPC methods and events. This option is ignored by -c, --config option.')
-  .option('-b, --abbrev', 'Enable abbreviated method and event name.(experimental) This option is ignored by -c, --config option.')
-  .option('-p, --printConfig', 'Dry run, print current or intended configuration as JSON.')
-  .option('-r, --report', 'Report all accessible RPC methds and evnets as JSON.')
-  .option('-k, --actions', 'Report result of Application#getActions() as JSON.')
-  .option('-e, --events', 'Monitor events.')
-  .option('-l, --logs', 'Trace control script console logs.')
+  .option('-c, --config <path>', 'config file(.js|.json) path.')
+  .option('-a, --all', 'enable all RPC methods and events. this option is ignored by -c, --config option.')
+  .option('-b, --abbrev', 'enable abbreviated method and event name.(experimental) this option is ignored by -c, --config option.')
+  .option('-p, --printConfig', 'dry run, print current or intended configuration as JSON.')
+  .option('-r, --report', 'report accessible RPC methods and evnets as JSON.')
+  .option('-k, --actions', 'report result of Application#getActions() as JSON.')
+  .option('-e, --events', 'monitor events.')
+  .option('-l, --logs', 'trace control script logs.')
   .option('-v, --version', pkg.version, () => {
     console.log(pkg.version);
     process.exit(0);
@@ -160,7 +160,7 @@ const url = program.url ? program.url : defaultUrl;
   try {
     let config, dirty;
     if (program.config) {
-      config = require(path.join(__dirname, '..', program.config));
+      config = require(path.relative(__dirname, path.resolve(program.config)));
       dirty = true;
     } else {
       config = await getCurrentConfig(url);
@@ -197,7 +197,7 @@ const url = program.url ? program.url : defaultUrl;
     if (program.report) {
       reportMethodsAndEvents(url);
     } else if (program.actions) {
-      reportActions(url, program.abbrev);
+      reportActions(url, config.abbrev);
     } else if (program.events) {
       monitorEvents(url);
     } else if (program.logs) {

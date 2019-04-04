@@ -46,7 +46,7 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
 program
   .description('Install WebSockets RPC server extension.')
   .usage('[options]')
-  .option('-e, --extensionDir <path>', `The path of Bitwig Studio's Extensions folder. (default: ${defaultExtensionDir})`)
+  .option('-e, --extensionDir <path>', `path of Bitwig Studio's Extensions folder. (default: ${defaultExtensionDir})`)
   .option('-v, --version', pkg.version, () => {
     console.log(pkg.version);
     process.exit(0);
