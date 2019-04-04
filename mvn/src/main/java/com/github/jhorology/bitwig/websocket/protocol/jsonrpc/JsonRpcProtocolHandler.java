@@ -56,6 +56,8 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     public void onStart() {
         gson = BitwigAdapters.adapt(new GsonBuilder())
             .serializeNulls()
+            .addSerializationExclusionStrategy(new ExcludeFieldsWithoutExposeAnnotationStrategy(true))
+            .addDeserializationExclusionStrategy(new ExcludeFieldsWithoutExposeAnnotationStrategy(false))
             // .excludeFieldsWithoutExposeAnnotation()
             .registerTypeAdapter(BatchOrSingleRequest.class, new BatchOrSingleRequestAdapter())
             .registerTypeAdapter(Request.class, new RequestAdapter(registry))
@@ -225,5 +227,4 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         Response res = createErrorResponse(error, data, id);
         send(gson.toJson(res), conn);
     }
-
 }

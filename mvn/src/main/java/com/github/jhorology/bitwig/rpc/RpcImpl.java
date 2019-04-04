@@ -137,6 +137,17 @@ public class RpcImpl implements Rpc {
         host.restart();
     }
 
+    /**
+     * Return a current configuration
+     * @return
+     */
+    @Override
+    public Config config() {
+        return ((WebSocketRpcServerExtensionDefinition)ExecutionContext
+            .getContext()
+            .getExtensionDefinition())
+            .getConfig();
+    }
     
     private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
         return Stream.of(eventNames)

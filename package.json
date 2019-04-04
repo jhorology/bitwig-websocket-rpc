@@ -4,21 +4,25 @@
   "description": "JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.",
   "main": "index.js",
   "scripts": {
-    "install-debug-extension": "cd mvn && mvn clean integration-test",
-    "install-production-extension": "cd mvn && mvn -P production clean integration-test",
-    "build-production-extension": "cd mvn && mvn -P production clean post-integration-test",
+    "build-dev-extension": "cd mvn && mvn clean post-integration-test",
+    "build-prod-extension": "cd mvn && mvn -P production clean post-integration-test",
+    "install-dev-extension": "npm run build-dev-extension && bin/install-bitwig-extension",
+    "install-prod-extension": "npm run build-prod-extension && bin/install-bitwig-extension",
     "build-browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
     "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
     "test-browser": "npm run build-browser-test && open test/test.html",
     "coffeelint": "coffeelint -f coffeelint.json test/",
-    "prepublish": "npm run build-production-extension"
+    "prepublish": "npm run build-prod-extension"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jhorology/bitwig-websocket-rpc.git"
   },
-  "author": "jhorology2014@gmail.com",
+  "author": {
+    "name": "Masafumi",
+    "email": "jhorology2014@gmail.com"
+  },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jhorology/bitwig-websocket-rpc/issues"
@@ -29,7 +33,7 @@
     "bws-rpc": "./bin/bws-rpc"
   },
   "dependencies": {
-    "commander": "^2.19.0",
+    "commander": "^2.20.0",
     "js-beautify": "^1.9.1",
     "rpc-websockets": "^4.3.5",
     "update-notifier": "^2.5.0"
@@ -43,7 +47,6 @@
     "coffeescript": "^2.4.0",
     "isomorphic-ws": "^4.0.1",
     "mocha": "^6.0.2",
-    "npm-run-all": "^4.1.5",
     "nyan": "^1.1.0",
     "underscore": "^1.9.1"
   }

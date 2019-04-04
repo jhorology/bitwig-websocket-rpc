@@ -7,94 +7,143 @@ const WebSocket = require('rpc-websockets').Client;
 const bitwig = require('../lib/bitwig-websocket-rpc');
 const pkg = require('../package.json');
 const beautify = require('js-beautify');
+
+const defaultUrl = 'ws://localhost:8887';
+const enableAllConfig = {
+  useProject: true,
+  useApplication: true,
+  useTransport: true,
+  useArranger: true,
+  useGroove: true,
+  useMixer: true,
+  useArrangerCursorClip: true,
+  useLauncherCursorClip: true,
+  useCursorTrack: true,
+  cursorTrackShouldFollowSelection: true,
+  useSiblingsTrackBank: true,
+  siblingsTrackBankIncludeEffectTracks: false,
+  siblingsTrackBankIncludeMasterTrack: false,
+  useChildTrackBank: true,
+  childTrackBankHasFlatList: false,
+  useCursorDevice: true,
+  useChainSelector: true,
+  useCursorDeviceLayer: true,
+  useCursorRemoteControlsPage: true,
+  useDeviceLayerBank: true,
+  useDrumPadBank: true,
+  useSiblingsDeviceBank: true,
+  useChainDeviceBank: true,
+  useSceneBank: true,
+  useMainTrackBank: true,
+  mainTrackBankFollowCursorTrack: true,
+  useEffectTrackBank: true,
+  useMasterTrack: true,
+  useBrowser: true
+};
+const requestTimeoutMillis = 2000;
+
+const getCurrentConfig = url => {
+  return new Promise((resolve, reject) =>{
+    const ws = new WebSocket(url, {
+      autoconnect: true,
+      reconnect: false
+    });
+    ws.on('open', async () => {
+      try {
+        const config = await ws.call('rpc.config', null, requestTimeoutMillis);
+        ws.close();
+        resolve(config);
+      } catch (err) {
+        ws.close();
+        reject(err);
+      }
+    });
+    ws.on('error', (err) => {
+      ws.close();
+      reject(err);
+    });
+  });
+};
+
+const reportMethodsAndEvents = url => {
+  const ws = new WebSocket(url, {
+    autoconnect: true,
+    reconnect: false
+  });
+  ws.on('open', async () => {
+    const report = await ws.call('rpc.report', null, requestTimeoutMillis);
+    ws.close();
+    print(report);
+  });
+};
+
+const reportActions = (url, abbrev) => {
+  const ws = new WebSocket(url, {
+    autoconnect: true,
+    reconnect: false
+  });
+  ws.on('open', async () => {
+    const method = abbrev ? 'app.actions' : 'application.getActions';
+    const actions = await ws.call(method, null, requestTimeoutMillis);
+    ws.close();
+    print(actions);
+  });
+};
+
+const monitorEvents = url => {
+  const ws = new WebSocket(url, {
+    autoconnect: true,
+    reconnect: true
+  });
+  ws.on('open', async () => {
+    report = await ws.call('rpc.report');
+    const events = report.events.filter((e) => {
+      return ! e.event.startsWith('test.') && ! e.event.startsWith('rpc.');
+    }).map((e) => {return e.event;});
+    ws.subscribe(events);
+    events.forEach((e) => {
+      ws.on(e, function() {
+        console.log(`${Date.now()} - [${e}]`, arguments);
+      });
+    });
+  });
+};
+
+const monitorLogs = url => {
+  const ws = new WebSocket(url, {
+    autoconnect: true,
+    reconnect: true
+  });
+  ws.on('open', async () => {
+    ws.subscribe('rpc.log');
+    ws.on('rpc.log', log => {
+      console.log(log);
+    });
+  });
+};
+
+const print = obj => {
+  console.log(beautify(JSON.stringify(obj), {indent_size: 2}));
+};
+
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({pkg});
 if (notifier.update && notifier.update.latest !== pkg.version) {
   notifier.notify({defer: false});
 }
 
-const defaultUrl = 'ws://localhost:8887';
-
-const defaultConfig = {
-  useAbbreviatedMethodNames: false
-};
-const enableAllConfig = {
-  useAbbreviatedMethodNames: false,
-  useProject: true,
-  useApplication: true,
-  useTransport: true,
-  useArranger: true,
-  arrangerCueMarkerSize: 16,
-  useGroove: true,
-  useMixer: true,
-  useArrangerCursorClip: true,
-  arrangerCursorClipGridWidth: 16,
-  arrangerCursorClipGridHeight: 16,
-  useLauncherCursorClip: true,
-  launcherCursorClipGridWidth: 16,
-  launcherCursorClipGridHeight: 16,
-  useCursorTrack: true,
-  cursorTrackNumSends: 2,
-  cursorTrackNumScenes: 8,
-  cursorTrackShouldFollowSelection: true,
-  useSiblingsTrackBank: true,
-  siblingsTrackBankNumTracks: 8,
-  siblingsTrackBankIncludeEffectTracks: false,
-  siblingsTrackBankIncludeMasterTrack: false,
-  useChildTrackBank: true,
-  childTrackBankNumTracks: 8,
-  childTrackBankHasFlatList: false,
-  useCursorDevice: true,
-  cursorDeviceNumSends: 2,
-  cursorDeviceFollowMode:  'FOLLOW_SELECTION',
-  useChainSelector: true,
-  useCursorDeviceLayer: true,
-  useCursorRemoteControlsPage: true,
-  cursorRemoteControlsPageParameterCount: 8,
-  useDeviceLayerBank: true,
-  deviceLayerBankNumChannels: 8,
-  useDrumPadBank: true,
-  drumPadBankNumPads: 16,
-  useSiblingsDeviceBank: true,
-  siblingsDeviceBankNumDevices: 4,
-  useChainDeviceBank: true,
-  chainDeviceBankNumDevices: 4,
-  useSceneBank: true,
-  sceneBankNumScenes: 8,
-  useMainTrackBank: true,
-  mainTrackBankFollowCursorTrack: true,
-  mainTrackBankNumTracks: 8,
-  mainTrackBankNumSends: 2,
-  mainTrackBankNumScenes: 8,
-  useEffectTrackBank: true,
-  effectTrackBankNumTracks: 2,
-  effectTrackBankNumScenes: 8,
-  useMasterTrack: true,
-  masterTrackNumScenes: 8,
-  useBrowser: true,
-  browserSmartCollectionRows: 32,
-  browserLocationRows: 32,
-  browserDeviceRows: 32,
-  browserCategoryRows: 32,
-  browserTagRows: 32,
-  browserDeviceTypeRows: 16,
-  browserFileTypeRows: 16,
-  browserCreatorRows: 32,
-  browserResultsRows: 32
-};
-
 program
   .description('Configuration and helper tools for bitwig-websocket-rpc.')
   .usage('[options]')
-  .option('-a, --all', 'Enable all RPC methods and events.')
-  .option('-b, --abbrev', 'Enable abbreviated method and event name.(experimental)')
-  .option('-c, --config <path>', 'Config file(.js|.json) path. This option is ignored by -a, -all option.')
   .option('-u, --url <url>', `URL of websockets server. (default: ${defaultUrl})`)
-  .option('-p, --printConfig', 'Dry run, print configuration as JSON.')
+  .option('-c, --config <path>', 'Config file(.js|.json) path.')
+  .option('-a, --all', 'Enable all RPC methods and events. This option is ignored by -c, --config option.')
+  .option('-b, --abbrev', 'Enable abbreviated method and event name.(experimental) This option is ignored by -c, --config option.')
+  .option('-p, --printConfig', 'Dry run, print current or intended configuration as JSON.')
   .option('-r, --report', 'Report all accessible RPC methds and evnets as JSON.')
   .option('-k, --actions', 'Report result of Application#getActions() as JSON.')
   .option('-e, --events', 'Monitor events.')
-  .option('-l, --log', 'Trace control script console logs.')
+  .option('-l, --logs', 'Trace control script console logs.')
   .option('-v, --version', pkg.version, () => {
     console.log(pkg.version);
     process.exit(0);
@@ -105,70 +154,59 @@ program
   })
   .parse(process.argv);
 
-
-const config = program.all ?
-      enableAllConfig :
-      program.config ?
-      require(path.join(__dirname, '..', program.config)) :
-      defaultConfig;
-
-if (program.abbrev) {
-  config.useAbbreviatedMethodNames = true;
-}
-if (program.listActions) {
-  config.useApplication = true;
-}
 const url = program.url ? program.url : defaultUrl;
 
-if (program.printConfig) {
-  console.log(beautify(JSON.stringify(config), {indent_size: 2}));
-  process.exit(0);
-}
-
-function handleEvent() {
-  console.log(arguments);
-}
 (async () => {
   try {
-    await bitwig(url, config);
-    ws = new WebSocket(url, {
-      autoconnect: true,
-      reconnect: true
-    });
-    ws.on('open', async () => {
-      var report;
-      if (program.listActions) {
-        const actions = await ws.call(program.abbrev ? 'app.actions' : 'application.getActions');
-        console.log(beautify(JSON.stringify(actions), {indent_size: 2}));
+    let config, dirty;
+    if (program.config) {
+      config = require(path.join(__dirname, '..', program.config));
+      dirty = true;
+    } else {
+      config = await getCurrentConfig(url);
+      if (program.all) {
+        Object.keys(enableAllConfig).forEach( key => {
+          if (!config[key]) {
+            config[key] = true;
+            dirty = true;
+          }
+        });
       }
-      if (program.report || program.events) {
-        report = await ws.call('rpc.report');
-        if (program.report) {
-          console.log(beautify(JSON.stringify(report), {indent_size: 2}));
-          ws.close();
-          process.exit(0);
+      if (program.abbrev) {
+        if (!config.useAbbreviatedMethodNames) {
+          config.useAbbreviatedMethodNames = true;
+          dirty = true;
         }
       }
-      if (program.events) {
-        const events = report.events.filter((e) => {
-          return ! e.event.startsWith('test') && ! e.event.startsWith('rpc');
-        }).map((e) => {return e.event;});
-        ws.subscribe(events);
-        events.forEach((e) => {
-          ws.on(e, function() {
-            args = arguments;
-            console.log(`${Date.now()} - [${e}]`, arguments);
-          });
-        });
+    }
+    if (program.actions) {
+      if (!config.useApplication) {
+        config.useApplication = true;
+        dirty = true;
       }
-      if (program.log) {
-        ws.on('rpc.log', (log) => {
-          console.log(log);
-        });
-        ws.subscribe('rpc.log');
-      }
-    });
+    }
+    if (program.printConfig) {
+      print(config);
+      process.exit(0);
+    }
+
+    if (dirty) {
+      // console.log("##### configure");
+      await bitwig(url, config);
+    }
+    if (program.report) {
+      reportMethodsAndEvents(url);
+    } else if (program.actions) {
+      reportActions(url, program.abbrev);
+    } else if (program.events) {
+      monitorEvents(url);
+    } else if (program.logs) {
+      monitorLogs(url);
+    } else {
+      // console.log("##### do nothing");
+    }
   } catch (err) {
     console.error(err);
+    process.exit(1);
   }
 })();

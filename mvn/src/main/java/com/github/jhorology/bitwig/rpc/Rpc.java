@@ -84,4 +84,10 @@ public interface Rpc {
      * @param config
      */
      void config(Config config);
+     
+    /**
+     * Return a current configuration.
+     * @return 
+     */
+     Config config();
 }

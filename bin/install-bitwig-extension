@@ -3,34 +3,50 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const execSync = require('child_process').execSync;
 const program = require('commander');
 const updateNotifier = require('update-notifier');
 const pkg = require('../package.json');
-
 const notifier = updateNotifier({pkg});
-if (notifier.update && notifier.update.latest !== pkg.version) {
-    notifier.notify({defer: false});
-}
+
+const isWSL = () => {
+  return process.platform === 'linux' &&
+	  os.release().includes('Microsoft') &&
+		fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+};
+
+const wslWinHomeDir = () => {
+  return execSync('wslpath $(cmd.exe /C "echo %USERPROFILE%")')
+    .toString().replace(/[\r\n]+$/g, '');
+};
 
 const extensionFileName = 'WebSocketRpcServer.bwextension';
 const defaultExtensionDir = (function() {
   switch (process.platform) {
-    case 'win32':
-      return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
-    case 'darwin':
-      return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
-    case 'linux':
+  case 'win32':
+    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
+  case 'darwin':
+    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
+  case 'linux':
+    if (isWSL()) {
+      return path.join(wslWinHomeDir(), 'Documents', 'Bitwig Studio', 'Extensions');
+    } else {
       return path.join(os.homedir(), 'Bitwig Studio', 'Extensions');
-    default:
-      console.error(`Unsupported Platform:[${process.platform}].`);
-      return process.exit(1);
+    }
+  default:
+    console.error(`Unsupported Platform:[${process.platform}].`);
+    return process.exit(1);
   }
 })();
+
+if (notifier.update && notifier.update.latest !== pkg.version) {
+  notifier.notify({defer: false});
+}
 
 program
   .description('Install WebSockets RPC server extension.')
   .usage('[options]')
-  .option('-e, --extensionDir <path>', `The path of Bitwig Studio's Extension folder. (default: ${defaultExtensionDir})`)
+  .option('-e, --extensionDir <path>', `The path of Bitwig Studio's Extensions folder. (default: ${defaultExtensionDir})`)
   .option('-v, --version', pkg.version, () => {
     console.log(pkg.version);
     process.exit(0);

@@ -107,6 +107,10 @@ public class RequestContext {
         notifications.add(notification);
     }
 
+    /**
+     * Return a list of notification messages.
+     * @return
+     */
     List<Notification> getNotifications() {
         return notifications;
     }

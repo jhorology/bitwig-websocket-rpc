@@ -1,10 +1,15 @@
 package com.github.jhorology.bitwig.rpc.test;
 
+// dependencies
+import com.google.gson.annotations.Expose;
+
 /**
  * Simple POJO class for testing JSON deserialization
  */
 public class IntPair {
+    @Expose
     private int left;
+    @Expose
     private int right;
 
     public IntPair() {
