@@ -2,7 +2,6 @@
 JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.
 
 ## Installation
---------------
 In your project directory:
 ```sh
 npm install bitwig-websocket-rpc --save
@@ -20,7 +19,6 @@ npx install-bitwig-extension [options]
     -h, --help                  output usage information
 
 ## Configuration and Helper Tool
---------------
 ```sh
 npx bws-rpc [options]
 ```
@@ -41,7 +39,6 @@ npx bws-rpc [options]
     -h, --help              output usage information
 
 ## Module Use
---------------
 ### Usage
 ```js
 const bitwig = require('bitwig-websocket-rpc');
@@ -219,7 +216,6 @@ npx bws-rpc --printConfig
 ```
 
 ## Notes
---------------
 - `useAbbreviatedMethodNames` option is experimental. I don't gurantee to maintain the same method and event names for future.
 
 - Currently calling `Bank#setSizeOfBank()` method doesn't support extending or reducing fire events.
@@ -230,7 +226,6 @@ npx bws-rpc --printConfig
     - `Host#requestFlush()`
 
 ## License
---------------
 All source codes of this git repository are licensed under [MIT](LICENSE).
 
 Bitwig Extension module contains following libraries:
