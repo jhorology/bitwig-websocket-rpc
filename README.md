@@ -1,8 +1,6 @@
 # bitwig-websocket-rpc
 JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.
 
-Publishing NPM package soon!
-
 ## Installation
 --------------
 In your project directory:
@@ -13,9 +11,7 @@ Install Bitwig Studio Extension
 ```sh
 npx install-bitwig-extension [options]
 ```
-
 ### Options
---------------
     -e, --extensionDir <path>   Bitwig Studio's Extensions folder path.
                                 (default: /[platform specific]/Extensions)
     -v, --version               x.x.x
@@ -29,7 +25,6 @@ npx install-bitwig-extension [options]
 npx bws-rpc [options]
 ```
 ### Options
---------------
     -u, --url <url>         URL of websockets server. (default: ws://localhost:8887)
     -c, --config <path>     config file(.js|.json) path.
     -a, --all               enable all RPC methods and events.
@@ -45,12 +40,9 @@ npx bws-rpc [options]
     -V
     -h, --help              output usage information
 
-
 ## Module Use
 --------------
-
 ### Usage
---------------
 ```js
 const bitwig = require('bitwig-websocket-rpc');
 const WebSocket = require('rpc-websockets').Client;
@@ -125,9 +117,7 @@ const WebSocket = require('rpc-websockets').Client;
 })();
 
 ```
-
 ### API
---------------
 ```js
 const bitwig = require('bitwig-websocket-rpc');
 bitwig(url, config).then(() => {
@@ -139,7 +129,7 @@ bitwig(url, config).then(() => {
 })();
 
 ```
-### bitwig(url, config])
+### bitwig(url, config)
 
 Configure RPC modules. 
 
@@ -155,7 +145,6 @@ This configuration is not session scoped. It's stored as JSON file in your home 
 ${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
 ```
 ### Configuration Defaults
---------------
 ```JSON
 {
   "useAbbreviatedMethodNames": false,
