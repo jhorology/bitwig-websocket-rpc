@@ -52,7 +52,7 @@ public class Config extends AbstractConfiguration {
     private static final int[] INT_OPTIONS_8TO64 = {8,16,32,64};
     private static final int[] INT_OPTIONS_16TO128 = {16,32,64,128};
     // populate from json -->
-    @Expose(serialize = false)
+    @Expose
     private int webSocketPort;
     @Expose(serialize = false)
     private Protocols rpcProtocol;

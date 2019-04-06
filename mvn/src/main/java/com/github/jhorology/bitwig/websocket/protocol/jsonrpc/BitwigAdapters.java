@@ -24,7 +24,7 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 // jdk
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
 import com.bitwig.extension.controller.api.Action;
 import com.bitwig.extension.controller.api.ActionCategory;
+import com.bitwig.extension.controller.api.BeatTimeValue;
 import com.bitwig.extension.controller.api.BooleanValue;
 import com.bitwig.extension.controller.api.ColorValue;
 import com.bitwig.extension.controller.api.DoubleValue;
@@ -59,7 +60,8 @@ public class BitwigAdapters {
      */
     private static final Map<Class<?>, Supplier<Object>> ADAPTED_TYPES;
     static {
-        ADAPTED_TYPES = new HashMap<>();
+        ADAPTED_TYPES = new LinkedHashMap<>();
+        ADAPTED_TYPES.put(BeatTimeValue.class,    BeatTimeValueAdapter::new);
         ADAPTED_TYPES.put(ShortMidiMessage.class, ShortMidiMessageAdapter::new);
         ADAPTED_TYPES.put(Action.class,           ActionAdapter::new);
         ADAPTED_TYPES.put(ActionCategory.class,   ActionCategoryAdapter::new);
@@ -118,6 +120,22 @@ public class BitwigAdapters {
         ADAPTED_TYPES.keySet().stream()
             .forEach(c -> gsonBuilder.registerTypeHierarchyAdapter(c, ADAPTED_TYPES.get(c).get()));
         return gsonBuilder;
+    }
+    
+    /**
+     * A GSON type adapter for BeatTimeValue.
+     */
+    public static class BeatTimeValueAdapter implements JsonSerializer<BeatTimeValue> {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JsonElement serialize(BeatTimeValue src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject json = new JsonObject();
+            json.addProperty("raw", src.get());
+            json.addProperty("formatted", src.getFormatted());
+            return json;
+        }
     }
     
     /**

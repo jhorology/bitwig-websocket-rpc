@@ -100,12 +100,12 @@ const monitorEvents = url => {
     const events = report.events.filter((e) => {
       return ! e.event.startsWith('test.') && ! e.event.startsWith('rpc.');
     }).map((e) => {return e.event;});
-    ws.subscribe(events);
     events.forEach((e) => {
       ws.on(e, function() {
         console.log(`${Date.now()} - [${e}]`, arguments);
       });
     });
+    ws.subscribe(events);
   });
 };
 
@@ -115,10 +115,10 @@ const monitorLogs = url => {
     reconnect: true
   });
   ws.on('open', async () => {
-    ws.subscribe('rpc.log');
     ws.on('rpc.log', log => {
       console.log(log);
     });
+    ws.subscribe('rpc.log');
   });
 };
 

@@ -11,8 +11,8 @@ const notifier = updateNotifier({pkg});
 
 const isWSL = () => {
   return process.platform === 'linux' &&
-	  os.release().includes('Microsoft') &&
-		fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    os.release().includes('Microsoft') &&
+    fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
 };
 
 const wslWinHomeDir = () => {

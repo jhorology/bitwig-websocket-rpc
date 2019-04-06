@@ -44,9 +44,13 @@ npx bws-rpc [options]
 const bitwig = require('bitwig-websocket-rpc');
 const WebSocket = require('rpc-websockets').Client;
 
+const wait = millis => {
+  return new Promise(resolve => setTimeout(resolve, millis));
+};
+      
 (async() => {
   // configure interesting modules.
-  // this function trigger restart of extension,
+  // this function trigger restart of extension.
   // so all client connections will be closed by server.
   await bitwig('ws://localhost:8887', {
     useTransport: true
@@ -61,9 +65,10 @@ const WebSocket = require('rpc-websockets').Client;
   ws.on('open', async () => {
     // host module is accessible without configuration.
     ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!']);
+
     try {
-      // this calling will causes error.
-      // this is a limitation of Bitwig API.
+      // SettableBooleanValue Transport#isPlaying()
+      // this calling will causes error. this is a limitation of Bitwig API.
       const isPlaying0 = await ws.call('transport.isPlaying');
       console.log('isPlaying0:', isPlaying0);
     } catch (err) {
@@ -72,8 +77,8 @@ const WebSocket = require('rpc-websockets').Client;
       //   data: 'Trying to get a value while not being subscribed.' }
       console.log(err);
     }
-
-    // subscribe interesting events
+    
+    // start subscribing interesting events
     ws.subscribe([
       'transport.getPosition',
       'transport.isPlaying'
@@ -86,8 +91,8 @@ const WebSocket = require('rpc-websockets').Client;
     const isPlaying1 = await ws.call('transport.isPlaying');
     // boolean Transport#isPlaying().get()
     const isPlaying2 = await ws.call('transport.isPlaying.get');
-    // both values are same boolean value.
-    // API's value objects(inherited Value class) are serialized via custom serializer.
+    // Both values are same boolean value.
+    // API's value objects (inherited Value class) are serialized via custom serializer.
     // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
     console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2);
 
@@ -98,18 +103,19 @@ const WebSocket = require('rpc-websockets').Client;
     ws.on('transport.isPlaying', playing => {
       console.log("playing:", playing ? 'start' : 'stop');
     });
-    
+
+    await wait(1000);
     ws.notify('transport.play');
-    setTimeout(() => {
-      ws.notify('transport.stop');
-      // unsubscribe events
-      ws.unsubscribe([
-        'transport.getPosition',
-        'transport.isPlaying'
-      ]);
-      // cloese a connection
-      ws.close();
-    }, 3000);
+    await wait(3000);
+    ws.notify('transport.stop');
+    await wait(1000);
+    // unsbscrive events
+    ws.unsubscribe([
+      'transport.getPosition',
+      'transport.isPlaying'
+    ]);
+    // close a connection
+    ws.close();
   });
 })();
 
@@ -144,6 +150,7 @@ ${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
 ### Configuration Defaults
 ```JSON
 {
+  "webSocketPort": 8887,
   "useAbbreviatedMethodNames": false,
   "useProject": false,
   "useApplication": false,

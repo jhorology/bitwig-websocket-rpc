@@ -1,6 +1,6 @@
 {
   "name": "bitwig-websocket-rpc",
-  "version": "0.1.0",
+  "version": "0.1.1-SNAPSHOT",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.",
   "main": "index.js",
   "scripts": {
