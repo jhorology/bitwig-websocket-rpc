@@ -47,7 +47,6 @@
     "coffeescript": "^2.4.0",
     "isomorphic-ws": "^4.0.1",
     "mocha": "^6.0.2",
-    "nyan": "^1.1.0",
     "underscore": "^1.9.1"
   }
 }
