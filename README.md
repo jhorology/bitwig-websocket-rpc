@@ -222,6 +222,38 @@ You can get a default configuration as follows:
 npx bws-rpc --printConfig
 ```
 
+### RPC Module Dependencies
+```
+bitwig-websocket-rpc
+├── application
+├── arranger
+├── arrangerCursorClip
+├── browser
+├── cursorTrack
+│   ├── childTrackBank
+│   ├── cursorDevice
+│   │   ├── chainDeviceBank
+│   │   ├── chainSelector
+│   │   ├── cursorDeviceLayer
+│   │   ├── cursorRemoteControlsPage
+│   │   ├── deviceLayerBank
+│   │   ├── drumPadBank
+│   │   └── siblingsDeviceBank
+│   └── siblingsTrackBank
+├── effectTrackBank
+├── groove
+├── host
+├── launcherCursorClip
+├── mainTrackBank
+├── masterTrack
+├── mixer
+├── rpc         (core module for tools and supporting client library)
+├── sceneBank
+├── test        (for testing)
+└── transport
+
+```
+
 ## Notes
 - `useAbbreviatedMethodNames` option is experimental. I don't gurantee to maintain the same method and event names for future.
 
