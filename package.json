@@ -1,6 +1,6 @@
 {
   "name": "bitwig-websocket-rpc",
-  "version": "0.1.1-SNAPSHOT",
+  "version": "0.1.1",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.",
   "main": "index.js",
   "scripts": {
@@ -44,9 +44,9 @@
     "chai-as-promised": "^7.1.1",
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
-    "coffeescript": "^2.4.0",
+    "coffeescript": "^2.4.1",
     "isomorphic-ws": "^4.0.1",
-    "mocha": "^6.0.2",
+    "mocha": "^6.1.1",
     "underscore": "^1.9.1"
   }
 }
