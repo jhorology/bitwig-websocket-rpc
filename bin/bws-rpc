@@ -9,37 +9,6 @@ const pkg = require('../package.json');
 const beautify = require('js-beautify');
 
 const defaultUrl = 'ws://localhost:8887';
-const enableAllConfig = {
-  useProject: true,
-  useApplication: true,
-  useTransport: true,
-  useArranger: true,
-  useGroove: true,
-  useMixer: true,
-  useArrangerCursorClip: true,
-  useLauncherCursorClip: true,
-  useCursorTrack: true,
-  cursorTrackShouldFollowSelection: true,
-  useSiblingsTrackBank: true,
-  siblingsTrackBankIncludeEffectTracks: false,
-  siblingsTrackBankIncludeMasterTrack: false,
-  useChildTrackBank: true,
-  childTrackBankHasFlatList: false,
-  useCursorDevice: true,
-  useChainSelector: true,
-  useCursorDeviceLayer: true,
-  useCursorRemoteControlsPage: true,
-  useDeviceLayerBank: true,
-  useDrumPadBank: true,
-  useSiblingsDeviceBank: true,
-  useChainDeviceBank: true,
-  useSceneBank: true,
-  useMainTrackBank: true,
-  mainTrackBankFollowCursorTrack: true,
-  useEffectTrackBank: true,
-  useMasterTrack: true,
-  useBrowser: true
-};
 const requestTimeoutMillis = 2000;
 
 const getCurrentConfig = url => {
@@ -68,7 +37,7 @@ const getCurrentConfig = url => {
 const reportMethodsAndEvents = url => {
   const ws = new WebSocket(url, {
     autoconnect: true,
-    reconnect: false
+    reconnect: true
   });
   ws.on('open', async () => {
     const report = await ws.call('rpc.report', null, requestTimeoutMillis);
@@ -80,7 +49,7 @@ const reportMethodsAndEvents = url => {
 const reportActions = (url, abbrev) => {
   const ws = new WebSocket(url, {
     autoconnect: true,
-    reconnect: false
+    reconnect: true
   });
   ws.on('open', async () => {
     const method = abbrev ? 'app.actions' : 'application.getActions';
@@ -165,8 +134,8 @@ const url = program.url ? program.url : defaultUrl;
     } else {
       config = await getCurrentConfig(url);
       if (program.all) {
-        Object.keys(enableAllConfig).forEach( key => {
-          if (!config[key]) {
+        Object.keys(config).forEach(key => {
+          if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
             config[key] = true;
             dirty = true;
           }
