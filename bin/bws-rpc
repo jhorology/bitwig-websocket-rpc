@@ -98,7 +98,10 @@ const print = obj => {
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({pkg});
 if (notifier.update && notifier.update.latest !== pkg.version) {
-  notifier.notify({defer: false});
+  notifier.notify({
+    defer: false,
+    isGlobal: false
+  });
 }
 
 program
@@ -166,7 +169,7 @@ const url = program.url ? program.url : defaultUrl;
     if (program.report) {
       reportMethodsAndEvents(url);
     } else if (program.actions) {
-      reportActions(url, config.abbrev);
+      reportActions(url, config.useAbbreviatedMethodNames);
     } else if (program.events) {
       monitorEvents(url);
     } else if (program.logs) {

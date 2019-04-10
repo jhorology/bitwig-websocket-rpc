@@ -40,7 +40,10 @@ const defaultExtensionDir = (function() {
 })();
 
 if (notifier.update && notifier.update.latest !== pkg.version) {
-  notifier.notify({defer: false});
+    notifier.notify({
+      defer: false,
+      isGlobal: false
+    });
 }
 
 program
