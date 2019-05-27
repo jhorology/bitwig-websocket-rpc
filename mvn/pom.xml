@@ -7,7 +7,7 @@
   <artifactId>bitwig-websocket-rpc</artifactId>
   <packaging>jar</packaging>
   <name>Bitwig WebSocket RPC server</name>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.2</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -15,7 +15,7 @@
     <!-- Bitwig extension definition -->
     <extension.name>WebSocket RPC</extension.name>
     <extension.author>Masafumi</extension.author>
-    <extension.version>0.1.2-SNAPSHOT</extension.version>
+    <extension.version>0.1.2</extension.version>
     <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
     <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
     <extension.usingBetaAPI>true</extension.usingBetaAPI>
@@ -35,7 +35,7 @@
       <id>production</id>
       <properties>
         <!-- Bitwig extension definition -->
-        <extension.version>0.1.2-SNAPSHOT</extension.version>
+        <extension.version>0.1.2</extension.version>
         <extension.usingBetaAPI>false</extension.usingBetaAPI>
         <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
         <!-- default configuration values -->
