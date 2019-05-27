@@ -8,36 +8,56 @@ npm install bitwig-websocket-rpc --save
 ```
 Install Bitwig Studio Extension
 ```sh
-npx install-bitwig-extension [options]
+npx bws-rpc install [options]
 ```
-### Options
-    -e, --extensionDir <path>   Bitwig Studio's Extensions folder path.
-                                (default: /[platform specific]/Extensions)
-    -v, --version               x.x.x
-    -V
-
-    -h, --help                  output usage information
 
 ## Configuration and Helper Tool
 ```sh
-npx bws-rpc [options]
+npx bws-rpc <cmd> [options]
 ```
 ### Options
-    -u, --url <url>         URL of websockets server. (default: ws://localhost:8887)
-    -c, --config <path>     config file(.js|.json) path.
-    -a, --all               enable all RPC methods and events.
-                            this option is ignored by -c, --config option.
-    -b, --abbrev            enable abbreviated method and event name.(experimental)
-                            this option is ignored by -c, --config option.
-    -p, --printConfig       dry run, print current or intended configuration as JSON.
-    -r, --report            report accessible RPC methods and evnets as JSON.
-    -k, --actions           report result of Application#getActions() as JSON.
-    -e, --events            monitor events.
-    -l, --logs              trace control script logs.
-    -v, --version           x.x.x
-    -V
-    -h, --help              output usage information
+    $ npx bws-rpc
+    Usage: bws-rpc [options] [command]
 
+    Configuration and helper tools for bitwig-websocket-rpc.
+
+    Options:
+      -V, --version      output the version number
+      -h, --help         output usage information
+
+    Commands:
+      install [options]  Install Bitwig Studio WebSockets RPC server extension.
+      config [options]   Configure RPC modules.
+      report [options]   Report accessible RPC methods and evnets of current configuration as JSON.
+      actions [options]  Report result of Application#getActions() as JSON.
+      events [options]   Monitor events.
+      logs [options]     Trace controller script logs.
+
+    $ npx bws-rpc install --help
+    Usage: install [options]
+
+    Install Bitwig Studio WebSockets RPC server extension.
+
+    Options:
+      -e, --extension-dir <path>  Bitwig Studio Extension directory
+                                  (default: "<Platfom Specific>/Extensions")
+      -h, --help                  output usage information
+
+    $ npx bws-rpc config --help
+    Usage: config [options]
+
+    Configure RPC modules.
+
+    Options:
+      -u, --url <URL>    Bitwig Studio WebSockets URL (default: "ws://localhost:8887")
+      -f, --file <path>  config file(.js|.json) path.
+      -a, --all          enable all RPC methods and events.
+                         this option is ignored by -f, --file option.
+      -b, --abbrev       enable abbreviated method and event name (experimental),
+                         this option is ignored by -f, --file option.
+      -p, --print        dry run, print current or intended configuration as JSON.
+      -h, --help         output usage information
+      
 ## Module Use
 ### Usage
 ```js
