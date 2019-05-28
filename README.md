@@ -239,7 +239,7 @@ You can get a default configuration as follows:
  * Push [reset to default] button in preferences panel.
  * Execute command.
 ```sh
-npx bws-rpc --printConfig
+npx bws-rpc config --print
 ```
 
 ### RPC Module Dependencies
