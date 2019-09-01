@@ -38,11 +38,11 @@ import java.util.stream.Stream;
 // bitwig api
 import com.bitwig.extension.callback.Callback;
 import com.bitwig.extension.controller.api.Bank;
-import com.bitwig.extension.controller.api.BrowserFilterColumn;
+// import com.bitwig.extension.controller.api.BrowserFilterColumn;
 // import com.bitwig.extension.controller.api.BrowserFilterColumnBank;
 import com.bitwig.extension.controller.api.BrowserItem;
 import com.bitwig.extension.controller.api.BrowserItemBank;
-import com.bitwig.extension.controller.api.BrowsingSessionBank;
+// import com.bitwig.extension.controller.api.BrowsingSessionBank;
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.ChannelBank;
 import com.bitwig.extension.controller.api.ClipLauncherSlot;
@@ -304,8 +304,8 @@ public class ReflectUtils {
         boolean result = method.getName().startsWith("create")
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
-        if (false && result && LOG.isDebugEnabled()) {
-            LOG.debug("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
+        if (result && LOG.isTraceEnabled()) {
+            LOG.trace("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
                       + "] has been ignored as factory method for core module.");
         }
         return result;

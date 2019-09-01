@@ -32,18 +32,12 @@ import com.bitwig.extension.controller.api.SettableRangedValue;
 // provided dependencies
 import com.google.gson.annotations.Expose;
 
-// dependencies
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 // source
 import com.github.jhorology.bitwig.extension.AbstractConfiguration;
 import com.github.jhorology.bitwig.extension.ExtensionUtils;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
 public class Config extends AbstractConfiguration {
-    private static final Logger LOG = LoggerFactory.getLogger(Config.class);
-
     private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
     private static final int DEFAULT_WEBSOCKET_PORT = 8887;
     private static final int[] INT_OPTIONS_1TO8  = {1, 2, 4, 8};
@@ -1528,6 +1522,15 @@ public class Config extends AbstractConfiguration {
             useTransport = useTransportValue.get();
             useArranger = useArrangerValue.get();
             arrangerCueMarkerSize = arrangerCueMarkerSizeValue;
+            
+            useArrangerCursorClip = useArrangerCursorClipValue.get();
+            arrangerCursorClipGridWidth = arrangerCursorClipGridWidthValue;
+            arrangerCursorClipGridHeight = arrangerCursorClipGridHeightValue;
+
+            useLauncherCursorClip = useLauncherCursorClipValue.get();
+            launcherCursorClipGridWidth = launcherCursorClipGridWidthValue;
+            launcherCursorClipGridHeight = launcherCursorClipGridHeightValue;
+            
             useGroove = useGrooveValue.get();
             useMixer = useMixerValue.get();
 

@@ -66,7 +66,6 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
-import java.lang.reflect.Method;
 
 /**
  * A utility class for creating all known callbacks of Bitwig API.
@@ -108,14 +107,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    @SuppressWarnings({"UseSpecificCatch", "unchecked"})
+    @SuppressWarnings({"unchecked"})
     public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
         Function<Consumer<Object>, ? extends ValueChangedCallback> factory = CALLBACK_FACTORY.keySet()
             .stream()
             .filter(c -> {
                     try {
-                        Method m = value.getClass().getMethod("addValueObserver", (Class<?>)c);
-                        return true;
+                        return value.getClass().getMethod("addValueObserver", (Class<?>)c) != null;
                     } catch (Exception ex) {
                         return false;
                     }

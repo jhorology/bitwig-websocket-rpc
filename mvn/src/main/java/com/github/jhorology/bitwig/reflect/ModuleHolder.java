@@ -26,17 +26,11 @@ package com.github.jhorology.bitwig.reflect;
 import java.util.HashMap;
 import java.util.Map;
 
-// dependencies
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class ModuleHolder<T> extends RegistryNode<T> {
-    // Logger
-    private static final Logger LOG = LoggerFactory.getLogger(ModuleHolder.class);
-
+    /**
+     * the owner of this interface.
+     */
     protected final ReflectionRegistry owner;
-    
 
     /**
      * the instance of interface of this module.
@@ -44,7 +38,7 @@ public class ModuleHolder<T> extends RegistryNode<T> {
     protected T nodeInstance;
 
     protected final Map<Class<?>, Integer> bankItemCounts;
-    
+
     /**
      * Constructor
      * @param owner
@@ -75,7 +69,7 @@ public class ModuleHolder<T> extends RegistryNode<T> {
     /**
      * Returns a bank item conut of specified bank item class.
      * @param bankItemType
-     * @return 
+     * @return
      */
     int getBankItemCount(Class<?> bankType) {
         Integer count = bankItemCounts.get(bankType);
@@ -83,18 +77,18 @@ public class ModuleHolder<T> extends RegistryNode<T> {
             return count;
         }
         count = bankItemCounts.keySet().stream()
-                .filter(c -> c.isAssignableFrom(bankType))
-                .map(c -> bankItemCounts.get(c))
-                .findFirst().orElse(null);
+            .filter(c -> c.isAssignableFrom(bankType))
+            .map(c -> bankItemCounts.get(c))
+            .findFirst().orElse(null);
         if (count != null) {
             return count;
         }
         return 0;
     }
-    
+
     /**
      * Returns an cached instance.<br>
-     * can be nullable,
+     * can be nullable.
      * @param params
      * @return
      */

@@ -1,1 +1,1 @@
-module.exports = require('./lib/bitwig-websocket-rpc');
+module.exports = require('./lib/bitwig-websocket-rpc')

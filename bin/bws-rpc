@@ -13,121 +13,117 @@ const path = require('path'),
       defaultUrl = 'ws://localhost:8887',
       requestTimeoutMillis = 2000,
       extensionFileName = 'WebSocketRpcServer.bwextension',
-      defaultExtensionDir = _defaultExtensionDir();
+      defaultExtensionDir = _defaultExtensionDir()
 
 // check if a new version is available and print an update notification
-const notifier = updateNotifier({pkg});
+const notifier = updateNotifier({ pkg })
 if (notifier.update && notifier.update.latest !== pkg.version) {
   notifier.notify({
     defer: false,
     isGlobal: false
-  });
+  })
 }
 
 program
   .description('Configuration and helper tools for bitwig-websocket-rpc.')
-  .version(pkg.version);
+  .version(pkg.version)
 
 program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir)
-  .action(installCommand);
+  .action(installCommand)
 
+/* eslint no-multi-spaces: 0 */
 program
   .command('config')
   .description('Configure RPC modules.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL', defaultUrl)
   .option('-f, --file <path>', 'config file(.js|.json) path.')
   .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -f, --file option.')
   .option('-b, --abbrev',      'enable abbreviated method and event name (experimental), this option is ignored by -f, --file option.')
   .option('-p, --print',       'dry run, print current or intended configuration as JSON.')
-  .action(configCommand);
+  .action(configCommand)
 
 program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(reportCommand);
+  .action(reportCommand)
 
 program
   .command('actions')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
   .description('Report result of Application#getActions() as JSON.')
-  .action(actionsCommand);
+  .action(actionsCommand)
 
 program
   .command('events')
   .description('Monitor events.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(eventsCommand);
+  .action(eventsCommand)
 
 program
   .command('logs')
   .description('Trace controller script logs.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(logsCommand);
+  .action(logsCommand)
 
-program
-  .command('*')
-  .action(function(env){
-    program.outputHelp();
-  });
-
-program.parse(process.argv);
+program.parse(process.argv)
 
 if (!program.args.length) {
-  program.outputHelp();
+  program.outputHelp()
 }
 
 /**
  * install bitwig studio extension
  */
 function installCommand(options) {
-  _checkDir(options.extensionDir);
-  const basename = 'WebSocketRpcServer.bwextension';
-  const src = path.resolve(__dirname, '..', extensionFileName);
-  const dest = path.join(options.extensionDir, basename);
-  _checkFile(src);
-  fs.copyFileSync(src, dest);
-  console.info('file:', dest);
-  console.info('Installation completed successfully.');
+  _checkDir(options.extensionDir)
+  const basename = 'WebSocketRpcServer.bwextension',
+        src = path.resolve(__dirname, '..', extensionFileName),
+        dest = path.join(options.extensionDir, basename)
+  _checkFile(src)
+  fs.copyFileSync(src, dest)
+  console.info('file:', dest)
+  console.info('Installation completed successfully.')
 }
 
 /**
  * configure RPC modules
  */
 function configCommand(options) {
-  (async () => _configCommand(options))();
+  (async () => _configCommand(options))()
 }
+
 async function _configCommand(options) {
-  let config, dirty;
+  let config, dirty
   if (options.file) {
-    config = _checkRequireObject(options.file);
-    dirty = true;
+    config = _checkRequireObject(options.file)
+    dirty = true
   } else {
-    config = await _getCurrentConfig(options.url);
+    config = await _getCurrentConfig(options.url)
     if (options.all) {
       Object.keys(config).forEach(key => {
         if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
-          config[key] = true;
-          dirty = true;
+          config[key] = true
+          dirty = true
         }
-      });
+      })
     }
     if (options.abbrev) {
       if (!config.useAbbreviatedMethodNames) {
-        config.useAbbreviatedMethodNames = true;
-        dirty = true;
+        config.useAbbreviatedMethodNames = true
+        dirty = true
       }
     }
   }
   if (options.print) {
-    _print(config);
-    process.exit(0);
+    _print(config)
+    process.exit(0)
   }
   if (dirty) {
-    await bitwig(options.url, config);
+    await bitwig(options.url, config)
   }
 }
 
@@ -138,37 +134,38 @@ function reportCommand(options) {
   const ws = new WebSocket(options.url, {
     autoconnect: true,
     reconnect: true
-  });
+  })
   ws.on('open', async () => {
-    const report = await ws.call('rpc.report', null, requestTimeoutMillis);
-    ws.close();
-    _print(report);
-  });
+    const report = await ws.call('rpc.report', null, requestTimeoutMillis)
+    ws.close()
+    _print(report)
+  })
 }
 
 /**
  * report actions
  */
 function actionsCommand(options) {
-  (async () => _actionsCommand(options))();
+  (async () => _actionsCommand(options))()
 }
+
 async function _actionsCommand(options) {
-  const config = await _getCurrentConfig(options.url);
+  const config = await _getCurrentConfig(options.url)
   if (!config.useApplication) {
-    config.useApplication = true;
-    await bitwig(options.url, config);
+    config.useApplication = true
+    await bitwig(options.url, config)
   }
   const ws = new WebSocket(options.url, {
     autoconnect: true,
     reconnect: true
-  });
+  })
   ws.on('open', async () => {
-    const method = config.useAbbreviatedMethodNames ?
-          'app.actions' : 'application.getActions';
-    const actions = await ws.call(method, null, requestTimeoutMillis);
-    ws.close();
-    _print(actions);
-  });
+    const method = config.useAbbreviatedMethodNames
+      ? 'app.actions' : 'application.getActions'
+    const actions = await ws.call(method, null, requestTimeoutMillis)
+    ws.close()
+    _print(actions)
+  })
 }
 
 /**
@@ -178,19 +175,19 @@ function eventsCommand(options) {
   const ws = new WebSocket(options.url, {
     autoconnect: true,
     reconnect: true
-  });
+  })
   ws.on('open', async () => {
-    const report = await ws.call('rpc.report');
+    const report = await ws.call('rpc.report')
     const events = report.events.filter((e) => {
-      return ! e.event.startsWith('test.') && ! e.event.startsWith('rpc.');
-    }).map((e) => {return e.event;});
+      return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
+    }).map((e) => e.event)
     events.forEach((e) => {
       ws.on(e, function() {
-        console.log(`${Date.now()} - [${e}]`, arguments);
-      });
-    });
-    ws.subscribe(events);
-  });
+        console.log(`${Date.now()} - [${e}]`, arguments)
+      })
+    })
+    ws.subscribe(events)
+  })
 }
 
 /**
@@ -200,107 +197,105 @@ function logsCommand(options) {
   const ws = new WebSocket(options.url, {
     autoconnect: true,
     reconnect: true
-  });
-  ws.on('open',() => {
+  })
+  ws.on('open', () => {
     ws.on('rpc.log', log => {
-      console.log(log);
-    });
-    ws.subscribe('rpc.log');
-  });
+      console.log(log)
+    })
+    ws.subscribe('rpc.log')
+  })
 }
-
-
 
 function _checkDir(dir) {
   if (!fs.existsSync(dir)) {
-    console.error(`error: no such directory, "${dir}"`);
-    process.exit(1);
+    console.error(`error: no such directory, "${dir}"`)
+    process.exit(1)
   }
   if (!fs.statSync(dir).isDirectory()) {
-    console.error(`error: no such directory, "${dir}"`);
-    process.exit(1);
+    console.error(`error: no such directory, "${dir}"`)
+    process.exit(1)
   }
 }
 
 function _checkFile(file) {
   if (!fs.existsSync(file)) {
-    console.error(`error: no such file, "${file}"`);
-    process.exit(1);
+    console.error(`error: no such file, "${file}"`)
+    process.exit(1)
   }
   if (!fs.statSync(file).isFile()) {
-    console.error(`error: no such file, "${file}"`);
-    process.exit(1);
+    console.error(`error: no such file, "${file}"`)
+    process.exit(1)
   }
 }
 
 function _checkRequireObject(file) {
-  var obj;
+  var obj
   try {
-    obj = require(path.resolve(file));
+    obj = require(path.resolve(file))
   } catch (err) {
-    console.info(err);
-    process.exit(1);
+    console.info(err)
+    process.exit(1)
   }
   if (typeof fn !== 'object') {
-    console.error('error: config file should export function');
-    process.exit(1);
+    console.error('error: config file should export function')
+    process.exit(1)
   }
-  return obj;
+  return obj
 }
-
-
 
 function _isWSL() {
   return process.platform === 'linux' &&
     os.release().includes('Microsoft') &&
-    fs.readFileSync('/proc/version', 'utf8').includes('Microsoft');
+    fs.readFileSync('/proc/version', 'utf8').includes('Microsoft')
 }
 
 function _wslWinHomeDir() {
-  return execSync('wslpath $(cmd.exe /C "echo %USERPROFILE%")')
-    .toString().replace(/[\r\n]+$/g, '');
+  return execSync('wslpath $(cmd.exe /C "echo %USERPROFILE%") 2> /dev/null', {
+    stdio: ['pipe', 'pipe', 'ignore']
+  }).toString().replace(/[\r\n]+$/g, '')
 }
 
 function _defaultExtensionDir() {
   switch (process.platform) {
   case 'win32':
-    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
+    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions')
   case 'darwin':
-    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions');
+    return path.join(os.homedir(), 'Documents', 'Bitwig Studio', 'Extensions')
   case 'linux':
     if (_isWSL()) {
-      return path.join(_wslWinHomeDir(), 'Documents', 'Bitwig Studio', 'Extensions');
+      return path.join(_wslWinHomeDir(), 'Documents', 'Bitwig Studio', 'Extensions')
     } else {
-      return path.join(os.homedir(), 'Bitwig Studio', 'Extensions');
+      return path.join(os.homedir(), 'Bitwig Studio', 'Extensions')
     }
   default:
-    console.error(`Unsupported Platform:[${process.platform}].`);
-    return process.exit(1);
+    console.error(`Unsupported Platform:[${process.platform}].`)
+    return process.exit(1)
   }
 }
+
 function _print(obj) {
-  console.log(beautify(JSON.stringify(obj), {indent_size: 2}));
+  console.log(beautify(JSON.stringify(obj), { indent_size: 2 }))
 }
 
 function _getCurrentConfig(url) {
-  return new Promise((resolve, reject) =>{
+  return new Promise((resolve, reject) => {
     const ws = new WebSocket(url, {
       autoconnect: true,
       reconnect: false
-    });
+    })
     ws.on('open', async () => {
       try {
-        const config = await ws.call('rpc.config', null, requestTimeoutMillis);
-        ws.close();
-        resolve(config);
+        const config = await ws.call('rpc.config', null, requestTimeoutMillis)
+        ws.close()
+        resolve(config)
       } catch (err) {
-        ws.close();
-        reject(err);
+        ws.close()
+        reject(err)
       }
-    });
+    })
     ws.on('error', (err) => {
-      ws.close();
-      reject(err);
-    });
-  });
-};
+      ws.close()
+      reject(err)
+    })
+  })
+}

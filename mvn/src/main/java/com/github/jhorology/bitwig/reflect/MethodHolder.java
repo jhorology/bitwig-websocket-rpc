@@ -56,15 +56,14 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     private final MethodIdentifier identifier;
     private String error;
     private Map<List<Object>, T> instanceCache;
-    
+
     /**
-     * 
+     * Constructor.
      * @param method
      * @param nodeType
-     * @param parentNode 
+     * @param parentNode
      * @param bankItemCount
      */
-    @SuppressWarnings("unchecked")
     MethodHolder(String nodeName, Method method, Class<T>nodeType, RegistryNode<?> parentNode, int bankItemCount) {
         super(nodeName, nodeType,
               method.getGenericParameterTypes(), parentNode, bankItemCount);
@@ -85,8 +84,8 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
      * this return values maybe not same as real method's parameter types.<br>
      * <pre>
      *  below case:
-     *    foobar1.foober2(a, b).foober3r(c)
-     *    returns parameter types as [a,b,c]
+     *    foobar1.foober2(a, b).foober3(c)
+     *  returns parameter types as [a,b,c]
      * </pre>
      * An implementation method of {@link RpcMethod#getParamTypes()}
      * @return
@@ -141,7 +140,7 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     /**
      * Returns an cached managed instance.
      * @param bankIndexes
-     * @return 
+     * @return
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -159,7 +158,7 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         }
         return nodeInstance;
     }
-    
+
     protected void putNodeInstance(Object[] params, T nodeInstance) {
         if (params.length != bankDimension.length) {
             return;
@@ -169,22 +168,22 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         }
         instanceCache.put(Arrays.asList(params), nodeInstance);
     }
-    
+
     /**
-     * {@inheritDoc} 
+     * {@inheritDoc}
      */
     @Override
     void clear() {
     }
-    
+
     /**
      * Return the identifier of this method.
-     * @return 
+     * @return
      */
     MethodIdentifier getIdentifier() {
         return identifier;
     }
-    
+
     /**
      * Retunrs an error message.
      * @return
@@ -230,10 +229,10 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
             ? method.invoke(null, new Object[] {params})
             : method.invoke(null, params);
     }
-    
+
     /**
      * create a report object for MehodHolder.
-     * @return 
+     * @return
      */
     Object reportRpcMethod() {
         Map<String, Object> report = new LinkedHashMap<>();
@@ -245,9 +244,9 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         report.put("expression", getExpression(true));
         return report;
     }
-    
+
     /**
-     * return a RPC method expression.<be>
+     * return a Java API expression.<be>
      * @param withReturnType
      * @retuen
      */

@@ -22,37 +22,95 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+// jdk
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
+// provided dependencies
+import com.google.common.eventbus.Subscribe;
+
+// dependencies
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
- * Executor class that is used to execute task asynchronously in the 'Control Surface Session' thread.
+ * Executor class that always runs tasks within 'ControllerHost#flush()' method.
  */
-@Deprecated
-public class ControlSurfaceSessionExecutor implements Executor {
+public class ControlSurfaceSessionExecutor implements Executor, Runnable {
+    private static final Logger LOG = LoggerFactory.getLogger(ControlSurfaceSessionExecutor.class);
+
+    private static final int QUEUE_SIZE = 64;
+    
     private final AbstractExtension<? extends AbstractConfiguration> extension;
+    private final ConcurrentLinkedQueue<Runnable> tasks;
+    private Thread controlSurfaceSession;
     
     /**
-     * Consutruct an instance of Executor.
-     * @param extension 
+     * Constructor.
+     * @param extension
      */
     public ControlSurfaceSessionExecutor(AbstractExtension<? extends AbstractConfiguration> extension) {
+        this.tasks = new ConcurrentLinkedQueue<>();
         this.extension = extension;
     }
     
+    @Subscribe
+    public void onInit(InitEvent e) {
+        e.getHost().scheduleTask(this, 0L);
+        this.controlSurfaceSession = Thread.currentThread();
+    }
+    
+    @Subscribe
+    public void onFlush(FlushEvent e) {
+        runAllQueuedTasks();
+    }
+    
+    @Subscribe
+    public void onExit(ExitEvent e) {
+        runAllQueuedTasks();
+    }
+    
     /**
-     * {@inheritDoc}
+     * An implementation method of Executor interface
+     * @param command 
      */
     @Override
-    public synchronized void execute(Runnable command) {
-        // This is not Safe!
-        // easy to see crash on ConcurrentModificationException
-        extension.getHost().scheduleTask(() -> {
-                ExecutionContext.init(extension);
-                try {
-                    command.run();
-                } finally {
-                    ExecutionContext.destroy();
-                }
-            }, 0L);
+    public void execute(Runnable command) {
+        tasks.offer(command);
+        if (Thread.currentThread() == controlSurfaceSession) {
+            runAllQueuedTasks();
+        } else {
+            extension.getHost().requestFlush();
+        }
+        if (LOG.isWarnEnabled()) {
+            if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
+                LOG.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
+            }
+        }
+    }
+
+    private void runAllQueuedTasks() {
+        Runnable task = tasks.poll();
+        while(task != null) {
+            ExecutionContext.init(extension);
+            try {
+                task.run();
+            } catch (Exception ex) {
+                LOG.error("Executer task execution error.", ex);
+            } finally {
+                task = tasks.poll();
+                ExecutionContext.destroy();
+            }
+        }
+    }
+
+    @Override
+    public void run() {
+        try {
+            runAllQueuedTasks();
+        } finally {
+            extension.getHost().scheduleTask(this, 0L);
+        }
     }
 }

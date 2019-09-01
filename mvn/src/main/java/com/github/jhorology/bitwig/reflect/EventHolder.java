@@ -54,10 +54,10 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
  * A RPC event holder class.<br>
- * The return value of method is guranteed to be implemented Value inteface.
+ * The return value of method is guaranteed to be implemented Value interface.
  * @param <T>
  */
-public class EventHolder<T extends Value> extends MethodHolder<T> implements RpcEvent {
+public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements RpcEvent {
     private static final Logger LOG = LoggerFactory.getLogger(EventHolder.class);
     
     // gurantee the posting current value on 'subscibe' is called.
@@ -144,7 +144,7 @@ public class EventHolder<T extends Value> extends MethodHolder<T> implements Rpc
         private boolean syncSubscribedState() {
             try {
                 // TODO support method chain that has parameters
-                Value value = getNodeInstance(bankIndexes);
+                Value<?> value = getNodeInstance(bankIndexes);
                 if (clients.isEmpty() && value.isSubscribed()) {
                     value.unsubscribe();
                     return false;

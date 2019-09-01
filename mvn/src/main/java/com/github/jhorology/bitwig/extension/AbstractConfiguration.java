@@ -59,7 +59,6 @@ public abstract class AbstractConfiguration {
     // <--
 
     protected boolean ignoreValueChanged;
-    private ControllerHost host;
     private ControllerExtensionDefinition definition;
     private Path rcFilePath;
     private boolean valueChanged;
@@ -115,7 +114,6 @@ public abstract class AbstractConfiguration {
      * @param extension
      */
     void init(ControllerHost host, ControllerExtensionDefinition definition) {
-        this.host = host;
         this.definition = definition;
         this.rcFilePath = getRcFilePath(definition);
         if (USE_RC_FILE) {

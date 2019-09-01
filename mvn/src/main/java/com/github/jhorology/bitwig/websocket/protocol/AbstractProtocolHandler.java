@@ -93,7 +93,6 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public void onColse(CloseEvent e) {
         if (LOG.isTraceEnabled()) {
-            WebSocket conn = e.getConnection();
             LOG.trace("connection closed. conn:" + e.getConnection() +
                       "\ncode:" + e.getCode() +
                       "\nreason:" + e.getReason() +
