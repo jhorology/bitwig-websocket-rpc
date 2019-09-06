@@ -39,9 +39,10 @@ program
   .command('config')
   .description('Configure RPC modules.')
   .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL', defaultUrl)
-  .option('-f, --file <path>', 'config file(.js|.json) path.')
-  .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -f, --file option.')
-  .option('-b, --abbrev',      'enable abbreviated method and event name (experimental), this option is ignored by -f, --file option.')
+  .option('-r, --reset',       'reset configuration to defaults.')
+  .option('-f, --file <path>', 'config file(.js|.json) path. this option is ignored by -r option.')
+  .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -r or -f option.')
+  .option('-b, --abbrev',      'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.')
   .option('-p, --print',       'dry run, print current or intended configuration as JSON.')
   .action(configCommand)
 
@@ -93,38 +94,38 @@ function installCommand(options) {
  * configure RPC modules
  */
 function configCommand(options) {
-  (async () => _configCommand(options))()
-}
-
-async function _configCommand(options) {
-  let config, dirty
-  if (options.file) {
-    config = _checkRequireObject(options.file)
-    dirty = true
-  } else {
-    config = await _getCurrentConfig(options.url)
-    if (options.all) {
-      Object.keys(config).forEach(key => {
-        if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
-          config[key] = true
+  (async () => {
+    let config, dirty
+    if (options.reset) {
+      config = {}
+      dirty = true
+    } else if (options.file) {
+      config = _checkRequireObject(options.file)
+      dirty = true
+    } else {
+      config = await _getCurrentConfig(options.url)
+      if (options.all) {
+        Object.keys(config).forEach(key => {
+          if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
+            config[key] = true
+            dirty = true
+          }
+        })
+      } else if (options.abbrev) {
+        if (!config.useAbbreviatedMethodNames) {
+          config.useAbbreviatedMethodNames = true
           dirty = true
         }
-      })
-    }
-    if (options.abbrev) {
-      if (!config.useAbbreviatedMethodNames) {
-        config.useAbbreviatedMethodNames = true
-        dirty = true
       }
     }
-  }
-  if (options.print) {
-    _print(config)
-    process.exit(0)
-  }
-  if (dirty) {
-    await bitwig(options.url, config)
-  }
+    if (options.print) {
+      _print(config)
+      process.exit(0)
+    }
+    if (dirty) {
+      await bitwig(options.url, config)
+    }
+  })()
 }
 
 /**
@@ -146,26 +147,25 @@ function reportCommand(options) {
  * report actions
  */
 function actionsCommand(options) {
-  (async () => _actionsCommand(options))()
-}
-
-async function _actionsCommand(options) {
-  const config = await _getCurrentConfig(options.url)
-  if (!config.useApplication) {
-    config.useApplication = true
-    await bitwig(options.url, config)
-  }
-  const ws = new WebSocket(options.url, {
-    autoconnect: true,
-    reconnect: true
-  })
-  ws.on('open', async () => {
-    const method = config.useAbbreviatedMethodNames
-      ? 'app.actions' : 'application.getActions'
-    const actions = await ws.call(method, null, requestTimeoutMillis)
-    ws.close()
-    _print(actions)
-  })
+  (async () => {
+    const config = await _getCurrentConfig(options.url)
+    if (!config.useApplication) {
+      config.useApplication = true
+      await bitwig(options.url, config)
+    }
+    const ws = new WebSocket(options.url, {
+      autoconnect: true,
+      reconnect: true
+    })
+    ws.on('open', async () => {
+      const method = config.useAbbreviatedMethodNames
+        ? 'app.actions'
+        : 'application.getActions'
+      const actions = await ws.call(method, null, requestTimeoutMillis)
+      ws.close()
+      _print(actions)
+    })
+  })()
 }
 
 /**
