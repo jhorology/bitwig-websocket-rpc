@@ -1,6 +1,6 @@
 {
   "name": "bitwig-websocket-rpc",
-  "version": "0.1.4-SNAPSHOT",
+  "version": "0.2.0-SNAPSHOT",
   "description": "JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.",
   "main": "index.js",
   "scripts": {
@@ -46,10 +46,10 @@
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
     "coffeescript": "^2.4.1",
-    "eslint": "^6.2.2",
+    "eslint": "^6.3.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^9.2.0",
+    "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "isomorphic-ws": "^4.0.1",

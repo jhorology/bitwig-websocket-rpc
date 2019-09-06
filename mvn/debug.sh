@@ -10,8 +10,8 @@ wslpath() {
     echo $1 | sed -e 's/\\/\//g' -e 's/^\(.*\):/\/mnt\/\L\1/'
 }
 
-BITWIG_VERSION="3.0.2 Beta 3"
-BETA=true
+BITWIG_VERSION="3.0.2"
+BETA=false
 
 case "`uname`" in
     Linux*)
@@ -31,7 +31,7 @@ case "`uname`" in
         ;;
     Darwin*)
         PLATFORM="Mac"
-        BITWIG_STUDIO="/Applications/Bitwig\ Studio.app/Contents/MacOS/BitwigStudio"
+        BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
         USER_HOME="$HOME"
         ;;
     *)

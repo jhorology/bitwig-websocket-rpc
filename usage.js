@@ -38,7 +38,7 @@ const wait = millis => {
       console.log(err)
     }
 
-    // interest events
+    // subscribe interest events
     ws.subscribe([
       'transport.getPosition',
       'transport.isPlaying'
@@ -52,9 +52,10 @@ const wait = millis => {
     // boolean Transport#isPlaying().get()
     const isPlaying2 = await ws.call('transport.isPlaying.get')
     // Both values are same boolean value.
+    const position2 = await ws.call('transport.getPosition')
     // API's value objects (inherited Value class) are serialized via custom serializer.
     // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
-    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2)
+    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2, ' position:', position2)
 
     // handling events
     ws.on('transport.getPosition', position => {
@@ -65,9 +66,10 @@ const wait = millis => {
     })
 
     ws.notify('transport.play')
-    await wait(3000)
+    await wait(6000)
     ws.notify('transport.stop')
     await wait(1000)
+
     // unsubscribe events
     ws.unsubscribe([
       'transport.getPosition',

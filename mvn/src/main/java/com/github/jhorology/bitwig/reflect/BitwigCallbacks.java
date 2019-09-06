@@ -23,8 +23,9 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -57,14 +58,17 @@ import com.bitwig.extension.callback.StringArrayValueChangedCallback;
 import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.callback.SysexMidiDataReceivedCallback;
 import com.bitwig.extension.callback.ValueChangedCallback;
+import com.bitwig.extension.controller.api.BeatTimeValue;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
 
 // dependencies
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
+import com.github.jhorology.bitwig.ext.BeatTimePosition;
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
 
 /**
@@ -77,18 +81,35 @@ public class BitwigCallbacks {
     private static final boolean PREFER_NAMED_PARAMS = true;
 
     // All knwown Subinterfaces of ValueChangedCallback
-    private static final Map<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>> CALLBACK_FACTORY = new LinkedHashMap<>();
+    private static final List<ImmutablePair<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>>> GENERAL_CALLBACKS = new ArrayList<>();
     static {
-        CALLBACK_FACTORY.put(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback);
-        CALLBACK_FACTORY.put(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback);
-        CALLBACK_FACTORY.put(DoubleValueChangedCallback.class,      BitwigCallbacks::newDoubleValueChangedCallback);
-        CALLBACK_FACTORY.put(EnumValueChangedCallback.class,        BitwigCallbacks::newEnumValueChangedCallback);
-        CALLBACK_FACTORY.put(IntegerValueChangedCallback.class,     BitwigCallbacks::newIntegerValueChangedCallback);
-        CALLBACK_FACTORY.put(StringArrayValueChangedCallback.class, BitwigCallbacks::newStringArrayValueChangedCallback);
-        CALLBACK_FACTORY.put(StringValueChangedCallback.class,      BitwigCallbacks::newStringValueChangedCallback);
-        CALLBACK_FACTORY.put(ObjectValueChangedCallback.class,      BitwigCallbacks::newObjectValueChangedCallback);
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(DoubleValueChangedCallback.class,      BitwigCallbacks::newDoubleValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(EnumValueChangedCallback.class,        BitwigCallbacks::newEnumValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(IntegerValueChangedCallback.class,     BitwigCallbacks::newIntegerValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(StringArrayValueChangedCallback.class, BitwigCallbacks::newStringArrayValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(StringValueChangedCallback.class,      BitwigCallbacks::newStringValueChangedCallback));
+        GENERAL_CALLBACKS.add(new ImmutablePair<>(ObjectValueChangedCallback.class,      BitwigCallbacks::newObjectValueChangedCallback));
     }
 
+    /**
+     * create a new optimum callback for 'addValueObserber' of specified Value instance.
+     * @param value the instance of Value interface.
+     * @param lambda the lambda consumer to observe the callback parameter(s).
+     * @return new callback instance
+     */
+    @SuppressWarnings({"unchecked"})
+    public static ValueChangedCallback newValueChangedCallback(Value value, Consumer<Object> lambda) {
+        // special callbacks
+        if (value instanceof BeatTimeValue) {
+            return newBeatTimeValueChangedCallback((BeatTimeValue)value, lambda);
+        }
+        // general callbacks
+        return newGeneralValueChangedCallback(value, lambda);
+    }
+    
+    
     /**
      * create a new optimum callback for 'addValueObserber' of specified Value instance.
      * All known subinterfaces of ValueChangedCallback:
@@ -108,17 +129,17 @@ public class BitwigCallbacks {
      * @return new callback instance
      */
     @SuppressWarnings({"unchecked"})
-    public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
-        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = CALLBACK_FACTORY.keySet()
+    public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
+        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = GENERAL_CALLBACKS
             .stream()
-            .filter(c -> {
+            .filter(p -> {
                     try {
-                        return value.getClass().getMethod("addValueObserver", (Class<?>)c) != null;
-                    } catch (Exception ex) {
+                        return value.getClass().getMethod("addValueObserver", (Class<?>)p.getLeft()) != null;
+                    } catch (NoSuchMethodException | SecurityException ex) {
                         return false;
                     }
                 })
-            .map(CALLBACK_FACTORY::get)
+            .map(p -> p.getRight())
             .findFirst().orElse(null);
         
         if (factory == null) {
@@ -126,6 +147,19 @@ public class BitwigCallbacks {
                                                     + value.getClass());
         }
         return (T)factory.apply(lambda);
+    }
+
+    /**
+     * create new special DoubleValueChangedCallback for BeatTimeValue
+     * @param beatTimeValue
+     * @param lambda the lambda consumer to observe the callback parameter(s).
+     * @return return the instance of callback.
+     */
+    public static DoubleValueChangedCallback newBeatTimeValueChangedCallback(final BeatTimeValue beatTimeValue, final Consumer<Object> lambda) {
+        return (double value) -> {
+            lambda.accept(createParams(new String[] {"tposition"},
+                                       new Object[] { BeatTimePosition.newBeatTimePosition(value, beatTimeValue)}));
+        };
     }
 
     /**
@@ -334,8 +368,8 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static <T> ObjectValueChangedCallback<T> newObjectValueChangedCallback(Consumer<Object> lambda) {
-        return (T value) -> {
+    public static ObjectValueChangedCallback newObjectValueChangedCallback(Consumer<Object> lambda) {
+        return (Object value) -> {
             // for debug
             if (LOG.isWarnEnabled() &&
                 value != null &&

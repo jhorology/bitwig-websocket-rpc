@@ -24,8 +24,8 @@ package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 // jdk
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Supplier;
 
 // bitwig api
@@ -42,6 +42,7 @@ import com.bitwig.extension.controller.api.PlayingNote;
 import com.bitwig.extension.controller.api.RangedValue;
 import com.bitwig.extension.controller.api.StringArrayValue;
 import com.bitwig.extension.controller.api.StringValue;
+import com.github.jhorology.bitwig.ext.BeatTimePosition;
 
 // dependencies
 import com.google.gson.GsonBuilder;
@@ -50,6 +51,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * GSON type adapters for Bitwig Value Objects.
@@ -58,22 +60,21 @@ public class BitwigAdapters {
     /**
      * GSON type adapters for Bitwig Value Objects.
      */
-    private static final Map<Class<?>, Supplier<Object>> ADAPTED_TYPES;
+    private static final List<ImmutablePair<Class<?>, Supplier<Object>>> ADAPTED_TYPES;
     static {
-        ADAPTED_TYPES = new LinkedHashMap<>();
-        ADAPTED_TYPES.put(BeatTimeValue.class,    BeatTimeValueAdapter::new);
-        ADAPTED_TYPES.put(ShortMidiMessage.class, ShortMidiMessageAdapter::new);
-        ADAPTED_TYPES.put(Action.class,           ActionAdapter::new);
-        ADAPTED_TYPES.put(ActionCategory.class,   ActionCategoryAdapter::new);
-        ADAPTED_TYPES.put(BooleanValue.class,     BooleanValueAdapter::new);
-        ADAPTED_TYPES.put(ColorValue.class,       ColorValueAdapter::new);
-        ADAPTED_TYPES.put(DoubleValue.class,      DoubleValueAdapter::new);
-        ADAPTED_TYPES.put(EnumValue.class,        EnumValueAdapter::new);
-        ADAPTED_TYPES.put(IntegerValue.class,     IntegerValueAdapter::new);
-        ADAPTED_TYPES.put(PlayingNote.class,      PlayingNoteAdapter::new);
-        ADAPTED_TYPES.put(RangedValue.class,      RangedValueAdapter::new);
-        ADAPTED_TYPES.put(StringArrayValue.class, StringArrayValueAdapter::new);
-        ADAPTED_TYPES.put(StringValue.class,      StringValueAdapter::new);
+        ADAPTED_TYPES = new ArrayList<>();
+        ADAPTED_TYPES.add(new ImmutablePair<>(ShortMidiMessage.class, ShortMidiMessageAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(Action.class,           ActionAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(ActionCategory.class,   ActionCategoryAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(BooleanValue.class,     BooleanValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(ColorValue.class,       ColorValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(DoubleValue.class,      DoubleValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(EnumValue.class,        EnumValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(IntegerValue.class,     IntegerValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(PlayingNote.class,      PlayingNoteAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(RangedValue.class,      RangedValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(StringArrayValue.class, StringArrayValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(StringValue.class,      StringValueAdapter::new));
     }
 
     /**
@@ -85,14 +86,7 @@ public class BitwigAdapters {
         if (value == null) {
             return true;
         }
-        Class<?> clazz = value.getClass().isArray()
-                ? value.getClass().getComponentType()
-                : value.getClass();
-        if (ADAPTED_TYPES.containsKey(clazz)) {
-            return true;
-        }
-        return ADAPTED_TYPES.keySet().stream()
-            .anyMatch(c -> c.isAssignableFrom(clazz));
+        return isAdaptedType(value.getClass());
     }
     
     /**
@@ -104,11 +98,8 @@ public class BitwigAdapters {
         Class<?> clazz = type.isArray()
                 ? type.getComponentType()
                 : type;
-        if (ADAPTED_TYPES.containsKey(clazz)) {
-            return true;
-        }
-        return ADAPTED_TYPES.keySet().stream()
-            .anyMatch(c -> c.isAssignableFrom(clazz));
+        return ADAPTED_TYPES.stream()
+            .anyMatch(c -> c.getLeft().isAssignableFrom(clazz));
     }
 
     /**
@@ -117,25 +108,9 @@ public class BitwigAdapters {
      * @return adapted GsonBuilder.
      */
     public static GsonBuilder adapt(GsonBuilder gsonBuilder) {
-        ADAPTED_TYPES.keySet().stream()
-            .forEach(c -> gsonBuilder.registerTypeHierarchyAdapter(c, ADAPTED_TYPES.get(c).get()));
+        ADAPTED_TYPES.stream()
+            .forEach(c -> gsonBuilder.registerTypeHierarchyAdapter(c.getLeft(), c.getRight().get()));
         return gsonBuilder;
-    }
-    
-    /**
-     * A GSON type adapter for BeatTimeValue.
-     */
-    public static class BeatTimeValueAdapter implements JsonSerializer<BeatTimeValue> {
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public JsonElement serialize(BeatTimeValue src, Type typeOfSrc, JsonSerializationContext context) {
-            JsonObject json = new JsonObject();
-            json.addProperty("raw", src.get());
-            json.addProperty("formatted", src.getFormatted());
-            return json;
-        }
     }
     
     /**
@@ -231,6 +206,9 @@ public class BitwigAdapters {
          */
         @Override
         public JsonElement serialize(DoubleValue src, Type typeOfSrc, JsonSerializationContext context) {
+            if (src instanceof BeatTimeValue) {
+                return context.serialize(BeatTimePosition.newBeatTimePosition(src.get(), (BeatTimeValue)src));
+            }
             return new JsonPrimitive(src.get());
         }
     }
