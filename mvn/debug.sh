@@ -1,27 +1,25 @@
 #!/bin/bash
 
+CWD=$(cd $(dirname $0); pwd)
+BITWIG_VERSION="3.0.2"
+BETA=false
+
 wslenv() {
   cmd.exe /C "echo %$1%"  2> /dev/null | sed -e "s/[\r\n]\+//g"
 }
 
+# path conversion win -> wsl
 # https://github.com/sgraf812/wslpath/blob/master/wslpath
 wslpath() {
     set -- "${1:-$(</dev/stdin)}" "${@:2}"
     echo $1 | sed -e 's/\\/\//g' -e 's/^\(.*\):/\/mnt\/\L\1/'
 }
 
-BITWIG_VERSION="3.0.2"
-BETA=false
-
 case "`uname`" in
     Linux*)
         if grep -q Microsoft /proc/version; then
             PLATFORM="WSL"
-            if $BETA; then
-                BITWIG_STUDIO="$(wslpath "$(wslenv "PROGRAMFILES")")/Bitwig Studio ${BITWIG_VERSION}/Bitwig Studio.exe"
-            else
-                BITWIG_STUDIO="$(wslpath "$(wslenv "PROGRAMFILES")")/Bitwig Studio/Bitwig Studio.exe"
-            fi
+            BITWIG_STUDIO="${CWD}/wsl-bitwig-studio"
             USER_HOME="$(wslpath "$(wslenv "USERPROFILE")")"
         else
             PLATFORM="Linux"
@@ -39,8 +37,6 @@ case "`uname`" in
         exit 1
         ;;
 esac
-
-echo $BITWIG_STUDIO $USER_HOME
 
 for arg in "$@"; do
   case $arg in
