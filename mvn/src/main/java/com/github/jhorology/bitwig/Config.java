@@ -107,6 +107,8 @@ public class Config extends AbstractConfiguration {
     @Expose
     private CursorDeviceFollowMode cursorDeviceFollowMode;
     @Expose
+    private boolean useCursorDeviceDirectParameter;
+    @Expose
     private boolean useChainSelector;
     @Expose
     private boolean useCursorDeviceLayer;
@@ -416,6 +418,14 @@ public class Config extends AbstractConfiguration {
         return cursorDeviceFollowMode;
     }
 
+    /**
+     * Returns a configuration value of the use or not use CursorDevice DirectParameter.
+     * @return
+     */
+    public boolean useCursorDeviceDirectParameter() {
+        return useCursorDeviceDirectParameter;
+    }
+    
     /**
      * Returns a configuration value of the use or not use ChainSelector API.
      * @return
@@ -728,6 +738,7 @@ public class Config extends AbstractConfiguration {
         useCursorDevice = false;
         cursorDeviceNumSends = 2;
         cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
+        useCursorDeviceDirectParameter = false;
 
         useChainSelector = false;
 
@@ -1122,6 +1133,17 @@ public class Config extends AbstractConfiguration {
                 }
             });
 
+        SettableBooleanValue useCursorDeviceDirectParameterValue = pref.getBooleanSetting
+            ("Use DirectParameter", "CursorDevice (needs CursorTrack)", false);
+        useCursorDeviceDirectParameterValue.addValueObserver(v -> {
+                if (ignoreValueChanged) {
+                    useCursorDeviceDirectParameterValue.set(useCursorDeviceDirectParameter);
+                } else if (useCursorDevice != v) {
+                    useCursorDeviceDirectParameter = v;
+                    valueChanged();
+                }
+            });
+        
         // --> ChainSelector
         SettableBooleanValue useChainSelectorValue = pref.getBooleanSetting
             ("Use", "ChainSelector (needs CursorDevice)", false);
@@ -1551,10 +1573,10 @@ public class Config extends AbstractConfiguration {
             useCursorDevice = useCursorDeviceValue.get();
             cursorDeviceNumSends = cursorDeviceNumSendsValue;
             cursorDeviceFollowMode = cursorDeviceFollowModeValue;
+            useCursorDeviceDirectParameter = useCursorDeviceDirectParameterValue.get();
 
             useChainSelector = useChainSelectorValue.get();
 
-            useCursorDevice = useCursorDeviceValue.get();
 
             useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
             cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;

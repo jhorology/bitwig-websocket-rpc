@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const path = require('path'),
+      assert = require('assert'),
       fs = require('fs'),
       os = require('os'),
       execSync = require('child_process').execSync,
@@ -24,6 +25,8 @@ if (notifier.update && notifier.update.latest !== pkg.version) {
   })
 }
 
+let commandExecuted = false
+
 program
   .description('Configuration and helper tools for bitwig-websocket-rpc.')
   .version(pkg.version)
@@ -32,7 +35,7 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir)
-  .action(installCommand)
+  .action(_execCommand(installCommand))
 
 /* eslint no-multi-spaces: 0 */
 program
@@ -44,36 +47,44 @@ program
   .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -r or -f option.')
   .option('-b, --abbrev',      'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.')
   .option('-p, --print',       'dry run, print current or intended configuration as JSON.')
-  .action(configCommand)
+  .action(_execCommand(configCommand))
 
 program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(reportCommand)
+  .action(_execCommand(reportCommand))
 
 program
   .command('actions')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
   .description('Report result of Application#getActions() as JSON.')
-  .action(actionsCommand)
+  .action(_execCommand(actionsCommand))
 
 program
   .command('events')
   .description('Monitor events.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(eventsCommand)
+  .action(_execCommand(eventsCommand))
 
 program
   .command('logs')
   .description('Trace controller script logs.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
-  .action(logsCommand)
+  .action(_execCommand(logsCommand))
+
+// error on unknown commands
+program
+  .on('command:*', function() {
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', program.args.join(' '))
+    process.exit(1)
+  })
 
 program.parse(process.argv)
 
-if (!program.args.length) {
-  program.outputHelp()
+if (!commandExecuted) {
+  console.error('no command given!\nSee --help for a list of available commands.')
+  process.exit(1)
 }
 
 /**
@@ -88,122 +99,107 @@ function installCommand(options) {
   fs.copyFileSync(src, dest)
   console.info('file:', dest)
   console.info('Installation completed successfully.')
+  process.exit(0)
 }
 
 /**
  * configure RPC modules
  */
-function configCommand(options) {
-  (async () => {
-    let config, dirty
-    if (options.reset) {
-      config = {}
-      dirty = true
-    } else if (options.file) {
-      config = _checkRequireObject(options.file)
-      dirty = true
-    } else {
-      config = await _getCurrentConfig(options.url)
-      if (options.all) {
-        Object.keys(config).forEach(key => {
-          if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
-            config[key] = true
-            dirty = true
-          }
-        })
-      } else if (options.abbrev) {
-        if (!config.useAbbreviatedMethodNames) {
-          config.useAbbreviatedMethodNames = true
+async function configCommand(options) {
+  let config, dirty
+  if (options.reset) {
+    config = {}
+    dirty = true
+  } else if (options.file) {
+    _checkFile(options.file)
+    config = _checkRequireObject(options.file)
+    dirty = true
+  } else {
+    config = await _getCurrentConfig(options.url)
+    if (options.all) {
+      Object.keys(config).forEach(key => {
+        if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
+          config[key] = true
           dirty = true
         }
+      })
+    } else if (options.abbrev) {
+      if (!config.useAbbreviatedMethodNames) {
+        config.useAbbreviatedMethodNames = true
+        dirty = true
       }
     }
-    if (options.print) {
-      _print(config)
-      process.exit(0)
-    }
-    if (dirty) {
-      await bitwig(options.url, config)
-    }
-  })()
+  }
+  if (dirty) {
+    await bitwig(options.url, config)
+    config = await _getCurrentConfig(options.url)
+  }
+  if (options.print) {
+    _print(config)
+  }
 }
 
 /**
  * report methods & events
  */
-function reportCommand(options) {
-  const ws = new WebSocket(options.url, {
-    autoconnect: true,
-    reconnect: true
-  })
-  ws.on('open', async () => {
-    const report = await ws.call('rpc.report', null, requestTimeoutMillis)
-    ws.close()
-    _print(report)
-  })
+async function reportCommand(options) {
+  const ws = await _bwsOpen(options.url, false)
+  const report = await ws.call('rpc.report', null, requestTimeoutMillis)
+  ws.close()
+  _print(report)
 }
 
 /**
  * report actions
  */
-function actionsCommand(options) {
-  (async () => {
-    const config = await _getCurrentConfig(options.url)
-    if (!config.useApplication) {
-      config.useApplication = true
-      await bitwig(options.url, config)
-    }
-    const ws = new WebSocket(options.url, {
-      autoconnect: true,
-      reconnect: true
-    })
-    ws.on('open', async () => {
-      const method = config.useAbbreviatedMethodNames
-        ? 'app.actions'
-        : 'application.getActions'
-      const actions = await ws.call(method, null, requestTimeoutMillis)
-      ws.close()
-      _print(actions)
-    })
-  })()
+async function actionsCommand(options) {
+  const config = await _getCurrentConfig(options.url)
+  if (!config.useApplication) {
+    config.useApplication = true
+    await bitwig(options.url, config)
+  }
+  const ws = await _bwsOpen(options.url, false)
+  const method = config.useAbbreviatedMethodNames
+    ? 'app.actions'
+    : 'application.getActions'
+  const actions = await ws.call(method, null, requestTimeoutMillis)
+  ws.close()
+  _print(actions)
 }
 
 /**
  * monitor events
  */
-function eventsCommand(options) {
-  const ws = new WebSocket(options.url, {
-    autoconnect: true,
-    reconnect: true
-  })
-  ws.on('open', async () => {
-    const report = await ws.call('rpc.report')
-    const events = report.events.filter((e) => {
-      return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
-    }).map((e) => e.event)
-    events.forEach((e) => {
-      ws.on(e, function() {
-        console.log(`${Date.now()} - [${e}]`, arguments)
-      })
+async function eventsCommand(options) {
+  const ws = _bwsOpen(options.url, true)
+  const report = await ws.call('rpc.report')
+  const events = report.events.filter((e) => {
+    return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
+  }).map((e) => e.event)
+  events.forEach((e) => {
+    ws.on(e, function() {
+      console.log(`${Date.now()} - [${e}]`, arguments)
     })
-    ws.subscribe(events)
   })
+  ws.subscribe(events)
 }
 
 /**
  * trace controller script logs
  */
-function logsCommand(options) {
-  const ws = new WebSocket(options.url, {
-    autoconnect: true,
-    reconnect: true
+async function logsCommand(options) {
+  const ws = await _bwsOpen(options.url, true)
+  ws.on('rpc.log', log => {
+    console.log(log)
   })
-  ws.on('open', () => {
-    ws.on('rpc.log', log => {
-      console.log(log)
-    })
-    ws.subscribe('rpc.log')
-  })
+  ws.subscribe('rpc.log')
+}
+
+function _execCommand(func) {
+  return function(options) {
+    commandExecuted = true
+    func(options)
+  }
 }
 
 function _checkDir(dir) {
@@ -236,8 +232,8 @@ function _checkRequireObject(file) {
     console.info(err)
     process.exit(1)
   }
-  if (typeof fn !== 'object') {
-    console.error('error: config file should export function')
+  if (typeof obj !== 'object') {
+    console.error('error: config file should be json or export object')
     process.exit(1)
   }
   return obj
@@ -277,25 +273,41 @@ function _print(obj) {
   console.log(beautify(JSON.stringify(obj), { indent_size: 2 }))
 }
 
-function _getCurrentConfig(url) {
+async function _getCurrentConfig(url) {
+  const ws = await _bwsOpen(url, false)
+  const config = await ws.call('rpc.config', null, requestTimeoutMillis)
+  await ws.close()
+  return config
+}
+
+async function _bwsOpen(url, keepConnection) {
+  const ws = new WebSocket(url, {
+    autoconnect: true,
+    reconnect: true,
+    max_reconnects: keepConnection ? 0 : 4 // 0 means unlimited
+  })
+  try {
+    await _wsWaitEvent(ws, 'open', 5000)
+    // assert connection is established. timeout 2000msec
+    assert.ok((await ws.call('rpc.echo', ['hello'], 2000)) === 'hello')
+    ws.reconnect = keepConnection
+  } catch (err) {
+    ws.reconnect = false
+    ws.close()
+    throw err
+  }
+  return ws
+}
+
+function _wsWaitEvent(ws, event, timeout) {
   return new Promise((resolve, reject) => {
-    const ws = new WebSocket(url, {
-      autoconnect: true,
-      reconnect: false
-    })
-    ws.on('open', async () => {
-      try {
-        const config = await ws.call('rpc.config', null, requestTimeoutMillis)
-        ws.close()
-        resolve(config)
-      } catch (err) {
-        ws.close()
-        reject(err)
-      }
-    })
-    ws.on('error', (err) => {
-      ws.close()
-      reject(err)
+    const timer = setTimeout(() => {
+      ws.off(event, resolve)
+      reject(new Error(`timeout waiting for event:${event})`))
+    }, timeout)
+    ws.once(event, () => {
+      clearTimeout(timer)
+      resolve()
     })
   })
 }

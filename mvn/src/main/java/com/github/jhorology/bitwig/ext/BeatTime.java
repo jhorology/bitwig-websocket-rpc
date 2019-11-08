@@ -30,9 +30,9 @@ import com.google.gson.annotations.Expose;
 
 
 /**
- * The value object class that represents time line position.
+ * JSON serializable raw value object class that represents time line length or absolute position.
  */
-public class BeatTimePosition {
+public class BeatTime {
     @Expose
     private boolean absolute;
     @Expose
@@ -56,22 +56,11 @@ public class BeatTimePosition {
      * Constructer.
      * @param raw raw beat time value
      * @param beatTimeValue
-     * @return
      */
-    private BeatTimePosition(double raw, BeatTimeValue beatTimeValue) {
+    public BeatTime(double raw, BeatTimeValue beatTimeValue) {
         update(raw, beatTimeValue);
     }
 
-
-    /**
-     * Create a new instance.
-     * @param raw raw beat time value
-     * @param beatTimeValue
-     * @return
-     */
-    public static BeatTimePosition newBeatTimePosition(double raw, BeatTimeValue beatTimeValue) {
-        return new BeatTimePosition(raw, beatTimeValue);
-    }
 
     /**
      * Update this instance.

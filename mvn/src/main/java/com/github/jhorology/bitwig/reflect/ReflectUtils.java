@@ -176,6 +176,15 @@ public class ReflectUtils {
     public static boolean isBitwigAPI(Class<?> interfaceType) {
         return interfaceType.getName().startsWith("com.bitwig.extension.");
     }
+    
+    /**
+     * return interface type is extended API or not.
+     * @param interfaceType
+     * @return
+     */
+    public static boolean isExtAPI(Class<?> interfaceType) {
+        return interfaceType.getName().startsWith("com.github.jhorology.bitwig.ext.api.");
+    }
 
     /**
      * return interface type is Bitwig Controller API or not.

@@ -14,7 +14,8 @@
     "test-browser": "npm run build-browser-test && open test/test.html",
     "eslint": "eslint lib/*.js ./*.js bin/bws-rpc",
     "coffeelint": "coffeelint -f coffeelint.json test/",
-    "prepublish": "npm run build-prod-extension"
+    "prepublishOnly": "npm run build-prod-extension",
+    "dev": "npm run install-dev-extension && mvn/debug.sh"
   },
   "repository": {
     "type": "git",
@@ -33,9 +34,8 @@
     "bws-rpc": "./bin/bws-rpc"
   },
   "dependencies": {
-    "commander": "^3.0.1",
+    "commander": "^4.0.0",
     "js-beautify": "^1.10.2",
-    "npm-check-updates": "^3.1.21",
     "rpc-websockets": "^4.6.1",
     "update-notifier": "^3.0.1"
   },
@@ -46,14 +46,14 @@
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
     "coffeescript": "^2.4.1",
-    "eslint": "^6.3.0",
+    "eslint": "^6.6.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-node": "^10.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "isomorphic-ws": "^4.0.1",
-    "mocha": "^6.2.0",
+    "mocha": "^6.2.2",
     "underscore": "^1.9.1"
   }
 }

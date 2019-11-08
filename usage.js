@@ -52,10 +52,9 @@ const wait = millis => {
     // boolean Transport#isPlaying().get()
     const isPlaying2 = await ws.call('transport.isPlaying.get')
     // Both values are same boolean value.
-    const position2 = await ws.call('transport.getPosition')
     // API's value objects (inherited Value class) are serialized via custom serializer.
     // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
-    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2, ' position:', position2)
+    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2)
 
     // handling events
     ws.on('transport.getPosition', position => {

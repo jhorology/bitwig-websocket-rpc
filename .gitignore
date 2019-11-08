@@ -27,3 +27,5 @@ npm-debug.log
 yarn-error.log
 /nbproject/private/
 WebSocketRpcServer.bwextension
+usage.js
+test.js

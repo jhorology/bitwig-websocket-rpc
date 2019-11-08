@@ -51,6 +51,7 @@ import com.github.jhorology.bitwig.rpc.RpcException;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
+import com.github.jhorology.bitwig.ext.api.CollectionValues;
 
 /**
  * A RPC event holder class.<br>
@@ -68,44 +69,41 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
     private final Collection<WebSocket> clients;
     private final PushModel pushModel;
     private final ControllerHost host;
-    private final List<BankedEvent> bankedEvents;
-    private final BankedEvent bankedEvent;
+    private final List<PrimitiveEvent> primitiveEvents;
+    private final PrimitiveEvent primitiveEvent;
     
     /**
-     * 
+     *  A primitive event class.
      */
-    private class BankedEvent {
+    private class PrimitiveEvent {
         private boolean hostTriggered;
         // the last reported value from host
         private Object lastReportedParams;
         private final Object[] bankIndexes;
+        private boolean collectionValue;
+        
         /**
-         * 
+         * Constructor.
          * @param bankIndexes 
          */
-        
-        private BankedEvent(int[] bankIndexes) {
-            this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
-            registerObserver();
-        }
-        
-        
         @SuppressWarnings({"UseSpecificCatch", "unchecked"})
-        private void registerObserver() {
+        private PrimitiveEvent(int[] bankIndexes) {
+            this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
             try {
-                Value value = getNodeInstance(bankIndexes);
+                Value value = getNodeInstance(this.bankIndexes);
+                this.collectionValue = value instanceof CollectionValues;
                 ValueChangedCallback callback =
                     BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
                 value.unsubscribe();
                 // for debug
                 if (LOG.isDebugEnabled() && ObjectValueChangedCallback.class.equals(callback.getClass())) {
-                    LOG.debug(event() + " event usess ObjectValueChangedCallback.");
+                    LOG.debug(event() + " event uses ObjectValueChangedCallback.");
                 }
                 // addValueObserver raise callback calls even after call unsubscribe()
                 value.addValueObserver(callback);
             } catch (Exception ex) {
-                setError(ex, "Fialed registering observer.");
-                LOG.error(event() + " event: Fialed registering observer.", ex);
+                setError(ex, "Failed registering observer.");
+                LOG.error(event() + " event: Failed registering observer.", ex);
             }
         }
         
@@ -126,30 +124,35 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
                 // if Subscribable#subscribed() was called, (it's meaning first client of subscribers list.)
                 // host may trigger callback, but it's only for the value that has changed since last reported.
                 // so need to notify current value to the client if host will not trigger callback.
-                notifyCurrentValueIfHostNotTriggered(client);
+                if (!collectionValue) {
+                    notifyCurrentValueIfHostNotTriggered(client);
+                }
             } else {
                 // should send a current value to the client comming after the first one.
-                notifyCurrentValue();
+                if (!collectionValue) {
+                    notifyCurrentValue();
+                }
             }
+            
             if (LOG.isDebugEnabled())  {
                 LOG.debug(event() + " event has been subscribed by " + client(client));
             }
         }
         
         /**
-         * Sync state of event subscription between RPC and Bitwig Studio.
+         * Sync subscription states between RPC and Bitwig Studio.
          * @return host side state will change to subscribed
          */
         @SuppressWarnings({"UseSpecificCatch", "unchecked"})
         private boolean syncSubscribedState() {
             try {
-                // TODO support method chain that has parameters
                 Value<?> value = getNodeInstance(bankIndexes);
                 if (clients.isEmpty() && value.isSubscribed()) {
                     value.unsubscribe();
                     return false;
                 }
                 if (!clients.isEmpty() && !value.isSubscribed()) {
+                    hostTriggered = false;
                     value.subscribe();
                     return true;
                 }
@@ -166,7 +169,6 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
          */
         private void notifyCurrentValueIfHostNotTriggered(WebSocket client) {
             if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE && pushModel != null) {
-                hostTriggered = false;
                 host.scheduleTask(() -> {
                         if (hostTriggered ||
                             lastReportedParams == null) {
@@ -230,7 +232,7 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
     }
     
     /**
-     * 
+     *  COnstructor.
      * @param nodeName
      * @param method
      * @param nodeType
@@ -246,16 +248,16 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         this.pushModel = pushModel;
         this.clients = new ArrayList<>();
         this.bankIndexCombinations = bankDimension.length > 0
-            ? createCombinations(bankDimension)
+            ? createBankIndexCombinations(bankDimension)
             : null;
         if (bankIndexCombinations != null) {
-            this.bankedEvents = bankIndexCombinations.stream()
-                .map(combination -> new BankedEvent(combination))
+            this.primitiveEvents = bankIndexCombinations.stream()
+                .map(combination -> new PrimitiveEvent(combination))
                 .collect(Collectors.toList());
-            this.bankedEvent = null;
+            this.primitiveEvent = null;
         } else {
-            this.bankedEvents = null;
-            this.bankedEvent = new BankedEvent(new int[]{});
+            this.primitiveEvents = null;
+            this.primitiveEvent = new PrimitiveEvent(new int[]{});
         }
     }
 
@@ -269,10 +271,10 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         }
         if (!clients.contains(client)) {
             clients.add(client);
-            if (bankedEvent != null) {
-                bankedEvent.internalSubscribe(client);
+            if (primitiveEvent != null) {
+                primitiveEvent.internalSubscribe(client);
             } else {
-                bankedEvents.stream().forEach(e -> e.internalSubscribe(client));
+                primitiveEvents.stream().forEach(e -> e.internalSubscribe(client));
             }
             if (LOG.isDebugEnabled())  {
                 LOG.debug("[" + absoluteName + "] event has been subscribed by " + client(client));
@@ -337,10 +339,10 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
      * @return host side state will change to subscribed
      */
     private void syncSubscribedState() {
-        if (bankedEvent != null) {
-            bankedEvent.syncSubscribedState();
+        if (primitiveEvent != null) {
+            primitiveEvent.syncSubscribedState();
         } else {
-            bankedEvents.stream().forEach(e -> e.syncSubscribedState());
+            primitiveEvents.stream().forEach(e -> e.syncSubscribedState());
         }
     }
 
@@ -361,9 +363,9 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         return sb.toString();
     }
     
-    private static List<int[]> createCombinations(int[] dimension) {
+    private static List<int[]> createBankIndexCombinations(int[] bankDimension) {
         List<int[]> combinations = new ArrayList<>();
-        for (int size : dimension) {
+        for (int size : bankDimension) {
             List<int[]> newCombinations = new ArrayList<>();
             for (int element = 0; element < size; element++) {
                 if (combinations.isEmpty()) {

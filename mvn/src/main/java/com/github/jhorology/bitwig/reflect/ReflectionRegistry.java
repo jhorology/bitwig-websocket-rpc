@@ -271,7 +271,7 @@ public class ReflectionRegistry implements RpcRegistry {
             return;
         }
         
-        boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType);
+        boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType) || ReflectUtils.isExtAPI(returnType);
         boolean isReturnTypeBitwigValue = false;
         boolean isReturnTypeBitwigParameter = false;
         Class<?> bankItemType = null;
@@ -307,14 +307,14 @@ public class ReflectionRegistry implements RpcRegistry {
             ! isReturnTypeBitwigParameter;
         
         MethodHolder<?> mh = isEvent
-            ? new EventHolder(methodName,
+            ? new EventHolder<>(methodName,
                               method,
-                              (Class<? extends Value>)returnType,
+                              (Class<? extends Value<?>>)returnType,
                               parentNode,
                               bankItemCount,
                               host,
                               protocol.getPushModel())
-            : new MethodHolder(methodName,
+            : new MethodHolder<>(methodName,
                                method,
                                returnType,
                                parentNode,
@@ -346,7 +346,7 @@ public class ReflectionRegistry implements RpcRegistry {
                              + "\nnew:" + mh.getExpression(true));
                 }
             }
-            events.put(absoluteName, (EventHolder)mh);
+            events.put(absoluteName, (EventHolder<?>)mh);
         }
         // register method recursively
         if (methodsOfReturnType != null && !methodsOfReturnType.isEmpty()) {

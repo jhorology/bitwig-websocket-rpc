@@ -82,7 +82,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'method' property should be string.");
             req.setMethod(method.getAsString());
 
-            final JsonElement params = request.get("params");
+            JsonElement params = request.get("params");
             RpcMethod rpcMethod = registry.getRpcMethod(req.getMethod(), toRpcParamTypes(params));
             
             JsonPrimitive id = request.getAsJsonPrimitive("id");
@@ -109,7 +109,21 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 req.setParams(new Object[0]);
             } else {
                 Type[] paramTypes = rpcMethod.getParamTypes();
-                if (params.isJsonArray() && !ReflectUtils.isVarargs(paramTypes)) {
+                boolean isVarargs = ReflectUtils.isVarargs(paramTypes);
+                boolean isArrayParams = params.isJsonArray();
+                
+                // matching params:
+                //    ['a','b','c'] or args = ['a', 'b', 'c']; [args]
+                // to method arguments:
+                //   foobar(String... args) or foobar(String[] args)
+                //
+                if (isArrayParams) {
+                    JsonArray arrayParam = params.getAsJsonArray();
+                    if (arrayParam.size() == 1 && arrayParam.get(0).isJsonArray()) {
+                        params = arrayParam.get(0);
+                    } 
+                }
+                if (params.isJsonArray() && !isVarargs) {
                     JsonArray ja = params.getAsJsonArray();
                     Object[] args = new Object[ja.size()];
                     for(int i = 0; i < ja.size(); i++) {
@@ -127,6 +141,8 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         }
         return req;
     }
+    
+    
 
     private RpcParamType[] toRpcParamTypes(final JsonElement json) {
         if (json == null || json.isJsonNull()) {

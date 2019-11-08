@@ -34,6 +34,7 @@ npx bws-rpc <cmd> [options]
       logs [options]     Trace controller script logs.
 
     $ npx bws-rpc install --help
+ 
     Usage: install [options]
 
     Install Bitwig Studio WebSockets RPC server extension.
@@ -50,95 +51,98 @@ npx bws-rpc <cmd> [options]
 
     Options:
       -u, --url <URL>    Bitwig Studio WebSockets URL (default: "ws://localhost:8887")
+      -r, --reset        reset configuration to defaults.
       -f, --file <path>  config file(.js|.json) path.
+                         this option is ignored by -r option.
       -a, --all          enable all RPC methods and events.
-                         this option is ignored by -f, --file option.
+                         this option is ignored by -r or -f option.
       -b, --abbrev       enable abbreviated method and event name (experimental),
-                         this option is ignored by -f, --file option.
-      -p, --print        dry run, print current or intended configuration as JSON.
+                         this option is ignored by -r, -f or -a option.
+      -p, --print        print current or result configuration as JSON.
       -h, --help         output usage information
-      
+
 ## Module Use
 ### Usage
 ```js
-const bitwig = require('bitwig-websocket-rpc');
-const WebSocket = require('rpc-websockets').Client;
+const bitwig = require('bitwig-websocket-rpc'),
+      WebSocket = require('rpc-websockets').Client
 
 const wait = millis => {
-  return new Promise(resolve => setTimeout(resolve, millis));
-};
-      
-(async() => {
-  // configure interesting modules.
+  return new Promise(resolve => setTimeout(resolve, millis))
+}
+
+(async () => {
+  // configure interest modules.
   // this function trigger restart of extension.
   // so all client connections will be closed by server.
   await bitwig('ws://localhost:8887', {
-    useTransport: true
-  });
+    useTransport: true,
+    useMainTrackBank: true
+  })
+
   // recommended client library.
   // https://github.com/elpheria/rpc-websockets
   const ws = new WebSocket('ws://localhost:8887', {
     autoconnect: true,
     reconnect: true
-  });
-  
+  })
+
   ws.on('open', async () => {
     // host module is accessible without configuration.
-    ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!']);
+    ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!'])
 
     try {
       // SettableBooleanValue Transport#isPlaying()
       // this calling will causes error. this is a limitation of Bitwig API.
-      const isPlaying0 = await ws.call('transport.isPlaying');
-      console.log('isPlaying0:', isPlaying0);
+      const isPlaying0 = await ws.call('transport.isPlaying')
+      console.log('isPlaying0:', isPlaying0)
     } catch (err) {
       // { code: -32603,
       //   message: 'Internal error',
       //   data: 'Trying to get a value while not being subscribed.' }
-      console.log(err);
+      console.log(err)
     }
-    
-    // start subscribing interesting events
+
+    // subscribe interest events
     ws.subscribe([
       'transport.getPosition',
       'transport.isPlaying'
-    ]);
+    ])
 
     // now you can read Transport#isPlaying()
     // Value#subscribe() is invoked internally because of subscribing event.
-    
+
     // SettableBooleanValue Transport#isPlaying()
-    const isPlaying1 = await ws.call('transport.isPlaying');
+    const isPlaying1 = await ws.call('transport.isPlaying')
     // boolean Transport#isPlaying().get()
-    const isPlaying2 = await ws.call('transport.isPlaying.get');
+    const isPlaying2 = await ws.call('transport.isPlaying.get')
     // Both values are same boolean value.
     // API's value objects (inherited Value class) are serialized via custom serializer.
     // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
-    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2);
+    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2)
 
     // handling events
     ws.on('transport.getPosition', position => {
-      console.log("position:", position);
-    });
+      console.log('position:', position)
+    })
     ws.on('transport.isPlaying', playing => {
-      console.log("playing:", playing ? 'start' : 'stop');
-    });
+      console.log('playing:', playing ? 'start' : 'stop')
+    })
 
-    await wait(1000);
-    ws.notify('transport.play');
-    await wait(3000);
-    ws.notify('transport.stop');
-    await wait(1000);
-    // unsbscrive events
+    ws.notify('transport.play')
+    await wait(6000)
+    ws.notify('transport.stop')
+    await wait(1000)
+
+    // unsubscribe events
     ws.unsubscribe([
       'transport.getPosition',
       'transport.isPlaying'
-    ]);
+    ])
     // close a connection
-    ws.close();
-  });
-})();
-
+    ws.close()
+  })
+})()
 ```
 ### API
 ```js
@@ -199,6 +203,7 @@ ${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
   "useCursorDevice": false,
   "cursorDeviceNumSends": 2,
   "cursorDeviceFollowMode": "FOLLOW_SELECTION",
+  "useCursorDeviceDirectParameter": false,
   "useChainSelector": false,
   "useCursorDeviceLayer": false,
   "useCursorRemoteControlsPage": false,
@@ -236,10 +241,8 @@ ${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
 }
 ```
 You can get a default configuration as follows:
- * Push [reset to default] button in preferences panel.
- * Execute command.
 ```sh
-npx bws-rpc config --print
+npx bws-rpc config --reset --print
 ```
 
 ### RPC Module Dependencies

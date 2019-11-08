@@ -68,7 +68,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
-import com.github.jhorology.bitwig.ext.BeatTimePosition;
+import com.github.jhorology.bitwig.ext.BeatTime;
 import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
 
 /**
@@ -99,8 +99,7 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    @SuppressWarnings({"unchecked"})
-    public static ValueChangedCallback newValueChangedCallback(Value value, Consumer<Object> lambda) {
+    public static ValueChangedCallback newValueChangedCallback(Value<?> value, Consumer<Object> lambda) {
         // special callbacks
         if (value instanceof BeatTimeValue) {
             return newBeatTimeValueChangedCallback((BeatTimeValue)value, lambda);
@@ -158,7 +157,7 @@ public class BitwigCallbacks {
     public static DoubleValueChangedCallback newBeatTimeValueChangedCallback(final BeatTimeValue beatTimeValue, final Consumer<Object> lambda) {
         return (double value) -> {
             lambda.accept(createParams(new String[] {"tposition"},
-                                       new Object[] { BeatTimePosition.newBeatTimePosition(value, beatTimeValue)}));
+                                       new Object[] { new BeatTime(value, beatTimeValue)}));
         };
     }
 
@@ -368,7 +367,7 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ObjectValueChangedCallback newObjectValueChangedCallback(Consumer<Object> lambda) {
+    public static ObjectValueChangedCallback<?> newObjectValueChangedCallback(Consumer<Object> lambda) {
         return (Object value) -> {
             // for debug
             if (LOG.isWarnEnabled() &&

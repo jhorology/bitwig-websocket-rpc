@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ * Copyright (c) 2019 Masafumi Fujimaru
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -20,44 +20,34 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig;
+package com.github.jhorology.bitwig.ext.api;
 
 // bitwig api
-import com.bitwig.extension.controller.ControllerExtension;
-import com.bitwig.extension.controller.api.ControllerHost;
-
-// provided dependencies
-import com.google.gson.annotations.Expose;
+import com.bitwig.extension.controller.api.Device;
 
 // source
-import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
+import com.github.jhorology.bitwig.ext.impl.DefaultExtApiFactory;
 
 /**
- * A Definition class of this extension. 
+ * Concrete factory class for extended API.
  */
-public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefinition
-{
-    // populate from json -->
-    @Expose
-    private Config config;
-    // <--
+public class ExtApiFactory implements ExtApi {
+    private static final ExtApiFactory instance = new ExtApiFactory();
+    private ExtApi factory = new DefaultExtApiFactory();
+    
+    private ExtApiFactory() {
+    }
 
-    /**
-     * Creates an instance of this extension.<br>
-     * An implementation of {@link com.bitwig.extension.controller.ControllerExtensionDefinition#createInstance(com.bitwig.extension.controller.api.ControllerHost)}
-     * @param host
-     * @return 
-     */
-    @Override
-    public ControllerExtension createInstance(ControllerHost host) {
-        return new WebSocketRpcServerExtension(this, host, config);
+    public static ExtApiFactory getInstance() {
+        return instance;
     }
     
-    /**
-     * Return a configuration object.
-     * @return 
-     */
-    public Config getConfig() {
-        return config;
+    public void setFactory(ExtApi factory) {
+        this.factory = factory;
+    }
+    
+    @Override
+    public DeviceExt createDeviceExt(Device device) {
+        return factory.createDeviceExt(device);
     }
 }

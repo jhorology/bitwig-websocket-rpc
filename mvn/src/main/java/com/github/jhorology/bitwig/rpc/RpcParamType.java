@@ -131,7 +131,7 @@ public enum RpcParamType {
      */
     public static RpcParamType of(Type type) {
         if (type instanceof Class) {
-            Class<?> c = (Class)type;
+            Class<?> c = (Class<?>)type;
             if (c.isPrimitive()) {
                 if (c.equals(boolean.class)) {
                     return RpcParamType.BOOLEAN;

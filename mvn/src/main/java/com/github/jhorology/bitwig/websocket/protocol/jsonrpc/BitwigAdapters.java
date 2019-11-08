@@ -42,7 +42,7 @@ import com.bitwig.extension.controller.api.PlayingNote;
 import com.bitwig.extension.controller.api.RangedValue;
 import com.bitwig.extension.controller.api.StringArrayValue;
 import com.bitwig.extension.controller.api.StringValue;
-import com.github.jhorology.bitwig.ext.BeatTimePosition;
+import com.github.jhorology.bitwig.ext.BeatTime;
 
 // dependencies
 import com.google.gson.GsonBuilder;
@@ -207,7 +207,7 @@ public class BitwigAdapters {
         @Override
         public JsonElement serialize(DoubleValue src, Type typeOfSrc, JsonSerializationContext context) {
             if (src instanceof BeatTimeValue) {
-                return context.serialize(BeatTimePosition.newBeatTimePosition(src.get(), (BeatTimeValue)src));
+                return context.serialize(new BeatTime(src.get(), (BeatTimeValue)src));
             }
             return new JsonPrimitive(src.get());
         }

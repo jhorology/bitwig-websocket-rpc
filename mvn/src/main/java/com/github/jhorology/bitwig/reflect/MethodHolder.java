@@ -257,7 +257,7 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
             sb.append(" ");
         }
         if (parentNode instanceof MethodHolder) {
-            sb.append(((MethodHolder)parentNode).getExpression(false));
+            sb.append(((MethodHolder<?>)parentNode).getExpression(false));
             sb.append(".");
         } else {
             sb.append(parentNode.nodeType.getSimpleName());

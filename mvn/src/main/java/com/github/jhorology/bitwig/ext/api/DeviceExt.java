@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -20,44 +20,44 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig;
+package com.github.jhorology.bitwig.ext.api;
 
 // bitwig api
-import com.bitwig.extension.controller.ControllerExtension;
-import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.StringArrayValue;
 
-// provided dependencies
-import com.google.gson.annotations.Expose;
-
-// source
-import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
 
 /**
- * A Definition class of this extension. 
+ * The extended API that allows to access direct parameters of Device.
  */
-public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefinition
-{
-    // populate from json -->
-    @Expose
-    private Config config;
-    // <--
-
+public interface DeviceExt {
     /**
-     * Creates an instance of this extension.<br>
-     * An implementation of {@link com.bitwig.extension.controller.ControllerExtensionDefinition#createInstance(com.bitwig.extension.controller.api.ControllerHost)}
-     * @param host
-     * @return 
+     * Value that reports the all parameter ids of the device.
+     * @return
      */
-    @Override
-    public ControllerExtension createInstance(ControllerHost host) {
-        return new WebSocketRpcServerExtension(this, host, config);
-    }
+    StringArrayValue directParameterIdArray();
     
     /**
-     * Return a configuration object.
-     * @return 
+     * Starts observing the parameters according to the given parameter ID array,
+     * or stops observing in case null is passed in for the parameter ID array.
+     * @param ids 
      */
-    public Config getConfig() {
-        return config;
-    }
+    void setObservedParameterIds(String[] ids);
+    
+    /**
+     * Value that reports the observed parameter name of the device.
+     * @return
+     */
+     ObservedDirectParameterValue<String> observedDirectParameterName();
+    
+    /**
+     * Value that reports the observed parameter value formatted as string.
+     * @return
+     */
+     ObservedDirectParameterValue<String> observedDirectParameterDisplayValue();
+     
+    /**
+     * Value that reports the observed parameter value normalized as 0..1.
+     * @return
+     */
+     ObservedDirectParameterValue<Double> observedDirectParameterNormalizedValue();
 }
