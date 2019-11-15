@@ -42,9 +42,8 @@ import com.bitwig.extension.controller.api.PlayingNote;
 import com.bitwig.extension.controller.api.RangedValue;
 import com.bitwig.extension.controller.api.StringArrayValue;
 import com.bitwig.extension.controller.api.StringValue;
-import com.github.jhorology.bitwig.ext.BeatTime;
 
-// dependencies
+// provided dependencies
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -52,6 +51,10 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+
+// source
+import com.github.jhorology.bitwig.ext.BeatTime;
+import com.github.jhorology.bitwig.ext.api.CollectionValue;
 
 /**
  * GSON type adapters for Bitwig Value Objects.
@@ -75,6 +78,7 @@ public class BitwigAdapters {
         ADAPTED_TYPES.add(new ImmutablePair<>(RangedValue.class,      RangedValueAdapter::new));
         ADAPTED_TYPES.add(new ImmutablePair<>(StringArrayValue.class, StringArrayValueAdapter::new));
         ADAPTED_TYPES.add(new ImmutablePair<>(StringValue.class,      StringValueAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(CollectionValue.class,  CollectionValueAdapter::new));
     }
 
     /**
@@ -176,6 +180,19 @@ public class BitwigAdapters {
         @Override
         public JsonElement serialize(BooleanValue src, Type typeOfSrc, JsonSerializationContext context) {
             return new JsonPrimitive(src.get());
+        }
+    }
+    
+    /**
+     * A GSON type adapter for IntegerValue.
+     */
+    public static class CollectionValueAdapter implements JsonSerializer<CollectionValue> {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JsonElement serialize(CollectionValue src, Type typeOfSrc, JsonSerializationContext context) {
+            return context.serialize(src.values());
         }
     }
     

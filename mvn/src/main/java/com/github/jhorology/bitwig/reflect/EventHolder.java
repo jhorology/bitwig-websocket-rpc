@@ -36,6 +36,7 @@ import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.Config;
 
 // provided dependencies
 import org.apache.commons.lang3.ArrayUtils;
@@ -51,14 +52,13 @@ import com.github.jhorology.bitwig.rpc.RpcException;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
-import com.github.jhorology.bitwig.ext.api.CollectionValues;
+import com.github.jhorology.bitwig.ext.api.CollectionValue;
 
 /**
  * A RPC event holder class.<br>
  * The return value of method is guaranteed to be implemented Value interface.
- * @param <T>
  */
-public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements RpcEvent {
+public class EventHolder extends MethodHolder implements RpcEvent {
     private static final Logger LOG = LoggerFactory.getLogger(EventHolder.class);
     
     // gurantee the posting current value on 'subscibe' is called.
@@ -80,6 +80,7 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         // the last reported value from host
         private Object lastReportedParams;
         private final Object[] bankIndexes;
+        private Value value;
         private boolean collectionValue;
         
         /**
@@ -90,8 +91,8 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         private PrimitiveEvent(int[] bankIndexes) {
             this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
             try {
-                Value value = getNodeInstance(this.bankIndexes);
-                this.collectionValue = value instanceof CollectionValues;
+                value = (Value)invoke(this.bankIndexes);
+                this.collectionValue = value instanceof CollectionValue;
                 ValueChangedCallback callback =
                     BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
                 value.unsubscribe();
@@ -120,18 +121,14 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         }
 
         private void internalSubscribe(WebSocket client) {
-            if (syncSubscribedState()) {
+            if (syncSubscribedState() && !collectionValue) {
                 // if Subscribable#subscribed() was called, (it's meaning first client of subscribers list.)
                 // host may trigger callback, but it's only for the value that has changed since last reported.
                 // so need to notify current value to the client if host will not trigger callback.
-                if (!collectionValue) {
-                    notifyCurrentValueIfHostNotTriggered(client);
-                }
+                notifyCurrentValueIfHostNotTriggered(client);
             } else {
                 // should send a current value to the client comming after the first one.
-                if (!collectionValue) {
-                    notifyCurrentValue();
-                }
+                notifyCurrentValue();
             }
             
             if (LOG.isDebugEnabled())  {
@@ -146,7 +143,7 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
         @SuppressWarnings({"UseSpecificCatch", "unchecked"})
         private boolean syncSubscribedState() {
             try {
-                Value<?> value = getNodeInstance(bankIndexes);
+                Value value = (Value)invoke(bankIndexes);
                 if (clients.isEmpty() && value.isSubscribed()) {
                     value.unsubscribe();
                     return false;
@@ -187,7 +184,12 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
             // do not post message directly in here.
             // 'cause message should be sent at after Request/Reponse sequence.
             if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
-                if (lastReportedParams != null) {
+                if (collectionValue) {
+                    ((CollectionValue)value).values().stream().forEach(v -> {
+                        RequestContext.getContext()
+                            .addNotification(newNotification(v));
+                    });
+                } else if (lastReportedParams != null) {
                     RequestContext.getContext()
                         .addNotification(newNotification(lastReportedParams));
                 }
@@ -232,8 +234,8 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
     }
     
     /**
-     *  COnstructor.
-     * @param nodeName
+     * Constructor.
+     * @param config
      * @param method
      * @param nodeType
      * @param parantNode
@@ -241,8 +243,8 @@ public class EventHolder<T extends Value<?>> extends MethodHolder<T> implements 
      * @param pushModel
      * @param host 
      */
-    EventHolder(String nodeName, Method method, Class<T> nodeType, RegistryNode<?> parantNode, int bankItemCount, ControllerHost host, PushModel pushModel) {
-        super(nodeName, method, nodeType, parantNode, bankItemCount);
+    EventHolder(Config config, Method method, Class<?> nodeType, RegistryNode parantNode, int bankItemCount, ControllerHost host, PushModel pushModel) {
+        super(config, method, nodeType, parantNode, bankItemCount);
         // clients = new LinkedList<>();
         this.host = host;
         this.pushModel = pushModel;

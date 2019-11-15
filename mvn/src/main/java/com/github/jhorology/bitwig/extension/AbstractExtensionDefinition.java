@@ -176,6 +176,10 @@ public abstract class AbstractExtensionDefinition
     public int getRequiredAPIVersion() {
         return requiredAPIVersion;
     }
+    
+    public void setRequiredAPIVersion(int requiredAPIVersion) {
+        this.requiredAPIVersion = requiredAPIVersion;
+    }
 
     /**
      * Is this extension is using Beta APIs?<br>

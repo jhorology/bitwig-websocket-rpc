@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Masafumi Fujimaru
+ * Copyright (c) 2018 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,14 +22,13 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// jdk
-import java.util.Collection;
-
 /**
- * The interface for value object that manage collection of element values.
- * @author masafumi
- * @param <T> the raw value type of elements in this collection.
+ * The extended API that allows to access VU Meter of Channel.
  */
-public interface CollectionValues<T> {
-    Collection<T> values();
+public interface ChannelExt {
+    /**
+     * Value that reports the VU Meter.
+     * @return
+     */
+    VuMeterValue vuMeter();
 }

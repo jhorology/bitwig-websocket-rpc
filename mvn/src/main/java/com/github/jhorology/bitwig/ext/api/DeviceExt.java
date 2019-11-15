@@ -41,7 +41,7 @@ public interface DeviceExt {
      * or stops observing in case null is passed in for the parameter ID array.
      * @param ids 
      */
-    void setObservedParameterIds(String[] ids);
+    void setObservedDirectParameterIds(String[] ids);
     
     /**
      * Value that reports the observed parameter name of the device.

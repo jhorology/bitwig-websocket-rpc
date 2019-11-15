@@ -20,34 +20,15 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig.ext.impl;
-
-// bitwig api
-import com.bitwig.extension.controller.api.Channel;
-import com.bitwig.extension.controller.api.Device;
-import com.github.jhorology.bitwig.ext.api.ChannelExt;
+package com.github.jhorology.bitwig.ext.api;
 
 // source
-import com.github.jhorology.bitwig.ext.api.ExtApi;
-import com.github.jhorology.bitwig.ext.api.DeviceExt;
-import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
-import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
+import com.github.jhorology.bitwig.ext.VuMeterLevel;
 
 /**
- * A Default factory class for extended API
+ * Value interface for observing VU Meter.
  * @author masafumi
  */
-public class DefaultExtApiFactory implements ExtApi {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return new DeviceExtImpl(device);
-    }
-
-    @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
-    }
+public interface VuMeterValue extends CollectionValue<VuMeterLevel> {
+    VuMeterLevel get(int ch, boolean peak);
 }

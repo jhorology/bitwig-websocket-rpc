@@ -138,6 +138,10 @@ public class ReflectUtils {
         }
     }
 
+    public static boolean isVarargs(Method method) {
+        return isVarargs(method.getGenericParameterTypes());
+    }
+    
     public static boolean isVarargs(Type[] paramTypes) {
         if (paramTypes.length == 1) {
             Type t = paramTypes[0];
@@ -370,99 +374,5 @@ public class ReflectUtils {
             .map(c -> SEMI_BANK_ITEM_TYPES.get(c))
             .findFirst().orElse(null);
         return bankItemType;
-    }
-
-    /**
-     * WTF! cleanup confilicted or deprecated or blacklisted methods
-     * @param interfaceType
-     * @return the list of methods
-     */
-    public static List<Method> getCleanMethods(Class<?> interfaceType) {
-        Stream<Method> methodsStream = Arrays.asList(interfaceType.getMethods())
-            .stream()
-            .filter(m -> !isDeprecated(m))
-            .filter(m -> !isDeprecated(m.getReturnType()))
-            .filter(m -> !hasAnyBitwigObjectParameter(m))
-            .filter(m -> !hasAnyCallbackParameter(m))
-            .filter(m -> !isModuleFactory(m));
-
-        // markInterested is probably same as Subscribable#subscibe()
-        if (Value.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("markInterested".equals(m.getName())));
-        }
-
-        // TODO limit host methods
-        if (ControllerHost.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> "getNotificationSettings".equals(m.getName()) ||
-                        "showPopupNotification".equals(m.getName()));
-        }
-
-
-        // WTF! fixing one by one
-
-        // StringArrayValue has two get() methods.  Object[] get()/String[] get()
-        if (StringArrayValue.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object[].class.equals(m.getReturnType())));
-        }
-        // RemoteControlsPage/ParameterBank has duplicated getParameter method
-        // RemoteControl getParameter(int)
-        // Paramater getParameter(int)
-        if (RemoteControlsPage.class.isAssignableFrom(interfaceType)
-            && ParameterBank.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("getParameter".equals(m.getName())
-                               && Parameter.class.equals(m.getReturnType())));
-        }
-        // RemoteContrrol has two name() methods. returnType: StringValue/SettableStringValue
-        if (RemoteControl.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("name".equals(m.getName())
-                               && StringValue.class.equals(m.getReturnType())));
-        }
-        // MasterTrack#sendBank() is useless, and host throw exception.
-        if (MasterTrack.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !"sendBank".equals(m.getName()));
-        }
-
-        // Scene has two name() methods. returnType: StringValue/SettableStringValue
-        if (Scene.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("name".equals(m.getName())
-                               && StringValue.class.equals(m.getReturnType())));
-        }
-        // SceneBank is implemented Bank<Scene>, should use Bank#getItemAt(int) instead of SceneBank#getScene(int)
-        if (SceneBank.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !"getScene".equals(m.getName()));
-        }
-        // DeviceBank is implemented Bank<Device>, should use Bank#getItemAt(int) instead of DeviceBank#getDevice(int)
-        if (DeviceBank.class.isAssignableFrom(interfaceType)) {
-            methodsStream = methodsStream
-                .filter(m -> !"getDevice".equals(m.getName()));
-        }
-
-        List<Method> methods = methodsStream.collect(Collectors.toList());
-        // for debug
-        if (LOG.isDebugEnabled()) {
-            methods.stream().forEach(m0 -> {
-                    methods.stream().forEach(m1 -> {
-                            if (m0 != m1) {
-                                MethodIdentifier m0id = new MethodIdentifier(m0.getName(), m0.getGenericParameterTypes());
-                                MethodIdentifier m1id = new MethodIdentifier(m1.getName(), m1.getGenericParameterTypes());
-                                if (m0id.equals(m1id)) {
-                                    LOG.debug("these two methods are identical." +
-                                              "\nmethod0:" + interfaceType.getSimpleName() + "#" + m0.getName() + " returnType:" + m0.getReturnType().getSimpleName() +
-                                              "\nmethod1:" + interfaceType.getSimpleName() + "#" + m1.getName() + " returnType:" + m1.getReturnType().getSimpleName());
-                                }
-                            }
-                        });
-                });
-        }
-        return methods;
     }
 }

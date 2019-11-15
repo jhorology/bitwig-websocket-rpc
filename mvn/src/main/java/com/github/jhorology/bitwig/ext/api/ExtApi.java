@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.ext.api;
 
 // bitwig API
+import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Device;
 
 /**
@@ -35,4 +36,14 @@ public interface ExtApi {
      * @return 
      */
     DeviceExt createDeviceExt(Device device);
+    
+    /**
+     * create an instance of extended Channel API.
+     * @param channel
+     * @param vuMeterRange
+     * @param vuMeterChammelMode
+     * @param vuMeterPeakMode
+     * @return 
+     */
+    ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChammelMode, VuMeterPeakMode vuMeterPeakMode);
 }

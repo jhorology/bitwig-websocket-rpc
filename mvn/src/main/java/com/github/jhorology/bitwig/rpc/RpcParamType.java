@@ -24,6 +24,7 @@ package com.github.jhorology.bitwig.rpc;
 
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
+import java.util.stream.Stream;
 
 /**
  * RPC paramater type enum that is used for loose matching parameters.
@@ -125,8 +126,19 @@ public enum RpcParamType {
     }
     
     /**
+     * Return a array of RpcParamType types that represents the specified array of types.
+     * @param types array of strict java type
+     * @return the aarray of enum value of RpcParamType
+     */
+    public static RpcParamType[] of(Type[] types) {
+        return Stream.of(types)
+            .map(RpcParamType::of)
+            .toArray(size -> new RpcParamType[size]);
+    }
+    
+    /**
      * Return a RpcParamType type that represents the specified type.
-     * @param type strickt java type
+     * @param type strict java type
      * @return the enum value of RpcParamType
      */
     public static RpcParamType of(Type type) {

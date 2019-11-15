@@ -143,8 +143,8 @@ async function configCommand(options) {
  * report methods & events
  */
 async function reportCommand(options) {
-  const ws = await _bwsOpen(options.url, false)
-  const report = await ws.call('rpc.report', null, requestTimeoutMillis)
+  const ws = await _bwsOpen(options.url, false),
+        report = await ws.call('rpc.report', null, requestTimeoutMillis)
   ws.close()
   _print(report)
 }
@@ -158,11 +158,11 @@ async function actionsCommand(options) {
     config.useApplication = true
     await bitwig(options.url, config)
   }
-  const ws = await _bwsOpen(options.url, false)
-  const method = config.useAbbreviatedMethodNames
-    ? 'app.actions'
-    : 'application.getActions'
-  const actions = await ws.call(method, null, requestTimeoutMillis)
+  const ws = await _bwsOpen(options.url, false),
+        method = config.useAbbreviatedMethodNames
+        ? 'app.actions'
+        : 'application.getActions',
+        actions = await ws.call(method, null, requestTimeoutMillis)
   ws.close()
   _print(actions)
 }
@@ -171,9 +171,9 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = _bwsOpen(options.url, true)
-  const report = await ws.call('rpc.report')
-  const events = report.events.filter((e) => {
+  const ws = await _bwsOpen(options.url, true),
+        report = await ws.call('rpc.report', null, requestTimeoutMillis),
+        events = report.events.filter((e) => {
     return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
   }).map((e) => e.event)
   events.forEach((e) => {
@@ -274,23 +274,23 @@ function _print(obj) {
 }
 
 async function _getCurrentConfig(url) {
-  const ws = await _bwsOpen(url, false)
-  const config = await ws.call('rpc.config', null, requestTimeoutMillis)
-  await ws.close()
+  const ws = await _bwsOpen(url, false),
+        config = await ws.call('rpc.config', null, requestTimeoutMillis)
+  ws.close()
   return config
 }
 
-async function _bwsOpen(url, keepConnection) {
+async function _bwsOpen(url, reconnect) {
   const ws = new WebSocket(url, {
     autoconnect: true,
     reconnect: true,
-    max_reconnects: keepConnection ? 0 : 4 // 0 means unlimited
+    max_reconnects: reconnect ? 0 : 4 // 0 means unlimited
   })
   try {
     await _wsWaitEvent(ws, 'open', 5000)
     // assert connection is established. timeout 2000msec
     assert.ok((await ws.call('rpc.echo', ['hello'], 2000)) === 'hello')
-    ws.reconnect = keepConnection
+    ws.reconnect = reconnect
   } catch (err) {
     ws.reconnect = false
     ws.close()

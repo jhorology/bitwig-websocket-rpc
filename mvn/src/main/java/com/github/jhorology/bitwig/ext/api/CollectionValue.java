@@ -22,32 +22,19 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// bitwig api
-import com.bitwig.extension.controller.api.Device;
-
-// source
-import com.github.jhorology.bitwig.ext.impl.DefaultExtApiFactory;
+// jdk
+import com.bitwig.extension.callback.ObjectValueChangedCallback;
+import com.bitwig.extension.controller.api.Value;
+import java.util.Collection;
 
 /**
- * Concrete factory class for extended API.
+ * The interface for value object that manage collection of element values.
+ * @param <T> the raw value type of elements in this collection.
  */
-public class ExtApiFactory implements ExtApi {
-    private static final ExtApiFactory instance = new ExtApiFactory();
-    private ExtApi factory = new DefaultExtApiFactory();
-    
-    private ExtApiFactory() {
-    }
-
-    public static ExtApiFactory getInstance() {
-        return instance;
-    }
-    
-    public void setFactory(ExtApi factory) {
-        this.factory = factory;
-    }
-    
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return factory.createDeviceExt(device);
-    }
+public interface CollectionValue<T> extends Value<ObjectValueChangedCallback<T>> {
+    /**
+     * Return a set of managed current value.
+     * @return 
+     */
+    Collection<T> values();
 }

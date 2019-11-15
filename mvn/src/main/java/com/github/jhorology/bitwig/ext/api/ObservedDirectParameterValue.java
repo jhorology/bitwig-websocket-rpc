@@ -22,10 +22,6 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// bitwig API
-import com.bitwig.extension.callback.ObjectValueChangedCallback;
-import com.bitwig.extension.controller.api.Value;
-
 // source
 import com.github.jhorology.bitwig.ext.IdValuePair;
 
@@ -34,7 +30,7 @@ import com.github.jhorology.bitwig.ext.IdValuePair;
  * @author masafumi
  * @param <T> 
  */
-public interface ObservedDirectParameterValue<T> extends Value<ObjectValueChangedCallback<IdValuePair<String, T>>>, CollectionValues<IdValuePair<String, T>> {
+public interface ObservedDirectParameterValue<T> extends CollectionValue<IdValuePair<String, T>> {
     IdValuePair<String, T> get(String id);
     void setObservedIds(String[] ids);
 }

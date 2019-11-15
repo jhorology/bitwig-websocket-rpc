@@ -23,11 +23,17 @@
 package com.github.jhorology.bitwig;
 
 // bitwig api
+import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.CursorDeviceFollowMode;
+import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Preferences;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.SettableRangedValue;
+import com.bitwig.extension.controller.api.Track;
+import com.github.jhorology.bitwig.ext.api.VuMeterUsedFor;
+import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
+import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 
 // provided dependencies
 import com.google.gson.annotations.Expose;
@@ -176,6 +182,14 @@ public class Config extends AbstractConfiguration {
     private int browserCreatorRows;
     @Expose
     private int browserResultsRows;
+    @Expose
+    private VuMeterUsedFor vuMeterUsedFor;
+    @Expose
+    private int vuMeterRange;
+    @Expose
+    private VuMeterChannelMode vuMeterChannelMode;
+    @Expose
+    private VuMeterPeakMode vuMeterPeakMode;
     // <--
 
     /**
@@ -699,6 +713,56 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
+     * Returns a configuration value of use VuMeter for
+     * @return
+     */
+    public VuMeterUsedFor getVuMeterUsedFor() {
+        return vuMeterUsedFor;
+    }
+    
+    /**
+     * Returns a configuration value of VuMeter channel mode
+     * @return
+     */
+    public VuMeterChannelMode getVuMeterChannelMode() {
+        return vuMeterChannelMode;
+    }
+    
+    /**
+     * Returns a configuration value of VuMeter channel mode
+     * @return
+     */
+    public VuMeterPeakMode getVuMeterPeakMode() {
+        return vuMeterPeakMode;
+    }
+    
+    /**
+     * Returns a configuration value of VuMeter range
+     * @return
+     */
+    public int getVuMeterRange() {
+        return vuMeterRange;
+    }
+        
+    /**
+     * Returns true if specified interface is needed VU Meter.
+     * @param interfaceType
+     * @return
+     */
+    public boolean useVuMeter(Class<?> interfaceType) {
+        if (vuMeterUsedFor == VuMeterUsedFor.CURSOR_TRACK) {
+            return CursorTrack.class.isAssignableFrom(interfaceType);
+        }
+        if (vuMeterUsedFor == VuMeterUsedFor.TRACK) {
+            return Track.class.isAssignableFrom(interfaceType);
+        }
+        if (vuMeterUsedFor == VuMeterUsedFor.CHANNEL) {
+            return Channel.class.isAssignableFrom(interfaceType);
+        }
+        return false;
+    }
+
+    /**
      * Reset to defaults.
      */
     @Override
@@ -785,6 +849,11 @@ public class Config extends AbstractConfiguration {
         browserFileTypeRows = 16;
         browserCreatorRows = 32;
         browserResultsRows = 32;
+        
+        vuMeterUsedFor = VuMeterUsedFor.NONE;
+        vuMeterChannelMode = VuMeterChannelMode.MONO;
+        vuMeterPeakMode = VuMeterPeakMode.RMS;
+        vuMeterRange = 64;
     }
 
     /**
@@ -1138,7 +1207,7 @@ public class Config extends AbstractConfiguration {
         useCursorDeviceDirectParameterValue.addValueObserver(v -> {
                 if (ignoreValueChanged) {
                     useCursorDeviceDirectParameterValue.set(useCursorDeviceDirectParameter);
-                } else if (useCursorDevice != v) {
+                } else if (useCursorDeviceDirectParameter != v) {
                     useCursorDeviceDirectParameter = v;
                     valueChanged();
                 }
@@ -1532,6 +1601,54 @@ public class Config extends AbstractConfiguration {
                     valueChanged();
                 }
             });
+        
+        VuMeterUsedFor vuMeterUsedForValue = ExtensionUtils.getPreferenceAsEnum
+            (pref, "used for", "VU Meter",
+             e -> e.getDisplayValue(), VuMeterUsedFor.NONE, vuMeterUsedFor,
+             (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(vuMeterUsedFor.getDisplayValue());
+                } else if (vuMeterUsedFor != e) {
+                    vuMeterUsedFor = e;
+                    valueChanged();
+                }
+            });
+
+        VuMeterChannelMode vuMeterChannelModeValue = ExtensionUtils.getPreferenceAsEnum
+            (pref, "channel mode", "VU Meter",
+             e -> e.getDisplayValue(), VuMeterChannelMode.MONO, vuMeterChannelMode,
+             (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(vuMeterChannelMode.getDisplayValue());
+                } else if (vuMeterChannelMode != e) {
+                    vuMeterChannelMode = e;
+                    valueChanged();
+                }
+            });
+        
+        VuMeterPeakMode vuMeterPeakModeValue = ExtensionUtils.getPreferenceAsEnum
+            (pref, "peak mode", "VU Meter",
+             e -> e.getDisplayValue(), VuMeterPeakMode.RMS, vuMeterPeakMode,
+             (e, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(vuMeterPeakMode.getDisplayValue());
+                } else if (vuMeterPeakMode != e) {
+                    vuMeterPeakMode = e;
+                    valueChanged();
+                }
+            });
+        
+        int vuMeterRangeValue = ExtensionUtils.getPreferenceAsIntOptions
+            (pref, "range", "VU Meter", INT_OPTIONS_8TO64[1], vuMeterRange,
+             INT_OPTIONS_16TO128, (i, v) -> {
+                if (ignoreValueChanged) {
+                    v.set(String.valueOf(vuMeterRange));
+                } else if (vuMeterRange != i) {
+                    vuMeterRange = i;
+                    valueChanged();
+                }
+            });
+
 
         // for future use
         if (!USE_RC_FILE) {
@@ -1619,6 +1736,11 @@ public class Config extends AbstractConfiguration {
             browserFileTypeRows = browserFileTypeRowsValue;
             browserCreatorRows = browserCreatorRowsValue;
             browserResultsRows = browserResultsRowsValue;
+            
+            vuMeterUsedFor = vuMeterUsedForValue;
+            vuMeterChannelMode = vuMeterChannelModeValue;
+            vuMeterPeakMode = vuMeterPeakModeValue;
+            vuMeterRange = vuMeterRangeValue;
         }
     }
 

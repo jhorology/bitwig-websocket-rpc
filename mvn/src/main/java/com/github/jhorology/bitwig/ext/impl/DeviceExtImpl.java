@@ -73,7 +73,7 @@ class DeviceExtImpl implements DeviceExt {
      * {@inheritDoc}
      */
     @Override
-    public void setObservedParameterIds(String[] ids) {
+    public void setObservedDirectParameterIds(String[] ids) {
         observedDirectParameterNameValue.setObservedIds(ids);
         observedDirectParameterNormalizedValue.setObservedIds(ids);
         observedDirectParameterDisplayValue.setObservedIds(ids);

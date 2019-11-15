@@ -23,37 +23,36 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModuleHolder<T> extends RegistryNode<T> {
-    /**
-     * the owner of this interface.
-     */
-    protected final ReflectionRegistry owner;
+// source
+import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.ext.ExtApiFactory;
 
+public class ModuleHolder extends RegistryNode {
     /**
-     * the instance of interface of this module.
+     * the instance of this module.
      */
-    protected T nodeInstance;
+    protected Object moduleInstance;
 
     protected final Map<Class<?>, Integer> bankItemCounts;
 
     /**
      * Constructor
-     * @param owner
+     * @param config
      * @param moduleName
      * @param interfaceType
      * @param moduleInstance
      */
-    ModuleHolder(ReflectionRegistry owner, String nodeName,
-                 Class<T> nodeType, T nodeInstance) {
-        super(nodeName, nodeType, EMPTY_PARAM_TYPES, null, 0);
-        this.owner = owner;
+    ModuleHolder(Config config, String nodeName,
+                 Class<?> nodeType, Object moduleInstance) {
+        super(config, nodeName, nodeType, null, 0);
         this.bankItemCounts = new HashMap<>();
-        this.nodeInstance = nodeInstance;
+        // instance may be proxy object that implements extended API.
+        this.moduleInstance = ExtApiFactory.newMixinInstance(config, nodeType, moduleInstance);
     }
-
 
     /**
      * Register item count of specified Bank class.
@@ -61,13 +60,22 @@ public class ModuleHolder<T> extends RegistryNode<T> {
      * @param count the count of bank items.
      * @return this instance.
      */
-    public ModuleHolder<T> registerBankItemCount(Class<?> bankType, int count) {
+    public ModuleHolder registerBankItemCount(Class<?> bankType, int count) {
         bankItemCounts.put(bankType, count);
         return this;
     }
 
     /**
-     * Returns a bank item conut of specified bank item class.
+     * Returns a bank item count of specified bank item class.
+     * @param bankItemType
+     * @return
+     */
+    Object getModuleInstance() {
+        return moduleInstance;
+    }
+    
+    /**
+     * Returns a bank item count of specified bank item class.
      * @param bankItemType
      * @return
      */
@@ -84,17 +92,6 @@ public class ModuleHolder<T> extends RegistryNode<T> {
             return count;
         }
         return 0;
-    }
-
-    /**
-     * Returns an cached instance.<br>
-     * can be nullable.
-     * @param params
-     * @return
-     */
-    @Override
-    protected T getNodeInstance(Object[] params) {
-        return nodeInstance;
     }
 
     /**

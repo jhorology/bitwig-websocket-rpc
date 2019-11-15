@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-BITWIG_VERSION="3.0.2"
+BITWIG_VERSION="3.0.3"
 BETA=false
 
 wslenv() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Masafumi Fujimaru
+ * Copyright (c) 2018 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -20,34 +20,28 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig.ext.impl;
+package com.github.jhorology.bitwig.ext.api;
 
-// bitwig api
-import com.bitwig.extension.controller.api.Channel;
-import com.bitwig.extension.controller.api.Device;
-import com.github.jhorology.bitwig.ext.api.ChannelExt;
+public enum VuMeterPeakMode {
+    RMS("RMS"),
+    PEAK("Peak"),
+    BOTH("RMS + Peak");
 
-// source
-import com.github.jhorology.bitwig.ext.api.ExtApi;
-import com.github.jhorology.bitwig.ext.api.DeviceExt;
-import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
-import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
-
-/**
- * A Default factory class for extended API
- * @author masafumi
- */
-public class DefaultExtApiFactory implements ExtApi {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return new DeviceExtImpl(device);
+    private final String displayValue;
+    
+    private VuMeterPeakMode(String displayValue) {
+        this.displayValue = displayValue;
     }
 
-    @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
+    public String getDisplayValue() {
+        return displayValue;
+    }
+    
+    public boolean hasRMS() {
+        return this == RMS || this == BOTH;
+    }
+    
+    public boolean hasPeak() {
+        return this == PEAK || this == BOTH;
     }
 }

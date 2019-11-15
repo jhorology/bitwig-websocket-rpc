@@ -23,6 +23,8 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
+import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.ext.ExtApiFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -45,17 +47,17 @@ import com.github.jhorology.bitwig.rpc.RpcParamType;
 
 /**
  * A holder class for RPC method.<br>
- * @param <T> the type of managed instance.
  */
-class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
+class MethodHolder extends RegistryNode implements RpcMethod {
     protected final Method method;
     private final Type[] paramTypes;
-    private final RpcParamType[] rpcParamTypes;
+    private final Type[] methodParamTypes;
     private final boolean staticMethod;
     private final boolean varargs;
+    private final boolean cacheable;
     private final MethodIdentifier identifier;
     private String error;
-    private Map<List<Object>, T> instanceCache;
+    private Map<List<Object>, Object> resultCache;
 
     /**
      * Constructor.
@@ -64,23 +66,23 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
      * @param parentNode
      * @param bankItemCount
      */
-    MethodHolder(String nodeName, Method method, Class<T>nodeType, RegistryNode<?> parentNode, int bankItemCount) {
-        super(nodeName, nodeType,
-              method.getGenericParameterTypes(), parentNode, bankItemCount);
+    MethodHolder(Config config, Method method, Class<?>nodeType, RegistryNode parentNode, int bankItemCount) {
+        super(config, method.getName(), nodeType, parentNode, bankItemCount);
         this.method = method;
+        this.methodParamTypes = method.getGenericParameterTypes();
         this.paramTypes = parentNode instanceof MethodHolder
-            ?  ArrayUtils.addAll(((MethodHolder)parentNode).paramTypes, nodeParamTypes)
-            : nodeParamTypes;
-        this.rpcParamTypes = Stream.of(paramTypes)
-            .map(RpcParamType::of)
-            .toArray(size -> new RpcParamType[size]);
+            ? ArrayUtils.addAll(((MethodHolder)parentNode).paramTypes, methodParamTypes)
+            : methodParamTypes;
         this.staticMethod = Modifier.isStatic(method.getModifiers());
-        this.varargs = ReflectUtils.isVarargs(nodeParamTypes);
-        this.identifier = new MethodIdentifier(absoluteName, rpcParamTypes);
+        this.varargs = ReflectUtils.isVarargs(method);
+        this.cacheable = (paramTypes.length == bankDimension.length)
+            && (ReflectUtils.isBitwigAPI(nodeType)
+                || ReflectUtils.isExtAPI(nodeType));
+        this.identifier = new MethodIdentifier(absoluteName, RpcParamType.of(paramTypes));
     }
 
     /**
-     * Returns a parameter types of this method.<br>
+     * Returns a parameter types of this rpc method.<br>
      * this return values maybe not same as real method's parameter types.<br>
      * <pre>
      *  below case:
@@ -111,25 +113,42 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         if (params == null) {
             params = ReflectUtils.EMPTY_ARRAY;
         }
+        Object result;
+        if (cacheable && resultCache != null) {
+            result = resultCache.get(Arrays.asList(params));
+            if (result != null) {
+                return result;
+            }
+        }
         try {
-            T result;
             //  foobar1(a).foobar2(b).foobar3(c, d);
             //  rpc params:[a,b,c,d]
             //  reduce [a,b,c,d] -> [c,d]
-            int parentMethodParamLength = getParentMethodParamLength();
-            Object[] thisMethodParams = ArrayUtils.subarray(params, parentMethodParamLength, params.length);
+            int split = (parentNode instanceof MethodHolder)
+                ? ((MethodHolder)parentNode).paramTypes.length : 0;
+            Object[] methodParams = ArrayUtils.subarray(params, split, params.length);
             if (staticMethod) {
-                result = (T)invokeStaticMethod(thisMethodParams);
-            } else {
+                result = invokeStaticMethod(methodParams);
+            } else if (parentNode instanceof ModuleHolder) {
+                result = invoke(((ModuleHolder)parentNode).getModuleInstance(), methodParams);
+            } else if (parentNode instanceof MethodHolder) {
                 //  foobar1(a).foobar2(b).foobar3(c, d);
                 //  rpc params:[a,b,c,d]
                 //  reduce [a,b,c,d] -> [a,b]
-                Object[] parentMethodParams = ArrayUtils.subarray(params, 0, parentMethodParamLength);
-                // cacheable parentNode instance?
-                Object parentNodeInstance = parentNode.getNodeInstance(parentMethodParams);
-                result = (T)invoke(parentNodeInstance, thisMethodParams);
+                Object[] parentParams = ArrayUtils.subarray(params, 0, split);
+                result = invoke(((MethodHolder)parentNode).invoke(parentParams), methodParams);
+            } else {
+                throw new IllegalStateException();
             }
-            putNodeInstance(params, result);
+            if (cacheable) {
+                if (result != null) {
+                    result = ExtApiFactory.newMixinInstance(config, nodeType, result);
+                }
+                if (resultCache == null) {
+                    resultCache = new HashMap<>();
+                }
+                resultCache.put(Arrays.asList(params), result);
+            }
             return result;
         } catch (Exception ex) {
             setError(ex, "Faild invoking method.");
@@ -138,42 +157,13 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     }
 
     /**
-     * Returns an cached managed instance.
-     * @param bankIndexes
-     * @return
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    protected T getNodeInstance(Object[] params) throws Exception{
-        if (params.length != bankDimension.length) {
-            return (T)invoke(params);
-        }
-        T nodeInstance = null;
-        List<Object> key = Arrays.asList(params);
-        if (instanceCache != null) {
-            nodeInstance = instanceCache.get(key);
-        }
-        if (nodeInstance == null) {
-            nodeInstance = (T)invoke(params);
-        }
-        return nodeInstance;
-    }
-
-    protected void putNodeInstance(Object[] params, T nodeInstance) {
-        if (params.length != bankDimension.length) {
-            return;
-        }
-        if (instanceCache == null) {
-            instanceCache = new HashMap<>();
-        }
-        instanceCache.put(Arrays.asList(params), nodeInstance);
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
     void clear() {
+        if (cacheable && resultCache != null) {
+            resultCache.clear();
+        }
     }
 
     /**
@@ -212,24 +202,6 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         this.error = errorMessage;
     }
 
-    private Object invoke(Object target, Object[] params) throws IllegalAccessException,
-                                                                 IllegalArgumentException,
-                                                                 IllegalArgumentException,
-                                                                 InvocationTargetException {
-        return varargs
-            ? method.invoke(target, new Object[] {params})
-            : method.invoke(target, params);
-    }
-
-    private Object invokeStaticMethod(Object[] params) throws IllegalAccessException,
-                                                              IllegalArgumentException,
-                                                              IllegalArgumentException,
-                                                              InvocationTargetException {
-        return varargs
-            ? method.invoke(null, new Object[] {params})
-            : method.invoke(null, params);
-    }
-
     /**
      * create a report object for MehodHolder.
      * @return
@@ -237,7 +209,8 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
     Object reportRpcMethod() {
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("method", absoluteName);
-        report.put("params", Stream.of(rpcParamTypes)
+        report.put("params", Stream.of(paramTypes)
+                   .map(t -> RpcParamType.of(t))
                    .map(t -> t.getExpression())
                    .collect(Collectors.toList()));
         report.put("result", rpcNodeType.getExpression());
@@ -257,7 +230,7 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
             sb.append(" ");
         }
         if (parentNode instanceof MethodHolder) {
-            sb.append(((MethodHolder<?>)parentNode).getExpression(false));
+            sb.append(((MethodHolder)parentNode).getExpression(false));
             sb.append(".");
         } else {
             sb.append(parentNode.nodeType.getSimpleName());
@@ -265,20 +238,30 @@ class MethodHolder<T> extends RegistryNode<T> implements RpcMethod {
         }
         sb.append(method.getName());
         sb.append("(");
-        sb.append(Stream.of(nodeRpcParamTypes)
+        sb.append(Stream.of(method.getGenericParameterTypes())
+                  .map(t -> RpcParamType.of(t))
                   .map(t -> t.getExpression())
                   .collect(Collectors.joining(", ")));
         sb.append(")");
         return sb.toString();
     }
 
-    private int getParentMethodParamLength() {
-        RegistryNode<?> node = parentNode;
-        int length = 0;
-        while(node instanceof MethodHolder) {
-            length += node.nodeParamTypes.length;
-            node = node.parentNode;
-        }
-        return length;
+
+    private Object invoke(Object target, Object[] params) throws IllegalAccessException,
+                                                                 IllegalArgumentException,
+                                                                 IllegalArgumentException,
+                                                                 InvocationTargetException {
+        return varargs
+            ? method.invoke(target, new Object[] {params})
+            : method.invoke(target, params);
+    }
+
+    private Object invokeStaticMethod(Object[] params) throws IllegalAccessException,
+                                                              IllegalArgumentException,
+                                                              IllegalArgumentException,
+                                                              InvocationTargetException {
+        return varargs
+            ? method.invoke(null, new Object[] {params})
+            : method.invoke(null, params);
     }
 }

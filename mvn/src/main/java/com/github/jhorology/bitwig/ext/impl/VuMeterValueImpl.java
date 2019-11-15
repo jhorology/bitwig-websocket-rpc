@@ -24,69 +24,65 @@ package com.github.jhorology.bitwig.ext.impl;
 
 // jdk
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 // bitwig API
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
-import com.github.jhorology.bitwig.ext.IdValuePair;
+import com.bitwig.extension.controller.api.Channel;
 
 // source
-import com.github.jhorology.bitwig.ext.api.ObservedDirectParameterValue;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
+import com.github.jhorology.bitwig.ext.VuMeterLevel;
+import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
+import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
+import com.github.jhorology.bitwig.ext.api.VuMeterValue;
 
-
-/**
- * An implementation of Value that reports observed direct parameter.
- * @param <T> type of raw value.
- */
-public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParameterValue<T> {
+public class VuMeterValueImpl implements VuMeterValue {
     private static final boolean NOTIFY_VALUES_ON_SUBSCRIBE = false;
-    private final Map<String, IdValuePair<String, T>> paramsCache;
-    private List<String> observedIds;
-    private final List<ObjectValueChangedCallback<IdValuePair<String, T>>> callbacks;
+    private final Channel channel;
+    private final List<VuMeterLevel> values;
+    private final List<ObjectValueChangedCallback<VuMeterLevel>> callbacks;
     private boolean subscribed;
-    private final boolean notifyValuesOnSetIds;
-
-    /**
-     * Constructor.
-     * @param name
-     */
-    ObservedDirectParameterValueImpl(boolean notifyValuesOnSetIds) {
-        this.paramsCache = new LinkedHashMap<>();
+    
+    VuMeterValueImpl(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
+        this.channel = channel;
+        values = new ArrayList<>();
         this.callbacks = new ArrayList<>();
-        this.notifyValuesOnSetIds = notifyValuesOnSetIds;
-        this.observedIds = Collections.emptyList();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setObservedIds(String[] ids) {
-        this.observedIds = ids != null ? Arrays.asList(ids) : Collections.emptyList();
-        if (subscribed && notifyValuesOnSetIds) {
-            notifyValues();
+        if (vuMeterPeakMode.hasRMS()) {
+            if (vuMeterChannelMode.hasMono()) {
+                setupVuMeter(vuMeterRange, -1, false);
+            }
+            if (vuMeterChannelMode.hasLeft()) {
+                setupVuMeter(vuMeterRange, 0, false);
+            }
+            if (vuMeterChannelMode.hasRight()) {
+                setupVuMeter(vuMeterRange, 1, false);
+            }
+        }
+        if (vuMeterPeakMode.hasPeak()) {
+            if (vuMeterChannelMode.hasMono()) {
+                setupVuMeter(vuMeterRange, -1, true);
+            }
+            if (vuMeterChannelMode.hasLeft()) {
+                setupVuMeter(vuMeterRange, 0, true);
+            }
+            if (vuMeterChannelMode.hasRight()) {
+                setupVuMeter(vuMeterRange, 1, true);
+            }
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public IdValuePair<String, T> get(String id) {
-        return paramsCache.get(id);
+    public VuMeterLevel get(int ch, boolean peak) {
+        return values.stream()
+            .filter(m -> m.getChannel() == ch && m.isPeak() == peak)
+            .findFirst()
+            .orElse(null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public List<IdValuePair<String, T>> values() {
-        return observedIds.stream().map(paramsCache::get).collect(Collectors.toList());
+    public Collection<VuMeterLevel> values() {
+        return values;
     }
 
     /**
@@ -134,47 +130,29 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
         setIsSubscribed(false);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void addValueObserver(ObjectValueChangedCallback<IdValuePair<String, T>> callback) {
+    public void addValueObserver(ObjectValueChangedCallback<VuMeterLevel> callback) {
         callbacks.add(callback);
     }
 
-    /**
-     * Notify observed device is changed
-     */
-    void deviceChanged() {
-        paramsCache.clear();
+    private void setupVuMeter(int range, int ch, boolean peak) {
+        VuMeterLevel meter = new VuMeterLevel(ch, peak);
+        values.add(meter);
+        channel.addVuMeterObserver(range, ch, peak, (int value) -> {
+            meter.setValue(value);
+            notifyValue(meter);
+        });
     }
-
+    
+    
     /**
      * Notify observed values to observers.
      */
     void notifyValues() {
-        values().stream().forEach(this::valueChanged);
+        values().stream().forEach(this::notifyValue);
     }
-
-    /**
-     * put or update direct parameter value.
-     * @param id
-     * @param value
-     */
-    void put(String id, T value) {
-        IdValuePair<String, T> v = paramsCache.get(id);
-        if (v != null) {
-            v.setValue(value);
-        } else {
-            v = new IdValuePair<String, T>(id, value);
-            paramsCache.put(id, v);
-        }
-        if (subscribed && observedIds.contains(id)) {
-            valueChanged(v);
-        }
-    }
-
-    private void valueChanged(IdValuePair<String, T> v) {
+    
+    private void notifyValue(VuMeterLevel v) {
         callbacks.stream().forEach(cb -> cb.valueChanged(v));
     }
 }

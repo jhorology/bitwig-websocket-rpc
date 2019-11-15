@@ -33,8 +33,35 @@ import java.util.stream.Collectors;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
+import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.Arranger;
+import com.bitwig.extension.controller.api.BrowserFilterColumn;
+import com.bitwig.extension.controller.api.BrowserFilterItem;
+import com.bitwig.extension.controller.api.BrowserFilterItemBank;
+import com.bitwig.extension.controller.api.BrowserResultsColumn;
+import com.bitwig.extension.controller.api.BrowserResultsItem;
+import com.bitwig.extension.controller.api.BrowserResultsItemBank;
+import com.bitwig.extension.controller.api.ChainSelector;
+import com.bitwig.extension.controller.api.Clip;
+import com.bitwig.extension.controller.api.ClipLauncherSlotBank;
+import com.bitwig.extension.controller.api.ClipLauncherSlotOrSceneBank;
 import com.bitwig.extension.controller.api.ControllerHost;
-import com.bitwig.extension.controller.api.Value;
+import com.bitwig.extension.controller.api.CueMarkerBank;
+import com.bitwig.extension.controller.api.CursorDeviceLayer;
+import com.bitwig.extension.controller.api.CursorRemoteControlsPage;
+import com.bitwig.extension.controller.api.CursorTrack;
+import com.bitwig.extension.controller.api.DeviceBank;
+import com.bitwig.extension.controller.api.DeviceLayerBank;
+import com.bitwig.extension.controller.api.DrumPadBank;
+import com.bitwig.extension.controller.api.Groove;
+import com.bitwig.extension.controller.api.MasterTrack;
+import com.bitwig.extension.controller.api.Mixer;
+import com.bitwig.extension.controller.api.PinnableCursorDevice;
+import com.bitwig.extension.controller.api.PopupBrowser;
+import com.bitwig.extension.controller.api.SceneBank;
+import com.bitwig.extension.controller.api.SendBank;
+import com.bitwig.extension.controller.api.TrackBank;
+import com.bitwig.extension.controller.api.Transport;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
@@ -45,45 +72,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
+import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import com.github.jhorology.bitwig.rpc.Rpc;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
+import com.github.jhorology.bitwig.rpc.RpcImpl;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
+import com.github.jhorology.bitwig.rpc.test.Test;
+import com.github.jhorology.bitwig.rpc.test.TestImpl;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 
 /**
- * 
+ *
  */
 public class ReflectionRegistry implements RpcRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(ReflectionRegistry.class);
-    
+
     /**
      * the delimitter for method chain.
      */
     public static final String NODE_DELIMITER = ".";
 
+    private final Config config;
     private final ProtocolHandler protocol;
-    private final boolean useAbbrev;
+    // server sent evnt bus.
+    private final List<ModuleHolder> modules;
+    private final Map<MethodIdentifier, MethodHolder> methods;
+    private final Map<String, EventHolder> events;
+
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
-    
-    // server sent evnt bus.
-    private final List<ModuleHolder<?>> modules;
-    private final Map<MethodIdentifier, MethodHolder<?>> methods;
-    private final Map<String, EventHolder<?>> events;
-
-    private boolean initialized;
 
     /**
-     * 
+     *
      * @param protocol
-     * @param useAbbrev 
      */
-    public ReflectionRegistry(ProtocolHandler protocol, boolean useAbbrev) {
+    public ReflectionRegistry(Config config, ProtocolHandler protocol) {
+        this.config = config;
         this.protocol = protocol;
-        this.useAbbrev = useAbbrev;
         modules = new ArrayList<>();
         methods = new LinkedHashMap<>(512);
         events = new LinkedHashMap<>(256);
@@ -93,9 +122,281 @@ public class ReflectionRegistry implements RpcRegistry {
     public void onInit(InitEvent e) {
         host = e.getHost();
         definition = e.getExtension().getExtensionDefinition();
+
+        String id = definition.getId().toString();
+
+        register("rpc",  Rpc.class, new RpcImpl());
+        // for test
+        register("test", Test.class, new TestImpl());
+
+        register("host",
+                 ControllerHost.class,
+                 host);
+
+        if (config.useApplication()) {
+            Application application = host.createApplication();
+            register("application",
+                     Application.class,
+                     application);
+        }
+        if (config.useTransport()) {
+            Transport transport = host.createTransport();
+            register("transport",
+                     Transport.class,
+                     transport);
+        }
+        if (config.useArranger()) {
+            Arranger arranger = host.createArranger();
+            register("arranger",
+                     Arranger.class,
+                     arranger);
+            CueMarkerBank cueMarkerBank =
+                arranger.createCueMarkerBank(config.getArrangerCueMakerSize());
+            register("arranger.cueMarkerBank",
+                     CueMarkerBank.class,
+                     cueMarkerBank)
+                .registerBankItemCount(CueMarkerBank.class,
+                                       config.getArrangerCueMakerSize());
+        }
+        if (config.useGroove()) {
+            Groove groove = host.createGroove();
+            register("groove",
+                     Groove.class,
+                     groove);
+        }
+        if (config.useMixer()) {
+            Mixer mixer = host.createMixer();
+            register("mixer",
+                     Mixer.class,
+                     mixer);
+        }
+        if (config.useArrangerCursorClip()) {
+            Clip arrangerCursorClip = host.createArrangerCursorClip(config.getArrangerCursorClipGridWidth(),
+                                                                    config.getArrangerCursorClipGridHeight());
+            register("arrangerCursorClip",
+                     Clip.class,
+                     arrangerCursorClip);
+        }
+        if (config.useLauncherCursorClip()) {
+            Clip launcherCursorClip = host.createLauncherCursorClip(config.getLauncherCursorClipGridWidth(),
+                                                                    config.getLauncherCursorClipGridHeight());
+            register("launcherCursorClip",
+                     Clip.class,
+                     launcherCursorClip);
+        }
+
+        CursorTrack cursorTrack = null;
+        if (config.useCursorTrack()) {
+            cursorTrack =
+                host.createCursorTrack(id, definition.getName(),
+                                       config.getCursorTrackNumSends(),
+                                       config.getCursorTrackNumScenes(),
+                                       config.cursorTrackShouldFollowSelection());
+            register("cursorTrack",
+                     CursorTrack.class,
+                     cursorTrack)
+                .registerBankItemCount(SendBank.class,
+                                       config.getCursorTrackNumSends())
+                .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                       config.getCursorTrackNumScenes());
+            if (config.useSiblingsTrackBank()) {
+                TrackBank siblingsTrackBank =
+                    cursorTrack.createSiblingsTrackBank(config.getSiblingsTrackBankNumTracks(),
+                                                        config.getCursorTrackNumSends(),
+                                                        config.getCursorTrackNumScenes(),
+                                                        config.isSiblingsTrackBankIncludeEffectTracks(),
+                                                        config.isSiblingsTrackBankIncludeMasterTrack());
+                register("siblingsTrackBank",
+                         TrackBank.class,
+                         siblingsTrackBank)
+                    .registerBankItemCount(TrackBank.class,
+                                           config.getSiblingsTrackBankNumTracks())
+                    .registerBankItemCount(SendBank.class,
+                                           config.getCursorTrackNumSends())
+                    .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                           config.getCursorTrackNumScenes());
+            }
+            if (config.useChildTrackBank()) {
+                TrackBank childTrackBank =
+                    cursorTrack.createTrackBank(config.getChildTrackBankNumTracks(),
+                                                config.getCursorTrackNumSends(),
+                                                config.getCursorTrackNumScenes(),
+                                                config.isChildTrackBankHasFlatList());
+                register("childTrackBank",
+                         TrackBank.class,
+                         childTrackBank)
+                    .registerBankItemCount(TrackBank.class,
+                                           config.getChildTrackBankNumTracks())
+                    .registerBankItemCount(SendBank.class,
+                                           config.getCursorTrackNumSends())
+                    .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                           config.getCursorTrackNumScenes());
+            }
+            if (config.useCursorDevice()) {
+                PinnableCursorDevice cursorDevice =
+                    cursorTrack.createCursorDevice(id, definition.getName(),
+                                                   config.getCursorDeviceNumSends(),
+                                                   config.getCursorDeviceFollowMode());
+                register("cursorDevice",
+                         PinnableCursorDevice.class,
+                         cursorDevice)
+                    .registerBankItemCount(SendBank.class,
+                                           config.getCursorDeviceNumSends());
+
+                if (config.useChainSelector()) {
+                    ChainSelector chainSelector = cursorDevice.createChainSelector();
+                    register("chainSelector",
+                             ChainSelector.class,
+                             chainSelector)
+                        .registerBankItemCount(SendBank.class,
+                                               config.getCursorDeviceNumSends());
+                }
+
+                if (config.useCursorDeviceLayer()) {
+                    CursorDeviceLayer cursorDeviceLayer = cursorDevice.createCursorLayer();
+                    register("cursorDeviceLayer",
+                             CursorDeviceLayer.class,
+                             cursorDeviceLayer)
+                        .registerBankItemCount(SendBank.class,
+                                               config.getCursorDeviceNumSends());
+                }
+
+                if (config.useCursorRemoteControlsPage()) {
+                    CursorRemoteControlsPage cursorRemoteControlsPage
+                        = cursorDevice.createCursorRemoteControlsPage
+                        (config.getCursorRemoteControlsPageParameterCount());
+                    register("cursorRemoteControlsPage",
+                             CursorRemoteControlsPage.class,
+                             cursorRemoteControlsPage)
+                        .registerBankItemCount(CursorRemoteControlsPage.class,
+                                               config.getCursorRemoteControlsPageParameterCount());
+                }
+
+                if (config.useDeviceLayerBank()) {
+                    DeviceLayerBank deviceLayerBank
+                        = cursorDevice.createLayerBank(config.getDeviceLayerBankNumChannels());
+                    register("deviceLayerBank",
+                             DeviceLayerBank.class,
+                             deviceLayerBank)
+                        .registerBankItemCount(DeviceLayerBank.class,
+                                               config.getDeviceLayerBankNumChannels())
+                        .registerBankItemCount(SendBank.class,
+                                               config.getCursorDeviceNumSends());
+                }
+                if (config.useDrumPadBank()) {
+                    DrumPadBank drumPadBank
+                        = cursorDevice.createDrumPadBank(config.getDrumPadBankNumPads());
+                    register("drumPadBank",
+                             DrumPadBank.class,
+                             drumPadBank)
+                        .registerBankItemCount(DrumPadBank.class,
+                                               config.getDrumPadBankNumPads())
+                        .registerBankItemCount(SendBank.class,
+                                               config.getCursorDeviceNumSends());
+                }
+                if (config.useSiblingsDeviceBank()) {
+                    DeviceBank siblingsDeviceBank
+                        = cursorDevice.createSiblingsDeviceBank(config.getSiblingsDeviceBankNumDevices());
+                    register("siblingsDeviceBank",
+                             DeviceBank.class,
+                             siblingsDeviceBank)
+                        .registerBankItemCount(DeviceBank.class,
+                                               config.getSiblingsDeviceBankNumDevices());
+                }
+                if (config.useChainDeviceBank()) {
+                    DeviceBank chainDeviceBank
+                        = cursorDevice.deviceChain().createDeviceBank(config.getChainDeviceBankNumDevices());
+                    register("chainDeviceBank",
+                             DeviceBank.class,
+                             chainDeviceBank)
+                        .registerBankItemCount(DeviceBank.class,
+                                               config.getChainDeviceBankNumDevices());
+                }
+            }
+        }
+        if (config.useSceneBank()) {
+            SceneBank sceneBank
+                = host.createSceneBank(config.getSceneBankNumScenes());
+            register("sceneBank",
+                     SceneBank.class,
+                     sceneBank)
+                .registerBankItemCount(SceneBank.class,
+                                       config.getSceneBankNumScenes());
+        }
+        if (config.useMainTrackBank()) {
+            TrackBank mainTrackBank
+                = host.createMainTrackBank(config.getMainTrackBankNumTracks(),
+                                           config.getMainTrackBankNumSends(),
+                                           config.getMainTrackBankNumScenes());
+            register("mainTrackBank",
+                     TrackBank.class,
+                     mainTrackBank)
+                .registerBankItemCount(TrackBank.class,
+                                       config.getMainTrackBankNumTracks())
+                .registerBankItemCount(SendBank.class,
+                                       config.getMainTrackBankNumSends())
+                .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                       config.getMainTrackBankNumScenes());
+            if (config.useCursorTrack() && cursorTrack != null && config.isMainTrackBankFollowCursorTrack()) {
+                mainTrackBank.followCursorTrack(cursorTrack);
+            }
+        }
+        if (config.useEffectTrackBank()) {
+            TrackBank effectTrackBank
+                = host.createEffectTrackBank(config.getEffectTrackBankNumTracks(),
+                                             config.getEffectTrackBankNumScenes());
+            register("effectTrackBank",
+                     TrackBank.class,
+                     effectTrackBank)
+                .registerBankItemCount(TrackBank.class,
+                                       config.getEffectTrackBankNumTracks())
+                .registerBankItemCount(ClipLauncherSlotBank.class,
+                                       config.getEffectTrackBankNumScenes());
+        }
+        if (config.useMasterTrack()) {
+            MasterTrack masterTrack
+                = host.createMasterTrack(config.getMasterTrackNumScenes());
+            register("masterTrack",
+                     MasterTrack.class,
+                     masterTrack)
+                .registerBankItemCount(ClipLauncherSlotBank.class,
+                                       config.getMasterTrackNumScenes());
+        }
+
+        if (config.useBrowser()) {
+            PopupBrowser popupBrowser = host.createPopupBrowser();
+            register("browser",
+                     PopupBrowser.class,
+                     popupBrowser);
+            registerBrowserFilterColumn(popupBrowser.smartCollectionColumn(),
+                                        "smartCollectionColumn",
+                                        config.getBrowserSmartCollectionRows());
+            registerBrowserFilterColumn(popupBrowser.locationColumn(),
+                                        "locationColumn",
+                                        config.getBrowserLocationRows());
+            registerBrowserFilterColumn(popupBrowser.deviceColumn(),
+                                        "deviceColumn",
+                                        config.getBrowserDeviceRows());
+            registerBrowserFilterColumn(popupBrowser.categoryColumn(),
+                                        "categoryColumn",
+                                        config.getBrowserCategoryRows());
+            registerBrowserFilterColumn(popupBrowser.tagColumn(),
+                                        "tagColumn",
+                                        config.getBrowserTagRows());
+            registerBrowserFilterColumn(popupBrowser.deviceTypeColumn(),
+                                        "deviceTypeColumn",
+                                        config.getBrowserDeviceTypeRows());
+            registerBrowserFilterColumn(popupBrowser.fileTypeColumn(),
+                                        "fileTypeColumn",
+                                        config.getBrowserFileTypeRows());
+            registerBrowserFilterColumn(popupBrowser.creatorColumn(),
+                                        "creatorColumn",
+                                        config.getBrowserCreatorRows());
+            registerBrowserResultsColumn(popupBrowser.resultsColumn(),
+                                         config.getBrowserResultsRows());
+        }
+        //
         modules.forEach(m -> registerMethods(m));
-        
-        initialized = true;
     }
 
     @Subscribe
@@ -126,7 +427,7 @@ public class ReflectionRegistry implements RpcRegistry {
         }
         return method;
     }
-    
+
     /**
      * Get an interface for RPC event model.
      * @param name the event name.
@@ -169,22 +470,48 @@ public class ReflectionRegistry implements RpcRegistry {
 
     /**
      * Register a RPC module.
-     * @param <T>            the type of interface.
      * @param moduleName     the name of module.
      * @param interfaceType  the type of interface.
      * @param moduleInstance the instance of interface.
      * @return the instance of ModuleHolder.
      */
-    public <T> ModuleHolder<T> register(String moduleName, Class<T> interfaceType, T moduleInstance) {
-        ModuleHolder<T> module = new ModuleHolder<>(this,
-                                                    useAbbrev ? AbbrevDict.abbrev(moduleName) : moduleName,
-                                                    interfaceType,
-                                                    moduleInstance);
-        if (initialized) {
-            throw new IllegalStateException("This method can be called only before initializtion.");
-        }
+    private ModuleHolder register(String moduleName, Class<?> interfaceType, Object moduleInstance) {
+        ModuleHolder module = new ModuleHolder(config, moduleName, interfaceType, moduleInstance);
         modules.add(module);
         return module;
+    }
+
+    private void registerBrowserFilterColumn(BrowserFilterColumn column,
+                                             String columnName,
+                                             int itemSize) {
+        // register cursor
+        BrowserFilterItem cursorItem = column.createCursorItem();
+        register("browser." + columnName + ".cursorItem",
+                 BrowserFilterItem.class,
+                 cursorItem);
+        // register item bank
+        BrowserFilterItemBank itemBank = column.createItemBank(itemSize);
+        register("browser." + columnName + ".itemBank",
+                 BrowserFilterItemBank.class,
+                 itemBank)
+            .registerBankItemCount(BrowserFilterItemBank.class,
+                                   itemSize);
+    }
+
+    private void registerBrowserResultsColumn(BrowserResultsColumn column,
+                                              int itemSize) {
+        // register cursor
+        BrowserResultsItem cursorItem = column.createCursorItem();
+        register("browser.resultsColumn.cursorItem",
+                 BrowserResultsItem.class,
+                 cursorItem);
+        // register item bank
+        BrowserResultsItemBank itemBank = column.createItemBank(itemSize);
+        register("browser.resultsColumn.itemBank",
+                 BrowserResultsItemBank.class,
+                 itemBank)
+            .registerBankItemCount(BrowserResultsItemBank.class,
+                                   itemSize);
     }
 
     /**
@@ -203,6 +530,7 @@ public class ReflectionRegistry implements RpcRegistry {
 
     /**
      * create a report object for Extension.
+     *
      * @return
      */
     private Object reportExtension() {
@@ -229,7 +557,7 @@ public class ReflectionRegistry implements RpcRegistry {
             .collect(Collectors.toList());
         return list;
     }
-    
+
     /**
      * @return
      */
@@ -242,93 +570,88 @@ public class ReflectionRegistry implements RpcRegistry {
     }
 
 
-    private void registerMethods(ModuleHolder<?> module) {
-        ReflectUtils.getCleanMethods(module.getNodeType())
+    private void registerMethods(ModuleHolder module) {
+        module.getMethods()
             .forEach(m -> registerMethod(module, m, module, 0));
     }
-    
-    @SuppressWarnings("unchecked")
-    private void registerMethod(ModuleHolder<?> module, Method method, RegistryNode<?> parentNode, int chainDepth) {
+
+    private void registerMethod(ModuleHolder module, Method method, RegistryNode parentNode, int chainDepth) {
         // filter unusable methods
         Class<?> returnType = method.getReturnType();
-        String methodName = useAbbrev ? AbbrevDict.abbrev(method.getName()) : method.getName();
-        String absoluteName = parentNode.getAbsoluteName() + NODE_DELIMITER + methodName;
         if (chainDepth > 5) {
             LOG.error("##!!! Method chain depth are too long. Something is wrong!!"
-                      + "\nmethod:" + absoluteName);
+                      + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName());
             return;
         }
-        
+
         if (ReflectUtils.isBank(returnType) &&
             module.getBankItemCount(returnType) == 0) {
             // maybe correct
             // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
             if (LOG.isDebugEnabled()) {
                 LOG.debug("##!!! Bank type founded, but bankItemCount is not registered.!!"
-                          + "\nmethod:" + absoluteName +
-                          " bankType:" + returnType);
+                          + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
+                          + " bankType:" + returnType);
             }
             return;
         }
-        
+
         boolean isReturnTypeBitwigAPI = ReflectUtils.isBitwigAPI(returnType) || ReflectUtils.isExtAPI(returnType);
         boolean isReturnTypeBitwigValue = false;
         boolean isReturnTypeBitwigParameter = false;
         Class<?> bankItemType = null;
         int bankItemCount = 0;
-        List<Method> methodsOfReturnType = null;
-        
+
         if (isReturnTypeBitwigAPI) {
             isReturnTypeBitwigValue = ReflectUtils.isBitwigValue(returnType);
             isReturnTypeBitwigParameter = ReflectUtils.isBitwigParameter(returnType);
             if (ReflectUtils.isBankMethod(method)) {
                 bankItemType = ReflectUtils.getBankItemType(parentNode.getNodeType());
             }
-            if (bankItemType != null) { 
+            if (bankItemType != null) {
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("##!!! Bank Method returns unassignable bank item type!!"
-                                  + "\nmethod:" + absoluteName +
-                                  " returnType:" + returnType +
-                                  " replaceWith:" + bankItemType);
+                                  + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
+                                  + " returnType:" + returnType
+                                  + " replaceWith:" + bankItemType);
                     }
                     // replace return type
                     returnType = bankItemType;
                 }
                 bankItemCount = module.getBankItemCount(parentNode.getNodeType());
             }
-            methodsOfReturnType = ReflectUtils.getCleanMethods(returnType);
         }
 
         // if return type is implemented both Value and Parameter
         // shoud use Parameter#Value() as event.
         boolean isEvent = isReturnTypeBitwigValue &&
             ! isReturnTypeBitwigParameter;
-        
-        MethodHolder<?> mh = isEvent
-            ? new EventHolder<>(methodName,
+
+        MethodHolder mh = isEvent
+            ? new EventHolder(config,
                               method,
-                              (Class<? extends Value<?>>)returnType,
+                              returnType,
                               parentNode,
                               bankItemCount,
                               host,
                               protocol.getPushModel())
-            : new MethodHolder<>(methodName,
+            : new MethodHolder(config,
                                method,
                                returnType,
                                parentNode,
                                bankItemCount);
-        
+
         if (! isReturnTypeBitwigAPI ||
             (isReturnTypeBitwigAPI &&
              protocol.isSerializableBitwigType(returnType))) {
             // for debug
             if (LOG.isDebugEnabled()) {
-                MethodHolder<?> duplicatedMethod = methods.get(mh.getIdentifier());
+                MethodHolder duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
                     LOG.debug("##!!! duplicated method!!"
-                              + "\nevent:" + absoluteName
+                              + "\nevent:" + mh.getAbsoluteName()
                               + "\nold:" + duplicatedMethod.getExpression(true)
                               + "\nnew:" + mh.getExpression(true));
                 }
@@ -338,20 +661,19 @@ public class ReflectionRegistry implements RpcRegistry {
         if (isEvent) {
             // for debug
             if (LOG.isDebugEnabled()) {
-                EventHolder<?> duplicatedEvent = events.get(absoluteName);
+                EventHolder duplicatedEvent = events.get(mh.getAbsoluteName());
                 if (duplicatedEvent != null) {
                     LOG.warn("##!!! duplicated event!!"
-                             + "\nevent:" + absoluteName
+                             + "\nevent:" + mh.getAbsoluteName()
                              + "\nold:" + duplicatedEvent.getExpression(true)
                              + "\nnew:" + mh.getExpression(true));
                 }
             }
-            events.put(absoluteName, (EventHolder<?>)mh);
+            events.put(mh.getAbsoluteName(), (EventHolder)mh);
         }
-        // register method recursively
-        if (methodsOfReturnType != null && !methodsOfReturnType.isEmpty()) {
-            methodsOfReturnType
-                .forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
+        if (isReturnTypeBitwigAPI) {
+            // register method recursively
+            mh.getMethods().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
     }
 }

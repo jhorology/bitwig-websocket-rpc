@@ -22,32 +22,24 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// bitwig api
 import com.bitwig.extension.controller.api.Channel;
-import com.bitwig.extension.controller.api.Device;
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
-
-// source
-import com.github.jhorology.bitwig.ext.api.ExtApi;
-import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
+import com.github.jhorology.bitwig.ext.api.VuMeterValue;
 
 /**
- * A Default factory class for extended API
- * @author masafumi
+ *
  */
-public class DefaultExtApiFactory implements ExtApi {
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return new DeviceExtImpl(device);
+public class ChannelExtImpl implements ChannelExt {
+    private final VuMeterValue vuMeter;
+    
+    ChannelExtImpl(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
+        vuMeter = new VuMeterValueImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
     }
-
+    
     @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
+    public VuMeterValue vuMeter() {
+        return vuMeter;
     }
 }
