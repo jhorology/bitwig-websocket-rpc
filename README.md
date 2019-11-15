@@ -42,6 +42,8 @@ npx bws-rpc <cmd> [options]
     Options:
       -e, --extension-dir <path>  Bitwig Studio Extension directory
                                   (default: "<Platfom Specific>/Extensions")
+      -a, --api <version>         Bitwig Studio Extension API version.
+                                  version=8, 9, 10 or all (default: "8")
       -h, --help                  output usage information
 
     $ npx bws-rpc config --help
@@ -237,7 +239,11 @@ ${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
   "browserDeviceTypeRows": 16,
   "browserFileTypeRows": 16,
   "browserCreatorRows": 32,
-  "browserResultsRows": 32
+  "browserResultsRows": 32,
+  "vuMeterUsedFor": "NONE",
+  "vuMeterRange": 64,
+  "vuMeterChannelMode": "MONO",
+  "vuMeterPeakMode": "RMS"
 }
 ```
 You can get a default configuration as follows:
