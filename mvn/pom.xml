@@ -13,7 +13,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- Bitwig extension definition -->
-    <extension.name>WebSocket RPC</extension.name>
+    <extension.name>WebSocket RPC API 8</extension.name>
     <extension.author>Masafumi</extension.author>
     <extension.version>0.2.0-SNAPSHOT</extension.version>
     <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
@@ -27,6 +27,11 @@
     <extension.config.webSocketPort>8887</extension.config.webSocketPort>
     <extension.config.useAbbreviatedMethodNames>true</extension.config.useAbbreviatedMethodNames>
     <extension.config.production>false</extension.config.production>
+    <!-- build env -->
+    <build.java.version>1.8</build.java.version>
+    <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
+    <build.bitwig.extension.api.version>9</build.bitwig.extension.api.version>
+    <build.commons.lang3.version>3.1</build.commons.lang3.version>
   </properties>
   
   <profiles>
@@ -42,6 +47,32 @@
         <extension.config.logLevel>WARN</extension.config.logLevel>
         <extension.config.useAbbreviatedMethodNames>false</extension.config.useAbbreviatedMethodNames>
         <extension.config.production>true</extension.config.production>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>extension-api-9</id>
+      <properties>
+        <extension.name>WebSocket RPC API 9</extension.name>
+        <extension.uuid>841a3f11-ed53-4b4f-999e-51b4e90f4c7b</extension.uuid>
+        <extension.requiredAPIVersion>9</extension.requiredAPIVersion>
+        <!-- build env -->
+        <build.extension.file.name>WebSocketRpcServer-API9.bwextension</build.extension.file.name>
+        <build.bitwig.extension.api.version>9</build.bitwig.extension.api.version>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>extension-api-10</id>
+      <properties>
+        <extension.name>WebSocket RPC API 10</extension.name>
+        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
+        <!-- build env -->
+        <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
+        <build.java.version>12</build.java.version>
+        <build.bitwig.extension.api.version>10</build.bitwig.extension.api.version>
+        <build.commons.lang3.version>3.5</build.commons.lang3.version>
       </properties>
     </profile>
     
@@ -87,7 +118,7 @@
     <dependency>
       <groupId>com.bitwig</groupId>
       <artifactId>extension-api</artifactId>
-      <version>9</version>
+      <version>${build.bitwig.extension.api.version}</version>
       <scope>provided</scope> <!-- provided by bitwig.jar -->
     </dependency>
     <dependency>
@@ -99,7 +130,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>3.1</version>
+      <version>${build.commons.lang3.version}</version>
       <scope>provided</scope> <!-- provided by libs.jar -->
     </dependency>
     <!--
@@ -148,12 +179,12 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.0</version>
+        <version>3.8.1</version>
         <configuration>
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
-          <source>1.8</source>
-          <target>1.8</target>
+          <source>${build.java.version}</source>
+          <target>${build.java.version}</target>
           <encoding>UTF-8</encoding>
           <showDeprecation>true</showDeprecation>
         </configuration>
@@ -161,7 +192,7 @@
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -191,29 +222,7 @@
             </goals>
             <configuration>
               <sourceFile>${project.build.directory}/${project.build.finalName}-jar-with-dependencies.jar</sourceFile>
-              <destinationFile>${project.build.directory}/WebSocketRpcServer.bwextension</destinationFile>
-            </configuration>
-          </execution>
-          <execution>
-            <id>install-extension</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <sourceFile>${project.build.directory}/WebSocketRpcServer.bwextension</sourceFile>
-              <destinationFile>${bitwig.extension.directory}/WebSocketRpcServer.bwextension</destinationFile>
-            </configuration>
-          </execution>
-          <execution>
-            <id>prepublish-for-npm</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <sourceFile>${project.build.directory}/WebSocketRpcServer.bwextension</sourceFile>
-              <destinationFile>${project.basedir}/../WebSocketRpcServer.bwextension</destinationFile>
+              <destinationFile>${project.basedir}/../${build.extension.file.name}</destinationFile>
             </configuration>
           </execution>
         </executions>

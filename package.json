@@ -4,18 +4,25 @@
   "description": "JSON-RPC 2.0 implementation over WebSockets for Bitwig Studio.",
   "main": "index.js",
   "scripts": {
-    "build-dev-extension": "cd mvn && mvn clean post-integration-test",
-    "build-prod-extension": "cd mvn && mvn -P production clean post-integration-test",
-    "install-dev-extension": "npm run build-dev-extension && bin/bws-rpc install",
-    "install-prod-extension": "npm run build-prod-extension && bin/bws-rpc install",
-    "build-browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
-    "test": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
-    "nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
-    "test-browser": "npm run build-browser-test && open test/test.html",
+    "dev:build:extension-api-8": "cd mvn && mvn package",
+    "dev:build:extension-api-9": "cd mvn && mvn -P extension-api-9 clean package",
+    "dev:build:extension-api-10": "cd mvn && mvn -P extension-api-10 clean package",
+    "dev:build:browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
+    "prod:build:extension-api-8": "cd mvn && mvn -P production clean package",
+    "prod:build:extension-api-9": "cd mvn && mvn -P production,extension-api-9 clean package",
+    "prod:build:extension-api-10": "cd mvn && mvn -P production,extension-api-10 clean package",
+    "install": "bin/bws-rpc install --api all",
+    "debug": "mvn/debug.sh",
+    "dev:build": "npm-run-all --sequential dev:build:**",
+    "prod:build": "npm-run-all --sequential prod:build:**",
+    "dev": "npm-run-all --sequential dev:build install debug",
+    "test:cli": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
+    "test:nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
+    "test:browser": "open test/test.html",
+    "test": "npm-run-all --sequential dev:build:** test:**",
     "eslint": "eslint lib/*.js ./*.js bin/bws-rpc",
     "coffeelint": "coffeelint -f coffeelint.json test/",
-    "prepublishOnly": "npm run build-prod-extension",
-    "dev": "npm run install-dev-extension && mvn/debug.sh"
+    "prepublishOnly": "npm-run-all --sequential prod:build:**"
   },
   "repository": {
     "type": "git",
@@ -35,7 +42,9 @@
   },
   "dependencies": {
     "commander": "^4.0.0",
+    "glob": "^7.1.6",
     "js-beautify": "^1.10.2",
+    "rimraf": "^3.0.0",
     "rpc-websockets": "^4.6.1",
     "update-notifier": "^3.0.1"
   },
@@ -54,6 +63,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "isomorphic-ws": "^4.0.1",
     "mocha": "^6.2.2",
+    "npm-run-all": "^4.1.5",
     "underscore": "^1.9.1"
   }
 }

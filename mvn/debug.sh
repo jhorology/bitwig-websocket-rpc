@@ -29,7 +29,8 @@ case "`uname`" in
         ;;
     Darwin*)
         PLATFORM="Mac"
-        BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
+        # BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
+        BITWIG_STUDIO="${HOME}/Applications/Bitwig Studio/3.1 Beta 1/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
         USER_HOME="$HOME"
         ;;
     *)

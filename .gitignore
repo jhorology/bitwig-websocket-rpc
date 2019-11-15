@@ -26,6 +26,6 @@ coverage
 npm-debug.log
 yarn-error.log
 /nbproject/private/
-WebSocketRpcServer.bwextension
+*.bwextension
 usage.js
 test.js

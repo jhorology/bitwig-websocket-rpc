@@ -177,10 +177,6 @@ public abstract class AbstractExtensionDefinition
         return requiredAPIVersion;
     }
     
-    public void setRequiredAPIVersion(int requiredAPIVersion) {
-        this.requiredAPIVersion = requiredAPIVersion;
-    }
-
     /**
      * Is this extension is using Beta APIs?<br>
      * A override of {@link com.bitwig.extension.ExtensionDefinition#isUsingBetaAPI()}

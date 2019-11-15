@@ -5,6 +5,8 @@ const path = require('path'),
       fs = require('fs'),
       os = require('os'),
       execSync = require('child_process').execSync,
+      glob = require('glob'),
+      rimraf = require('rimraf'),
       updateNotifier = require('update-notifier'),
       program = require('commander'),
       WebSocket = require('rpc-websockets').Client,
@@ -13,7 +15,6 @@ const path = require('path'),
       beautify = require('js-beautify'),
       defaultUrl = 'ws://localhost:8887',
       requestTimeoutMillis = 2000,
-      extensionFileName = 'WebSocketRpcServer.bwextension',
       defaultExtensionDir = _defaultExtensionDir()
 
 // check if a new version is available and print an update notification
@@ -35,6 +36,7 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir)
+  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8, 9, 10 or all', '8')
   .action(_execCommand(installCommand))
 
 /* eslint no-multi-spaces: 0 */
@@ -92,14 +94,32 @@ if (!commandExecuted) {
  */
 function installCommand(options) {
   _checkDir(options.extensionDir)
-  const basename = 'WebSocketRpcServer.bwextension',
-        src = path.resolve(__dirname, '..', extensionFileName),
-        dest = path.join(options.extensionDir, basename)
-  _checkFile(src)
-  fs.copyFileSync(src, dest)
-  console.info('file:', dest)
-  console.info('Installation completed successfully.')
-  process.exit(0)
+  const srcDir = path.resolve(__dirname, '..')
+  if (options.api === 'all') {
+    const files = glob.sync(`${srcDir}/WebSocketRpcServer-API*.bwextension`)
+    if (files.length) {
+      rimraf.sync(`${options.extensionDir}/**/WebSocketRpcServer*.bwextension`)
+      files.forEach((src) => {
+        let dest = path.join(options.extensionDir, path.basename(src))
+        fs.copyFileSync(src, dest)
+        console.info('file:', dest)
+      });
+      console.info('Installation completed successfully.')
+      process.exit(0)
+    } else {
+      console.error('could not find extenson file!')
+      process.exit(1)
+    }
+  } else {
+    const src = `${srcDir}/WebSocketRpcServer-API${options.api}.bwextension`,
+          dest = path.join(options.extensionDir, path.basename(src))
+    _checkFile(src)
+    rimraf.sync(`${options.extensionDir}/**/WebSocketRpcServer*.bwextension`)
+    fs.copyFileSync(src, dest)
+    console.info('file:', dest)
+    console.info('Installation completed successfully.')
+    process.exit(0)
+  }
 }
 
 /**

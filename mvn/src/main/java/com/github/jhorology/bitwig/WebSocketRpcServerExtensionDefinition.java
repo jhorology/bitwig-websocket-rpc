@@ -50,7 +50,6 @@ public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefi
      */
     @Override
     public ControllerExtension createInstance(ControllerHost host) {
-        setRequiredAPIVersion(host.getHostApiVersion());
         return new WebSocketRpcServerExtension(this, host, config);
     }
     
