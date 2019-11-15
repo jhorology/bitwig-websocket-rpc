@@ -623,7 +623,7 @@ public class ReflectionRegistry implements RpcRegistry {
                 bankItemCount = module.getBankItemCount(parentNode.getNodeType());
             }
         }
-
+        
         // if return type is implemented both Value and Parameter
         // shoud use Parameter#Value() as event.
         boolean isEvent = isReturnTypeBitwigValue &&
@@ -671,7 +671,7 @@ public class ReflectionRegistry implements RpcRegistry {
             }
             events.put(mh.getAbsoluteName(), (EventHolder)mh);
         }
-        if (isReturnTypeBitwigAPI) {
+        if (isReturnTypeBitwigAPI && !returnType.isEnum()) {
             // register method recursively
             mh.getMethods().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }

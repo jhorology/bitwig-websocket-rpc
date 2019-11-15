@@ -23,6 +23,8 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
+import com.bitwig.extension.api.Color;
+import com.bitwig.extension.controller.api.Action;
 import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
@@ -255,7 +257,17 @@ abstract class RegistryNode {
             methodsStream = methodsStream
                 .filter(m -> !"getDevice".equals(m.getName()));
         }
+        
+        // Color class is difficult to use via remote. ColorValue class is enough. 
+        methodsStream = methodsStream
+            .filter(m -> !Color.class.equals(m.getReturnType()));
 
+        // TODO since API10 uhmmmm..., but I need this.
+        if (Action.class.isAssignableFrom(nodeType)) {
+            methodsStream = methodsStream
+                .filter(m -> !"isEnabled".equals(m.getName()));
+        }
+        
         List<Method> methods = methodsStream.collect(Collectors.toList());
         // for debug
         if (LOG.isDebugEnabled()) {

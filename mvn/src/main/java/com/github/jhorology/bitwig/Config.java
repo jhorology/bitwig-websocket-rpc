@@ -31,9 +31,6 @@ import com.bitwig.extension.controller.api.Preferences;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.bitwig.extension.controller.api.Track;
-import com.github.jhorology.bitwig.ext.api.VuMeterUsedFor;
-import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
-import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 
 // provided dependencies
 import com.google.gson.annotations.Expose;
@@ -42,6 +39,9 @@ import com.google.gson.annotations.Expose;
 import com.github.jhorology.bitwig.extension.AbstractConfiguration;
 import com.github.jhorology.bitwig.extension.ExtensionUtils;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
+import com.github.jhorology.bitwig.ext.api.VuMeterUsedFor;
+import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
+import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 
 public class Config extends AbstractConfiguration {
     private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
@@ -1230,7 +1230,7 @@ public class Config extends AbstractConfiguration {
             ("Use", "CursorDeviceLayer (needs CursorDevice)", false);
         useCursorDeviceLayerValue.addValueObserver(v -> {
                 if (ignoreValueChanged) {
-                    useChainSelectorValue.set(useCursorDeviceLayer);
+                    useCursorDeviceLayerValue.set(useCursorDeviceLayer);
                 } else if (useCursorDeviceLayer != v) {
                     useCursorDeviceLayer = v;
                     valueChanged();

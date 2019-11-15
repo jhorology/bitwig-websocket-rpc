@@ -49,7 +49,7 @@ import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
 
 /**
- * An imnplementation of the core RPC methods.
+ * An implementation of the core RPC methods.
  */
 public class RpcImpl implements Rpc {
     private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);

@@ -15,6 +15,7 @@ const path = require('path'),
       beautify = require('js-beautify'),
       defaultUrl = 'ws://localhost:8887',
       requestTimeoutMillis = 2000,
+      ENABLE_INSTALL_ALL = false,
       defaultExtensionDir = _defaultExtensionDir()
 
 // check if a new version is available and print an update notification
@@ -36,7 +37,7 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir)
-  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8, 9, 10 or all', '8')
+  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8, 9 or 10', '8')
   .action(_execCommand(installCommand))
 
 /* eslint no-multi-spaces: 0 */
@@ -95,15 +96,15 @@ if (!commandExecuted) {
 function installCommand(options) {
   _checkDir(options.extensionDir)
   const srcDir = path.resolve(__dirname, '..')
-  if (options.api === 'all') {
+  if (ENABLE_INSTALL_ALL && options.api === 'all') {
     const files = glob.sync(`${srcDir}/WebSocketRpcServer-API*.bwextension`)
     if (files.length) {
       rimraf.sync(`${options.extensionDir}/**/WebSocketRpcServer*.bwextension`)
       files.forEach((src) => {
-        let dest = path.join(options.extensionDir, path.basename(src))
+        const dest = path.join(options.extensionDir, path.basename(src))
         fs.copyFileSync(src, dest)
         console.info('file:', dest)
-      });
+      })
       console.info('Installation completed successfully.')
       process.exit(0)
     } else {
@@ -180,8 +181,8 @@ async function actionsCommand(options) {
   }
   const ws = await _bwsOpen(options.url, false),
         method = config.useAbbreviatedMethodNames
-        ? 'app.actions'
-        : 'application.getActions',
+          ? 'app.actions'
+          : 'application.getActions',
         actions = await ws.call(method, null, requestTimeoutMillis)
   ws.close()
   _print(actions)
@@ -194,8 +195,8 @@ async function eventsCommand(options) {
   const ws = await _bwsOpen(options.url, true),
         report = await ws.call('rpc.report', null, requestTimeoutMillis),
         events = report.events.filter((e) => {
-    return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
-  }).map((e) => e.event)
+          return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
+        }).map((e) => e.event)
   events.forEach((e) => {
     ws.on(e, function() {
       console.log(`${Date.now()} - [${e}]`, arguments)
