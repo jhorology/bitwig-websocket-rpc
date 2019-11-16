@@ -90,20 +90,6 @@ public class ExtApiFactory implements ExtApi {
     }
     
     /**
-     * Returns a mixin interface.
-     * @param config Configuraton.
-     * @param bitwigApi bitwig API interafce
-     * @return a mixin interface
-     */
-    public static Class<?> getMixinInterface(Config config, Class<?> bitwigApi) {
-        Class<?> extApi = getExtApiInterface(config, bitwigApi);
-        if (extApi != null) {
-            return Proxy.getProxyClass(ExtApiFactory.class.getClassLoader(), new Class<?>[] {bitwigApi, extApi});
-        }
-        return bitwigApi;
-    }
-    
-    /**
      * Create a new mixin instance.
      * @param config Configuraton.
      * @param bitwigApi bitwig API interafce

@@ -35,7 +35,9 @@ import java.util.stream.Collectors;
 // bitwig API
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.DeviceBank;
+import com.bitwig.extension.controller.api.EnumValue;
 import com.bitwig.extension.controller.api.MasterTrack;
+import com.bitwig.extension.controller.api.ObjectArrayValue;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.ParameterBank;
 import com.bitwig.extension.controller.api.RemoteControl;
@@ -44,9 +46,8 @@ import com.bitwig.extension.controller.api.Scene;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.StringArrayValue;
 import com.bitwig.extension.controller.api.StringValue;
+import com.bitwig.extension.controller.api.TimeSignatureValue;
 import com.bitwig.extension.controller.api.Value;
-import com.github.jhorology.bitwig.Config;
-import com.github.jhorology.bitwig.ext.ExtApiFactory;
 
 // provided dependencies
 import org.apache.commons.lang3.ArrayUtils;
@@ -57,9 +58,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
+import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.ext.ExtApiFactory;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
 
 /**
  * An interface that defines registry node.
@@ -258,6 +259,29 @@ abstract class RegistryNode {
                 .filter(m -> !"getDevice".equals(m.getName()));
         }
         
+        // since bitwig 3.1
+        if (StringValue.class.isAssignableFrom(nodeType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("get".equals(m.getName())
+                               && Object.class.equals(m.getReturnType())));
+        }
+        if (EnumValue.class.isAssignableFrom(nodeType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("get".equals(m.getName())
+                               && Object.class.equals(m.getReturnType())));
+        }
+        if (ObjectArrayValue.class.isAssignableFrom(nodeType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("get".equals(m.getName())
+                               && Object.class.equals(m.getReturnType())));
+        }
+        if (TimeSignatureValue.class.isAssignableFrom(nodeType)) {
+            methodsStream = methodsStream
+                .filter(m -> !("get".equals(m.getName())
+                               && Object.class.equals(m.getReturnType())));
+        }
+
+        
         // Color class is difficult to use via remote. ColorValue class is enough. 
         methodsStream = methodsStream
             .filter(m -> !Color.class.equals(m.getReturnType()));
@@ -277,9 +301,9 @@ abstract class RegistryNode {
                                 MethodIdentifier m0id = new MethodIdentifier(m0.getName(), m0.getGenericParameterTypes());
                                 MethodIdentifier m1id = new MethodIdentifier(m1.getName(), m1.getGenericParameterTypes());
                                 if (m0id.equals(m1id)) {
-                                    LOG.debug("these two methods are identical." +
-                                              "\nmethod0:" + nodeType.getSimpleName() + "#" + m0.getName() + " returnType:" + m0.getReturnType().getSimpleName() +
-                                              "\nmethod1:" + nodeType.getSimpleName() + "#" + m1.getName() + " returnType:" + m1.getReturnType().getSimpleName());
+                                    LOG.debug("node:" + absoluteName + " has identical methods." +
+                                              "\n0: " + m0.getReturnType().getSimpleName() + " " + m0.getDeclaringClass().getSimpleName() + "#" + m0.getName() +
+                                              "\n1: " + m1.getReturnType().getSimpleName() + " " + m1.getDeclaringClass().getSimpleName() + "#" + m1.getName());
                                 }
                             }
                         });

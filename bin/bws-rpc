@@ -4,6 +4,7 @@ const path = require('path'),
       assert = require('assert'),
       fs = require('fs'),
       os = require('os'),
+      { isAsyncFunction } = require('util').types,
       execSync = require('child_process').execSync,
       glob = require('glob'),
       rimraf = require('rimraf'),
@@ -219,7 +220,19 @@ async function logsCommand(options) {
 function _execCommand(func) {
   return function(options) {
     commandExecuted = true
-    func(options)
+    if (isAsyncFunction(func)) {
+      func(options).catch((err) => {
+        console.error(err)
+        process.exit(1)
+      })
+    } else {
+      try {
+        func(options)
+      } catch (err) {
+        console.error(err)
+        process.exit(1)
+      }
+    }
   }
 }
 
@@ -324,7 +337,7 @@ function _wsWaitEvent(ws, event, timeout) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       ws.off(event, resolve)
-      reject(new Error(`timeout waiting for event:${event})`))
+      reject(new Error(`timeout waiting for event:${event}`))
     }, timeout)
     ws.once(event, () => {
       clearTimeout(timer)

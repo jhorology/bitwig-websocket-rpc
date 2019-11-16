@@ -25,12 +25,12 @@
     <!-- default configuration values -->
     <extension.config.logLevel>TRACE</extension.config.logLevel>
     <extension.config.webSocketPort>8887</extension.config.webSocketPort>
-    <extension.config.useAbbreviatedMethodNames>true</extension.config.useAbbreviatedMethodNames>
+    <extension.config.useAbbreviatedMethodNames>false</extension.config.useAbbreviatedMethodNames>
     <extension.config.production>false</extension.config.production>
     <!-- build env -->
     <build.java.version>1.8</build.java.version>
     <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
-    <build.bitwig.extension.api.version>9</build.bitwig.extension.api.version>
+    <build.bitwig.extension.api.version>8</build.bitwig.extension.api.version>
     <build.commons.lang3.version>3.1</build.commons.lang3.version>
   </properties>
   
@@ -45,7 +45,6 @@
         <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
         <!-- default configuration values -->
         <extension.config.logLevel>WARN</extension.config.logLevel>
-        <extension.config.useAbbreviatedMethodNames>false</extension.config.useAbbreviatedMethodNames>
         <extension.config.production>true</extension.config.production>
         <!-- build env -->
       </properties>

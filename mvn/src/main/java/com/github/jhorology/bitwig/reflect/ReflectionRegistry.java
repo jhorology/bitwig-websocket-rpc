@@ -30,9 +30,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
+import com.bitwig.extension.controller.api.Action;
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Arranger;
 import com.bitwig.extension.controller.api.BrowserFilterColumn;
@@ -92,7 +94,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(ReflectionRegistry.class);
 
     /**
-     * the delimitter for method chain.
+     * the delimiter for method chain.
      */
     public static final String NODE_DELIMITER = ".";
 
@@ -105,9 +107,12 @@ public class ReflectionRegistry implements RpcRegistry {
 
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
+    
+    private Action[] actions;
 
     /**
-     *
+     * Constructor
+     * @param config
      * @param protocol
      */
     public ReflectionRegistry(Config config, ProtocolHandler protocol) {
@@ -138,6 +143,13 @@ public class ReflectionRegistry implements RpcRegistry {
             register("application",
                      Application.class,
                      application);
+            
+            // TODO temporary fix
+            // since bitwig studio 3.1, Application#getActions() throws exception.
+            // "This can only be called during driver initialization."
+            if (host.getHostVersion().compareTo("3.1") > 0) {
+                actions = application.getActions();
+            }
         }
         if (config.useTransport()) {
             Transport transport = host.createTransport();
@@ -588,10 +600,11 @@ public class ReflectionRegistry implements RpcRegistry {
             module.getBankItemCount(returnType) == 0) {
             // maybe correct
             // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
+            // TODO is need track.clipLauncherSlotBank or sendBank for Clip#getTrack ?
             if (LOG.isDebugEnabled()) {
-                LOG.debug("##!!! Bank type founded, but bankItemCount is not registered.!!"
-                          + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
-                          + " bankType:" + returnType);
+                LOG.warn("##!!! Bank type founded, but bankItemCount is not registered.!!"
+                         + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
+                         + " bankType:" + returnType);
             }
             return;
         }
@@ -612,10 +625,9 @@ public class ReflectionRegistry implements RpcRegistry {
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("##!!! Bank Method returns unassignable bank item type!!"
-                                  + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
-                                  + " returnType:" + returnType
-                                  + " replaceWith:" + bankItemType);
+                        LOG.debug("method:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
+                                  + "\n map bank item type:" + returnType.getSimpleName()
+                                  + " to type:" + bankItemType.getSimpleName());
                     }
                     // replace return type
                     returnType = bankItemType;
@@ -647,26 +659,26 @@ public class ReflectionRegistry implements RpcRegistry {
             (isReturnTypeBitwigAPI &&
              protocol.isSerializableBitwigType(returnType))) {
             // for debug
-            if (LOG.isDebugEnabled()) {
+            if (LOG.isWarnEnabled()) {
                 MethodHolder duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
-                    LOG.debug("##!!! duplicated method!!"
-                              + "\nevent:" + mh.getAbsoluteName()
-                              + "\nold:" + duplicatedMethod.getExpression(true)
-                              + "\nnew:" + mh.getExpression(true));
+                    LOG.warn("##!!! duplicated method!!"
+                             + "\nmethod:" + mh.getAbsoluteName()
+                             + "\nold:" + formatMethod(duplicatedMethod.method)  
+                             + "\nnew:" + formatMethod(mh.method));
                 }
             }
             methods.put(mh.getIdentifier(), mh);
         }
         if (isEvent) {
             // for debug
-            if (LOG.isDebugEnabled()) {
+            if (LOG.isWarnEnabled()) {
                 EventHolder duplicatedEvent = events.get(mh.getAbsoluteName());
                 if (duplicatedEvent != null) {
                     LOG.warn("##!!! duplicated event!!"
                              + "\nevent:" + mh.getAbsoluteName()
-                             + "\nold:" + duplicatedEvent.getExpression(true)
-                             + "\nnew:" + mh.getExpression(true));
+                             + "\nold:" + formatMethod(duplicatedEvent.method)  
+                             + "\nnew:" + formatMethod(mh.method));
                 }
             }
             events.put(mh.getAbsoluteName(), (EventHolder)mh);
@@ -675,5 +687,19 @@ public class ReflectionRegistry implements RpcRegistry {
             // register method recursively
             mh.getMethods().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
+    }
+    
+    private String formatMethod(Method m) {
+        StringBuilder sb = new StringBuilder(m.getReturnType().getSimpleName());
+        sb.append(" ");
+        sb.append(m.getDeclaringClass().getSimpleName());
+        sb.append("#");
+        sb.append(m.getName());
+        sb.append("(");
+        sb.append(Stream.of(m.getGenericParameterTypes())
+            .map(t -> t.getClass().getSimpleName())
+            .collect(Collectors.joining(", ")));
+        sb.append(")");
+        return sb.toString();
     }
 }

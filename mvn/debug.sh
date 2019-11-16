@@ -1,8 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-BITWIG_VERSION="3.0.3"
-BETA=false
+BITWIG_VERSION="3.1 Beta 1"
 
 wslenv() {
   cmd.exe /C "echo %$1%"  2> /dev/null | sed -e "s/[\r\n]\+//g"
@@ -14,6 +13,18 @@ wslpath() {
     set -- "${1:-$(</dev/stdin)}" "${@:2}"
     echo $1 | sed -e 's/\\/\//g' -e 's/^\(.*\):/\/mnt\/\L\1/'
 }
+
+for arg in "$@"; do
+  case $arg in
+    -clean) clean=true ;;
+    *) ;;
+  esac
+done
+
+if [[ -n $clean ]]; then
+    # clean RC file
+    rm -f "${USER_HOME}"/.bitwig.extension.*
+fi
 
 case "`uname`" in
     Linux*)
@@ -29,8 +40,11 @@ case "`uname`" in
         ;;
     Darwin*)
         PLATFORM="Mac"
-        # BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
-        BITWIG_STUDIO="${HOME}/Applications/Bitwig Studio/3.1 Beta 1/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
+        if [[ $BITWIG_VERSION == *"Beta"* ]]; then
+            BITWIG_STUDIO="${HOME}/Applications/Bitwig Studio/${BITWIG_VERSION}/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
+        else
+            BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
+        fi
         USER_HOME="$HOME"
         ;;
     *)
@@ -39,16 +53,4 @@ case "`uname`" in
         ;;
 esac
 
-for arg in "$@"; do
-  case $arg in
-    -clean) clean=true ;;
-    *) ;;
-  esac
-done
-
-if [[ -n $clean ]]; then
-    # clean RC file
-    rm -f "${USER_HOME}"/.bitwig.extension.*
-fi
-
-BITWIG_DEBUG_PORT=8989 "${BITWIG_STUDIO}"
+BITWIG_DEBUG_PORT=8989 BITWIG_VERSION=${BITWIG_VERSION} "${BITWIG_STUDIO}"

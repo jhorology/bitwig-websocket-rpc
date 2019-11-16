@@ -151,8 +151,18 @@ class MethodHolder extends RegistryNode implements RpcMethod {
             }
             return result;
         } catch (Exception ex) {
-            setError(ex, "Faild invoking method.");
-            throw ex;
+            StringBuilder msg = new StringBuilder("Faild invoking method.");
+            Exception err = ex;
+            if (ex instanceof InvocationTargetException) {
+                Throwable cause = ex.getCause();
+                if (cause != null && cause instanceof Exception) {
+                    err = (Exception)cause;
+                    msg.append(" cause:");
+                    msg.append(cause.getMessage());
+                }
+            }
+            setError(err,  msg.toString());
+            throw err;
         }
     }
 
