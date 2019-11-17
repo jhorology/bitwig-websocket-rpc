@@ -15,7 +15,7 @@ const path = require('path'),
       pkg = require('../package.json'),
       beautify = require('js-beautify'),
       defaultUrl = 'ws://localhost:8887',
-      requestTimeoutMillis = 2000,
+      requestTimeoutMillis = 5000,
       ENABLE_INSTALL_ALL = false,
       defaultExtensionDir = _defaultExtensionDir()
 
@@ -45,7 +45,7 @@ program
 program
   .command('config')
   .description('Configure RPC modules.')
-  .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL.', defaultUrl)
   .option('-r, --reset',       'reset configuration to defaults.')
   .option('-f, --file <path>', 'config file(.js|.json) path. this option is ignored by -r option.')
   .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -r or -f option.')
@@ -56,7 +56,7 @@ program
 program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
   .action(_execCommand(reportCommand))
 
 program
@@ -68,13 +68,15 @@ program
 program
   .command('events')
   .description('Monitor events.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(eventsCommand))
 
 program
   .command('logs')
   .description('Trace controller script logs.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(logsCommand))
 
 // error on unknown commands
@@ -165,7 +167,7 @@ async function configCommand(options) {
  * report methods & events
  */
 async function reportCommand(options) {
-  const ws = await _bwsOpen(options.url, false),
+  const ws = await _bwsOpen(options.url),
         report = await ws.call('rpc.report', null, requestTimeoutMillis)
   ws.close()
   _print(report)
@@ -180,7 +182,7 @@ async function actionsCommand(options) {
     config.useApplication = true
     await bitwig(options.url, config)
   }
-  const ws = await _bwsOpen(options.url, false),
+  const ws = await _bwsOpen(options.url),
         method = config.useAbbreviatedMethodNames
           ? 'app.actions'
           : 'application.getActions',
@@ -193,28 +195,67 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = await _bwsOpen(options.url, true),
-        report = await ws.call('rpc.report', null, requestTimeoutMillis),
-        events = report.events.filter((e) => {
-          return !e.event.startsWith('test.') && !e.event.startsWith('rpc.')
-        }).map((e) => e.event)
-  events.forEach((e) => {
-    ws.on(e, function() {
-      console.log(`${Date.now()} - [${e}]`, arguments)
+  if (options.reconnect) {
+    const ws = new WebSocket(options.url, {
+      autoconnect: true,
+      reconnect: true,
+      max_reconnects: 0 // 0 means unlimited
     })
-  })
-  ws.subscribe(events)
+    ws.on('open', async () => {
+      const report = await ws.call('rpc.report', null, requestTimeoutMillis),
+            events = report.events
+              .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
+              .map((e) => e.event)
+      events.forEach((e) => {
+        ws.on(e, function() {
+          console.log(`${Date.now()} - [${e}]`, arguments)
+        })
+      })
+      ws.once('close', () => {
+        ws.removeAllListeners(events)
+      })
+      ws.subscribe(events)
+    })
+  } else {
+    const ws = await _bwsOpen(options.url),
+          report = await ws.call('rpc.report', null, requestTimeoutMillis),
+          events = report.events
+            .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
+            .map((e) => e.event)
+    events.forEach((e) => {
+      ws.on(e, function() {
+        console.log(`${Date.now()} - [${e}]`, arguments)
+      })
+    })
+    ws.subscribe(events)
+  }
 }
 
 /**
  * trace controller script logs
  */
 async function logsCommand(options) {
-  const ws = await _bwsOpen(options.url, true)
-  ws.on('rpc.log', log => {
-    console.log(log)
-  })
-  ws.subscribe('rpc.log')
+  let ws
+  if (options.reconnect) {
+    ws = new WebSocket(options.url, {
+      autoconnect: true,
+      reconnect: true,
+      max_reconnects: 0 // 0 means unlimited
+    })
+    ws.on('open', () => {
+      ws.removeAllListeners(['rpc.log'])
+      ws.on('rpc.log', log => {
+        console.log(log)
+      })
+      ws.subscribe('rpc.log')
+    })
+  } else {
+    ws =  await _bwsOpen(options.url)
+    ws.on('rpc.log', log => {
+      console.log(log)
+    })
+    ws.subscribe('rpc.log')
+  }
 }
 
 function _execCommand(func) {
@@ -308,23 +349,23 @@ function _print(obj) {
 }
 
 async function _getCurrentConfig(url) {
-  const ws = await _bwsOpen(url, false),
+  const ws = await _bwsOpen(url),
         config = await ws.call('rpc.config', null, requestTimeoutMillis)
   ws.close()
   return config
 }
 
-async function _bwsOpen(url, reconnect) {
+async function _bwsOpen(url) {
   const ws = new WebSocket(url, {
     autoconnect: true,
     reconnect: true,
-    max_reconnects: reconnect ? 0 : 4 // 0 means unlimited
+    max_reconnects: 4 // 0 means unlimited
   })
   try {
     await _wsWaitEvent(ws, 'open', 5000)
     // assert connection is established. timeout 2000msec
     assert.ok((await ws.call('rpc.echo', ['hello'], 2000)) === 'hello')
-    ws.reconnect = reconnect
+    ws.reconnect = false
   } catch (err) {
     ws.reconnect = false
     ws.close()
@@ -333,14 +374,16 @@ async function _bwsOpen(url, reconnect) {
   return ws
 }
 
-function _wsWaitEvent(ws, event, timeout) {
+function _wsWaitEvent(ws, event, timeout = 0) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      ws.off(event, resolve)
-      reject(new Error(`timeout waiting for event:${event}`))
-    }, timeout)
+    const timer = timeout
+      ? setTimeout(() => {
+        ws.off(event, resolve)
+        reject(new Error(`timeout waiting for event:${event}`))
+      }, timeout)
+      : undefined
     ws.once(event, () => {
-      clearTimeout(timer)
+      if (timer) clearTimeout(timer)
       resolve()
     })
   })

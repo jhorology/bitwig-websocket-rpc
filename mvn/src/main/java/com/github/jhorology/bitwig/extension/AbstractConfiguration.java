@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.bitwig.extension.controller.api.SettableBooleanValue;
 
 // dependencies
 import com.google.gson.annotations.Expose;
@@ -54,6 +55,8 @@ public abstract class AbstractConfiguration {
     // populate from json -->
     @Expose(serialize = false)
     private LogSeverity logLevel;
+    @Expose(serialize = false)
+    protected boolean logOutputSystemConsole;
     @Expose(serialize = false)
     protected boolean production;
     // <--
@@ -107,6 +110,7 @@ public abstract class AbstractConfiguration {
     protected void resetToDefaults() {
         if (logLevel == null)
             logLevel = LogSeverity.ERROR;
+        logOutputSystemConsole = false;
     }
 
     /**
@@ -132,7 +136,7 @@ public abstract class AbstractConfiguration {
         }
 
         LogSeverity severity = ExtensionUtils.getPreferenceAsEnum
-            (host, "Log Level", "Debug", LogSeverity.WARN, logLevel, (e, v) -> {
+            (host, "Log Level", "Logging", LogSeverity.WARN, logLevel, (e, v) -> {
                 if (ignoreValueChanged) {
                     v.set(logLevel.name());
                 } else if (logLevel != e) {
@@ -141,6 +145,20 @@ public abstract class AbstractConfiguration {
                     valueChanged();
                 }
             });
+
+        if (!production) {
+            SettableBooleanValue logOutputSystemConsoleValue = host.getPreferences().getBooleanSetting
+                ("Output system console", "Logging", false);
+            logOutputSystemConsoleValue.addValueObserver(v -> {
+                if (ignoreValueChanged) {
+                    logOutputSystemConsoleValue.set(logOutputSystemConsole);
+                } else if (logOutputSystemConsole != v) {
+                    logOutputSystemConsole = v;
+                    valueChanged();
+                }
+            });
+        }
+
 
         if (!USE_RC_FILE) {
             logLevel = severity;
@@ -189,6 +207,14 @@ public abstract class AbstractConfiguration {
         return logLevel;
     }
 
+    /**
+     * Return a flag to output log to system console, or not.
+     * @return
+     */
+    boolean getLogOutputSystemConsole() {
+        return logOutputSystemConsole;
+    }
+    
     /**
      * Inherited class should call this method when configuration value has been changed.
      */

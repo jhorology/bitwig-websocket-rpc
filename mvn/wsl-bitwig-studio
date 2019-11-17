@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const path = require('path'),
-      { execSync, spawn } = require('child_process')
+      { execSync, spawn } = require('child_process'),
+      beta = process.env.BITWIG_VERSION && process.env.BITWIG_VERSION.includes('Beta')
 
 function winenv(name) {
   return execSync(`cmd.exe /C echo %${name}% 2> /dev/null`, {
@@ -13,24 +14,20 @@ function win2wslpath(winPath) {
   return execSync(`wslpath "${winPath}"`)
     .toString().replace(/[\r\n]+$/g, '')
 }
-
-const bitwig = path.join(win2wslpath(winenv('PROGRAMFILES')), 'Bitwig Studio', 'Bitwig Studio.exe')
-
-console.info(process.env.BITWIG_DEBUG_PORT);
-console.info(bitwig);
+const bitwig = path.join(win2wslpath(winenv('PROGRAMFILES')), `Bitwig Studio${beta ? ' ' + process.env.BITWIG_VERSION : ''}`, 'Bitwig Studio.exe')
 const childProcess = spawn(bitwig, [], {
-    detached: true,
-    stdio: 'pipe',
-    env: {
-        BITWIG_DEBUG_PORT: process.env.BITWIG_DEBUG_PORT,
-        WSLENV: 'BITWIG_DEBUG_PORT'
-    }
+  detached: true,
+  stdio: 'pipe',
+  env: {
+    BITWIG_DEBUG_PORT: process.env.BITWIG_DEBUG_PORT,
+    WSLENV: 'BITWIG_DEBUG_PORT'
+  }
 })
 
 childProcess.stdout.on('data', data => {
-    process.stdout.write(data)
+  process.stdout.write(data)
 })
 
 childProcess.stderr.on('data', data => {
-    process.stderr.write(data)
+  process.stderr.write(data)
 })

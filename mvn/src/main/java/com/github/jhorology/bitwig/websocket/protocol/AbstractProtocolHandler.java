@@ -77,7 +77,6 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
 
     @Subscribe
     public final void onStop(StopEvent e) {
-        onStop();
     }
 
     @Subscribe

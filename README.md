@@ -43,7 +43,7 @@ npx bws-rpc <cmd> [options]
       -e, --extension-dir <path>  Bitwig Studio Extension directory
                                   (default: "<Platfom Specific>/Extensions")
       -a, --api <version>         Bitwig Studio Extension API version.
-                                  version=8, 9, 10 or all (default: "8")
+                                  version=8, 9 or 10 (default: "8")
       -h, --help                  output usage information
 
     $ npx bws-rpc config --help
@@ -289,8 +289,6 @@ bitwig-websocket-rpc
 - Currently calling `Bank#setSizeOfBank()` method doesn't support extending or reducing fire events.
 
 - WebsocketRpcServer.bwextension calls following API methods from outside of Control Surface Session thread. It maybe dangerous.
-    - `Host#println()`
-    - `Host#errorln()`
     - `Host#requestFlush()`
 
 ## License

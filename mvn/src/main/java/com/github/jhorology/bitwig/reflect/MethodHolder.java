@@ -108,7 +108,7 @@ class MethodHolder extends RegistryNode implements RpcMethod {
      * @params parameter(s) for invoking method.
      */
     @Override
-    @SuppressWarnings({"unchecked", "UseSpecificCatch"})
+    @SuppressWarnings({"UseSpecificCatch"})
     public Object invoke(Object[] params) throws Exception {
         if (params == null) {
             params = ReflectUtils.EMPTY_ARRAY;

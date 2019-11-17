@@ -21,11 +21,6 @@ for arg in "$@"; do
   esac
 done
 
-if [[ -n $clean ]]; then
-    # clean RC file
-    rm -f "${USER_HOME}"/.bitwig.extension.*
-fi
-
 case "`uname`" in
     Linux*)
         if grep -q Microsoft /proc/version; then
@@ -52,5 +47,10 @@ case "`uname`" in
         exit 1
         ;;
 esac
+
+if [[ -n $clean ]]; then
+    # clean RC file
+    rm -f "${USER_HOME}"/.bitwig.extension.*
+fi
 
 BITWIG_DEBUG_PORT=8989 BITWIG_VERSION=${BITWIG_VERSION} "${BITWIG_STUDIO}"

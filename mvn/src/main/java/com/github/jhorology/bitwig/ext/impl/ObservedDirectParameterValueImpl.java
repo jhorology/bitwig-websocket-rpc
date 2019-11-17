@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
  * @param <T> type of raw value.
  */
 public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParameterValue<T> {
-    private static final boolean NOTIFY_VALUES_ON_SUBSCRIBE = false;
     private final Map<String, IdValuePair<String, T>> paramsCache;
     private List<String> observedIds;
     private final List<ObjectValueChangedCallback<IdValuePair<String, T>>> callbacks;
@@ -110,11 +109,6 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      */
     @Override
     public void setIsSubscribed(boolean subscribed) {
-        boolean on = subscribed && !this.subscribed;
-        this.subscribed = subscribed;
-        if (NOTIFY_VALUES_ON_SUBSCRIBE && on) {
-            notifyValues();
-        }
         this.subscribed = subscribed;
     }
 

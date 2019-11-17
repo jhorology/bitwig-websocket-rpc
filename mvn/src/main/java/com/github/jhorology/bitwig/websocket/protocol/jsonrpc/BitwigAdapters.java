@@ -186,12 +186,12 @@ public class BitwigAdapters {
     /**
      * A GSON type adapter for IntegerValue.
      */
-    public static class CollectionValueAdapter implements JsonSerializer<CollectionValue> {
+    public static class CollectionValueAdapter implements JsonSerializer<CollectionValue<?>> {
         /**
          * {@inheritDoc}
          */
         @Override
-        public JsonElement serialize(CollectionValue src, Type typeOfSrc, JsonSerializationContext context) {
+        public JsonElement serialize(CollectionValue<?> src, Type typeOfSrc, JsonSerializationContext context) {
             return context.serialize(src.values());
         }
     }

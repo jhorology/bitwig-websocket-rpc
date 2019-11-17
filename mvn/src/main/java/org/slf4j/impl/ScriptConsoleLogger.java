@@ -70,6 +70,7 @@ public class ScriptConsoleLogger
     private static boolean reentrantLock;
     private static int indentColumnSize;
     private static LogSeverity globalLogLevel;
+    private static boolean outputSystemConsole;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -84,6 +85,7 @@ public class ScriptConsoleLogger
     static void init() {
         CONFIG_PARAMS = new ScriptConsoleLoggerConfiguration();
         CONFIG_PARAMS.init();
+        outputSystemConsole = CONFIG_PARAMS.outputSystemConsole;
         subscribers = new ArrayList<>();
         tailMessages = new ArrayDeque<>(TAIL_QUEUE_SIZE);
         reentrantLock = false;
@@ -97,6 +99,14 @@ public class ScriptConsoleLogger
      */
     public static void setGlobalLogLevel(LogSeverity level) {
         globalLogLevel = level;
+    }
+
+    /**
+     * set a flag to output system console or not.
+     * @param on
+     */
+    public static void setOutputSystemConsole(boolean on) {
+        outputSystemConsole = on;
     }
     
     /**
@@ -592,17 +602,21 @@ public class ScriptConsoleLogger
         }
         String logMessage = buf.toString();
         
-        // TODO maybe not thread safe.
-        if (level.compareTo(LogSeverity.WARN) >= 0) {
-            outputScriptConsole(logMessage, (s) -> host.errorln(s));
-        } else {
-            outputScriptConsole(logMessage, (s) -> host.println(s));
+        if (outputSystemConsole) {
+            System.out.println(logMessage);
         }
+        
         // trigger value changed event.
         // only support within control surface session,
         // 'cause need to consider too many things...
         if (Thread.currentThread() == controlSurfaceSession) {
             triggerValueChanged(logMessage);
+
+            if (level.compareTo(LogSeverity.WARN) >= 0) {
+                outputScriptConsole(logMessage, (s) -> host.errorln(s));
+            } else {
+                outputScriptConsole(logMessage, (s) -> host.println(s));
+            }
         }
     }
 

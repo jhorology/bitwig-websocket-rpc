@@ -38,7 +38,6 @@ import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterValue;
 
 public class VuMeterValueImpl implements VuMeterValue {
-    private static final boolean NOTIFY_VALUES_ON_SUBSCRIBE = false;
     private final Channel channel;
     private final List<VuMeterLevel> values;
     private final List<ObjectValueChangedCallback<VuMeterLevel>> callbacks;
@@ -106,11 +105,6 @@ public class VuMeterValueImpl implements VuMeterValue {
      */
     @Override
     public void setIsSubscribed(boolean subscribed) {
-        boolean on = subscribed && !this.subscribed;
-        this.subscribed = subscribed;
-        if (NOTIFY_VALUES_ON_SUBSCRIBE && on) {
-            notifyValues();
-        }
         this.subscribed = subscribed;
     }
 

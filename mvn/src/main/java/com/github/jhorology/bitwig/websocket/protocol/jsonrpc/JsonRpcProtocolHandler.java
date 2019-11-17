@@ -94,6 +94,8 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void onMessage(WebSocket conn, String message) {
+        if (gson == null) return;
+        
         BatchOrSingleRequest req;
         try {
             req = gson.fromJson(message, BatchOrSingleRequest.class);
@@ -146,7 +148,9 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void push(Notification notification, WebSocket client) {
-        send(gson.toJson(notification), client);
+        if (gson != null) {
+            send(gson.toJson(notification), client);
+        }
     }
     
     /**
@@ -154,7 +158,9 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void push(Notification notification, Collection<WebSocket> clients) {
-        push(gson.toJson(notification), clients);
+        if (gson != null) {
+            push(gson.toJson(notification), clients);
+        }
     }
     
     /**
@@ -162,7 +168,9 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void broadcast(Notification notification) {
-        broadcast(gson.toJson(notification));
+        if (gson != null) {
+            broadcast(gson.toJson(notification));
+        }
     }
     
     /**

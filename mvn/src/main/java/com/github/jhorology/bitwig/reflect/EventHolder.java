@@ -140,7 +140,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          * Sync subscription states between RPC and Bitwig Studio.
          * @return host side state will change to subscribed
          */
-        @SuppressWarnings({"UseSpecificCatch", "unchecked"})
+        @SuppressWarnings({"UseSpecificCatch"})
         private boolean syncSubscribedState() {
             try {
                 Value value = (Value)invoke(bankIndexes);
@@ -185,7 +185,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             // 'cause message should be sent at after Request/Reponse sequence.
             if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
                 if (collectionValue) {
-                    ((CollectionValue)value).values().stream().forEach(v -> {
+                    ((CollectionValue<?>)value).values().stream().forEach(v -> {
                         RequestContext.getContext()
                             .addNotification(newNotification(v));
                     });
@@ -203,6 +203,11 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             if (clients.contains(client) && pushModel!= null) {
                 pushModel.push(newNotification(params), client);
             }
+        }
+        
+        
+        private void clear() {
+            value.unsubscribe();
         }
         
         /**
@@ -317,6 +322,15 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     @Override
     void clear() {
         clients.clear();
+        if (primitiveEvent != null) {
+            primitiveEvent.clear();
+        } else {
+            primitiveEvents.forEach(e -> e.clear());
+            primitiveEvents.clear();
+        }
+        if (bankIndexCombinations != null) {
+            bankIndexCombinations.clear();
+        }
     }
 
     /**

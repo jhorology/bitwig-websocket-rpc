@@ -56,10 +56,10 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
         ReflectionRegistry registry = new ReflectionRegistry(config, protocol);
         // returns subscriber modules of extension event.
         return new Object[] {
-            registry,
             new WebSocketRpcServer(config.getWebSocketPort(),
                                    protocol,
-                                   registry)
+                                   registry),
+            registry
         };
     }
 }

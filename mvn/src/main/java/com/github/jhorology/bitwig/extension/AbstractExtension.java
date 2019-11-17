@@ -98,6 +98,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         // always return intial value at this time.
         config.init(host, getExtensionDefinition());
         ScriptConsoleLogger.setGlobalLogLevel(config.getLogLevel());
+        ScriptConsoleLogger.setOutputSystemConsole(config.getLogOutputSystemConsole());
         ScriptConsoleLogger.setControllerHost(host);
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
@@ -111,7 +112,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         try {
             Object[] modules = createModules();
             if (modules != null && modules.length > 0) {
-                Stream.of(modules).forEach(m -> register(m));
+                Stream.of(modules).forEach(this::register);
             }
             eventBus.post(initEvent);
             LOG.trace("Extension has been initialized.");

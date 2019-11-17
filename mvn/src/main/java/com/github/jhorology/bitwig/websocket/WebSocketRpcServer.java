@@ -63,12 +63,6 @@ public class WebSocketRpcServer
     private boolean fullDrained;
 
     /**
-     *  private constructor for prevent instantiation
-     */
-    private WebSocketRpcServer() {
-    }
-
-    /**
      * Construct a server.
      * @param port
      * @param protocol

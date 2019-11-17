@@ -72,6 +72,8 @@ public class ExtApiFactory implements ExtApi {
         }
         if (Channel.class.isAssignableFrom(bitwigApi)) {
             switch(config.getVuMeterUsedFor()) {
+                case NONE:
+                    break;
                 case CURSOR_TRACK:
                     if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
                         return ChannelExt.class;

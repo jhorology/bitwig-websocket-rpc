@@ -54,6 +54,8 @@ public class ScriptConsoleLoggerConfiguration {
     int columnSize = 94;
     @Expose
     String indentPrefix = " > ";
+    @Expose
+    boolean outputSystemConsole = false;
 
     DateFormat dateFormatter = null;
     
