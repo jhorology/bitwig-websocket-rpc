@@ -43,6 +43,7 @@ import java.util.function.Consumer;
 import com.bitwig.extension.callback.StringValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.StringValue;
+import java.util.HashMap;
 
 // dependencies
 import org.slf4j.helpers.FormattingTuple;
@@ -99,6 +100,18 @@ public class ScriptConsoleLogger
      */
     public static void setGlobalLogLevel(LogSeverity level) {
         globalLogLevel = level;
+    }
+    
+    /**
+     * set a severity level of logger.
+     * @param namePrefix
+     * @param level
+     */
+    public static void setLogLevel(String namePrefix, LogSeverity level) {
+        if (CONFIG_PARAMS.logLevels == null) {
+            CONFIG_PARAMS.logLevels = new HashMap<>();
+        }
+        CONFIG_PARAMS.logLevels.put(namePrefix, level);
     }
 
     /**
@@ -629,12 +642,9 @@ public class ScriptConsoleLogger
         int indexOfLastDot = tempName.length();
         while ((level == null) && (indexOfLastDot > -1)) {
             tempName = tempName.substring(0, indexOfLastDot);
-            String levelString = CONFIG_PARAMS.logLevels.get(tempName);
-            if (levelString != null) {
-                level = LogSeverity.valueOf(levelString);
-                if (level != null) {
-                    return level;
-                }
+            level = CONFIG_PARAMS.logLevels.get(tempName);
+            if (level != null) {
+                return level;
             }
             indexOfLastDot = String.valueOf(tempName).lastIndexOf(".");
         }
@@ -683,7 +693,10 @@ public class ScriptConsoleLogger
     private boolean isLevelEnabled(LogSeverity level) {
         // log level are numerically ordered so can use simple numeric
         // comparison
-        return globalLogLevel.compareTo(level) <= 0 || (logLevel != null && logLevel.compareTo(level) <= 0);
+        
+        return logLevel != null
+                ? logLevel.compareTo(level) <= 0
+                : globalLogLevel.compareTo(level) <= 0;
     }
     
     private String createStackTraceString(Throwable ex) {

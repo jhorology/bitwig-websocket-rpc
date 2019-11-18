@@ -203,7 +203,7 @@ public abstract class AbstractConfiguration {
      * Return a log level that defined as configuration value.
      * @return
      */
-    LogSeverity getLogLevel() {
+    public LogSeverity getLogLevel() {
         return logLevel;
     }
 

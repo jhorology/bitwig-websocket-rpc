@@ -72,7 +72,7 @@
         <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
-        <build.java.version>12</build.java.version>
+        <!-- <build.java.version>12</build.java.version> -->
         <build.bitwig.extension.api.version>10</build.bitwig.extension.api.version>
         <build.commons.lang3.version>3.5</build.commons.lang3.version>
       </properties>

@@ -49,7 +49,7 @@ public class ScriptConsoleLoggerConfiguration {
     @Expose
     LogSeverity defaultLogLevel = LogSeverity.WARN;
     @Expose
-    Map<String, String> logLevels = null;
+    Map<String, LogSeverity> logLevels = null;
     @Expose
     int columnSize = 94;
     @Expose
