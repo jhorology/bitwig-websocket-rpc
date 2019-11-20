@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.ext.api;
 
 // bitwig API
+import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Device;
 
@@ -30,6 +31,13 @@ import com.bitwig.extension.controller.api.Device;
  * An abstract factory interface for extended API.
  */
 public interface ExtApi {
+    /**
+     * create an instance of extended Application API.
+     * @param application the instance of base application
+     * @return 
+     */
+    ApplicationExt createApplicationExt(Application application);
+    
     /**
      * create an instance of extended Device API.
      * @param device the instance of base Device

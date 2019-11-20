@@ -22,19 +22,13 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-public enum VuMeterUsedFor {
-    NONE("None"),
-    CURSOR_TRACK("Cursor Track"),
-    TRACK("All Track"),
-    CHANNEL("All Channel (include Track)");
-
-    private final String displayValue;
-    
-    private VuMeterUsedFor(String displayValue) {
-        this.displayValue = displayValue;
-    }
-
-    public String getDisplayValue() {
-        return displayValue;
-    }
+/**
+ * The extended API that allows to access VU Meter of Channel.
+ */
+public interface ApplicationExt {
+    /**
+     * Return a Value object that report action's enabled state.
+     * @return 
+     */
+    ObservedActionValue observedAction();
 }

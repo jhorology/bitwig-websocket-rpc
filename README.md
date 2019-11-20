@@ -149,25 +149,26 @@ const wait = millis => {
 ### API
 ```js
 const bitwig = require('bitwig-websocket-rpc');
-bitwig(url, config).then(() => {
+bitwig(url, config).then(c => {
     // configuration is done
 });
 // or inside async function
 (async () => {
-    await bitwig(url, config);
+    const config = await bitwig(url, config);
 })();
 
 ```
-### bitwig(url, config)
+### bitwig(url, config[, merge])
 
 Configure RPC modules. 
 
 Return:
-* {`Promise`}: resolve value is undefined.
+* {`Promise`}: resolve the present configuration after applying this function.
 
 Parameters:
 * `url` {`String`}: The URL of the WebSocket server.
 * `config` {`Object`}: The configuration of RPC modules. see section below for details.
+* `merge` {`boolean`}: merge config object into current configuration, or not. default:false
 
 This configuration is not session scoped. It's stored as JSON file in your home diretory.
 ```sh

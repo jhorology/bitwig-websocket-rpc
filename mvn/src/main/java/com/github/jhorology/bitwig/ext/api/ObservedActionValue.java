@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2019 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -22,19 +22,24 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-public enum VuMeterUsedFor {
-    NONE("None"),
-    CURSOR_TRACK("Cursor Track"),
-    TRACK("All Track"),
-    CHANNEL("All Channel (include Track)");
+// source
+import com.github.jhorology.bitwig.ext.IdValuePair;
 
-    private final String displayValue;
+/**
+ * Value interface for observing action.
+ * @author masafumi
+ */
+public interface ObservedActionValue extends CollectionValue<IdValuePair<String, Boolean>> {
+    /**
+     * Get a enabled state of specified action.
+     * @param id
+     * @return 
+     */
+    boolean isEnabled(String id);
     
-    private VuMeterUsedFor(String displayValue) {
-        this.displayValue = displayValue;
-    }
-
-    public String getDisplayValue() {
-        return displayValue;
-    }
+    /**
+     * Set an array of action ids that need to be subscribed.
+     * @param ids or null = stop subscribe
+     */
+    void setObservedIds(String[] ids);
 }

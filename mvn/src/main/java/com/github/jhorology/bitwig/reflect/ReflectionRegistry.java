@@ -107,8 +107,6 @@ public class ReflectionRegistry implements RpcRegistry {
 
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
-    
-    private Action[] actions;
 
     /**
      * Constructor
@@ -143,13 +141,6 @@ public class ReflectionRegistry implements RpcRegistry {
             register("application",
                      Application.class,
                      application);
-            
-            // TODO temporary fix
-            // since bitwig studio 3.1, Application#getActions() throws exception.
-            // "This can only be called during driver initialization."
-            if (host.getHostVersion().compareTo("3.1") > 0) {
-                actions = application.getActions();
-            }
         }
         if (config.useTransport()) {
             Transport transport = host.createTransport();

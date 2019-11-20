@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2019 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -20,21 +20,35 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package com.github.jhorology.bitwig.ext.api;
+package com.github.jhorology.bitwig.ext.impl;
 
-public enum VuMeterUsedFor {
-    NONE("None"),
-    CURSOR_TRACK("Cursor Track"),
-    TRACK("All Track"),
-    CHANNEL("All Channel (include Track)");
+// bitwig api
+import com.bitwig.extension.controller.api.Application;
 
-    private final String displayValue;
-    
-    private VuMeterUsedFor(String displayValue) {
-        this.displayValue = displayValue;
+// source
+import com.github.jhorology.bitwig.ext.api.ApplicationExt;
+import com.github.jhorology.bitwig.ext.api.ObservedActionValue;
+
+
+/**
+ * an implementation of extended Application API.
+ */
+class ApplicationExtImpl implements ApplicationExt {
+    private final ObservedActionValueImpl observedAction;
+
+    /**
+     * Constructor.
+     * @param device
+     */
+    ApplicationExtImpl(Application application) {
+        observedAction = new ObservedActionValueImpl(application);
     }
-
-    public String getDisplayValue() {
-        return displayValue;
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ObservedActionValue observedAction() {
+        return observedAction;
     }
 }

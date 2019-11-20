@@ -23,11 +23,13 @@
 package com.github.jhorology.bitwig.ext;
 
 // bitwig api
+import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.CursorDevice;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Device;
 import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.ExtApi;
@@ -60,11 +62,14 @@ public class ExtApiFactory implements ExtApi {
 
     /**
      * Returns a extended API  interface.
-     * @param config Configuraton.
-     * @param bitwigApi bitwig API interafce
+     * @param config Configuration.
+     * @param bitwigApi bitwig API interface
      * @return a extended api class
      */
     public static Class<?> getExtApiInterface(Config config, Class<?> bitwigApi) {
+        if (Application.class.isAssignableFrom(bitwigApi)) {
+            return ApplicationExt.class;
+        }
         if (CursorDevice.class.isAssignableFrom(bitwigApi)) {
             if (config.useCursorDeviceDirectParameter()) {
                 return DeviceExt.class;
@@ -93,9 +98,10 @@ public class ExtApiFactory implements ExtApi {
     
     /**
      * Create a new mixin instance.
-     * @param config Configuraton.
-     * @param bitwigApi bitwig API interafce
+     * @param config Configuration.
+     * @param bitwigApi bitwig API interface
      * @param bitwigApiInstance bitwig API instance
+     * @return 
      */
     public static Object newMixinInstance(Config config, Class<?> bitwigApi, Object bitwigApiInstance) {
         Class<?> extApi = getExtApiInterface(config, bitwigApi);
@@ -116,11 +122,19 @@ public class ExtApiFactory implements ExtApi {
     }
     
     /**
-     * Sets a customm factory.
+     * Sets a custom factory.
      * @param factory
      */
     public void setFactory(ExtApi factory) {
         this.factory = factory;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ApplicationExt createApplicationExt(Application application) {
+        return factory.createApplicationExt(application);
     }
     
     /**
@@ -140,6 +154,9 @@ public class ExtApiFactory implements ExtApi {
     }
 
     private static Object newExtApiInstance(Config config, Class<?> bitwigApiInterface, Object bitwigApiInstance) {
+        if (Application.class.isAssignableFrom(bitwigApiInterface)) {
+            return getInstance().createApplicationExt((Application)bitwigApiInstance);
+        }
         if (Device.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createDeviceExt((Device)bitwigApiInstance);
         }

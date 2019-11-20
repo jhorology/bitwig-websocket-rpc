@@ -24,41 +24,51 @@ package com.github.jhorology.bitwig.ext.impl;
 
 // jdk
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // bitwig API
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
-import com.github.jhorology.bitwig.ext.IdValuePair;
+import com.bitwig.extension.controller.api.Application;
+import com.bitwig.extension.controller.api.BooleanValue;
 
 // source
-import com.github.jhorology.bitwig.ext.api.ObservedDirectParameterValue;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
+import com.github.jhorology.bitwig.ext.IdValuePair;
+import com.github.jhorology.bitwig.ext.api.ObservedActionValue;
+import java.util.Collection;
 
 
 /**
  * An implementation of Value that reports observed direct parameter.
- * @param <T> type of raw value.
  */
-public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParameterValue<T> {
-    private final Map<String, IdValuePair<String, T>> paramsCache;
-    private List<String> observedIds;
-    private final List<ObjectValueChangedCallback<IdValuePair<String, T>>> callbacks;
+public class ObservedActionValueImpl implements ObservedActionValue {
+    private final Map<String, BooleanValue> enabledBooleanValues;
+    private Map<String, IdValuePair<String, Boolean>> observedValues;
+    private final List<ObjectValueChangedCallback<IdValuePair<String, Boolean>>> callbacks;
     private boolean subscribed;
-    private final boolean notifyValuesOnSetIds;
 
     /**
      * Constructor.
      * @param name
      */
-    ObservedDirectParameterValueImpl(boolean notifyValuesOnSetIds) {
-        this.paramsCache = new LinkedHashMap<>();
+    ObservedActionValueImpl(Application application) {
         this.callbacks = new ArrayList<>();
-        this.notifyValuesOnSetIds = notifyValuesOnSetIds;
-        this.observedIds = Collections.emptyList();
+        this.observedValues = Collections.emptyMap();
+        this.enabledBooleanValues = Stream.of(application.getActions())
+             .collect(Collectors.toMap(a -> a.getId(), a -> {
+                 BooleanValue isEnabled = a.isEnabled();
+                 isEnabled.addValueObserver((boolean b) -> {
+                     IdValuePair<String, Boolean> v = observedValues.get(a.getId());
+                     if (v != null) {
+                         v.setValue(b);
+                         notifyValue(v);
+                     }
+                 });
+                 return isEnabled;
+             }));
     }
 
     /**
@@ -66,8 +76,23 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      */
     @Override
     public void setObservedIds(String[] ids) {
-        this.observedIds = ids != null ? Arrays.asList(ids) : Collections.emptyList();
-        if (subscribed && notifyValuesOnSetIds) {
+        observedValues.values().forEach(o -> {
+            BooleanValue v = enabledBooleanValues.get(o.getId());
+            if (v != null) {
+                v.unsubscribe();
+            }
+        });
+        if (ids != null) {
+            observedValues = Stream.of(ids)
+                .collect(Collectors.toMap(id -> id, id -> {
+                    BooleanValue v = enabledBooleanValues.get(id);
+                    if (v != null) {
+                        v.subscribe();
+                    }
+                    return new IdValuePair<>(id, v !=  null ? v.get() : false);
+                }));
+        }
+        if (subscribed) {
             notifyValues();
         }
     }
@@ -76,17 +101,16 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      * {@inheritDoc}
      */
     @Override
-    public T get(String id) {
-        IdValuePair<String,T> v = paramsCache.get(id);
-        return v != null ? v.getValue() : null;
+    public boolean isEnabled(String id) {
+        return enabledBooleanValues.get(id).get();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public List<IdValuePair<String, T>> values() {
-        return observedIds.stream().map(paramsCache::get).collect(Collectors.toList());
+    public Collection<IdValuePair<String, Boolean>> values() {
+        return observedValues.values();
     }
 
     /**
@@ -111,6 +135,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
     @Override
     public void setIsSubscribed(boolean subscribed) {
         this.subscribed = subscribed;
+        setObservedIds(null);
     }
 
     /**
@@ -133,43 +158,19 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      * {@inheritDoc}
      */
     @Override
-    public void addValueObserver(ObjectValueChangedCallback<IdValuePair<String, T>> callback) {
+    public void addValueObserver(ObjectValueChangedCallback<IdValuePair<String, Boolean>> callback) {
         callbacks.add(callback);
-    }
-
-    /**
-     * Notify observed device is changed
-     */
-    void deviceChanged() {
-        paramsCache.clear();
     }
 
     /**
      * Notify observed values to observers.
      */
     void notifyValues() {
-        values().stream().forEach(this::valueChanged);
+        values().stream().forEach(this::notifyValue);
     }
 
-    /**
-     * put or update direct parameter value.
-     * @param id
-     * @param value
-     */
-    void put(String id, T value) {
-        IdValuePair<String, T> v = paramsCache.get(id);
-        if (v != null) {
-            v.setValue(value);
-        } else {
-            v = new IdValuePair<>(id, value);
-            paramsCache.put(id, v);
-        }
-        if (subscribed && observedIds.contains(id)) {
-            valueChanged(v);
-        }
-    }
-
-    private void valueChanged(IdValuePair<String, T> v) {
+    private void notifyValue(IdValuePair<String, Boolean> v) {
         callbacks.stream().forEach(cb -> cb.valueChanged(v));
     }
+
 }

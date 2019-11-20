@@ -31,6 +31,6 @@ import com.github.jhorology.bitwig.ext.IdValuePair;
  * @param <T> 
  */
 public interface ObservedDirectParameterValue<T> extends CollectionValue<IdValuePair<String, T>> {
-    IdValuePair<String, T> get(String id);
+    T get(String id);
     void setObservedIds(String[] ids);
 }

@@ -14,10 +14,10 @@ const path = require('path'),
       bitwig = require('../lib/bitwig-websocket-rpc'),
       pkg = require('../package.json'),
       beautify = require('js-beautify'),
-      defaultUrl = 'ws://localhost:8887',
-      requestTimeoutMillis = 5000,
+      DEFAULT_URL = 'ws://localhost:8887',
+      REQUEST_TIMEOUT_MILLIS = 5000,
       ENABLE_INSTALL_ALL = false,
-      defaultExtensionDir = _defaultExtensionDir()
+      DEFAULT_EXTENSION_DIR = _defaultExtensionDir()
 
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({ pkg })
@@ -37,7 +37,7 @@ program
 program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
-  .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir)
+  .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', DEFAULT_EXTENSION_DIR)
   .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8, 9 or 10', '8')
   .action(_execCommand(installCommand))
 
@@ -45,7 +45,7 @@ program
 program
   .command('config')
   .description('Configure RPC modules.')
-  .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-u, --url <URL>',   'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-r, --reset',       'reset configuration to defaults.')
   .option('-f, --file <path>', 'config file(.js|.json) path. this option is ignored by -r option.')
   .option('-a, --all',         'enable all RPC methods and events. this option is ignored by -r or -f option.')
@@ -56,26 +56,26 @@ program
 program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .action(_execCommand(reportCommand))
 
 program
   .command('actions')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', DEFAULT_URL)
   .description('Report result of Application#getActions() as JSON.')
   .action(_execCommand(actionsCommand))
 
 program
   .command('events')
   .description('Monitor events.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(eventsCommand))
 
 program
   .command('logs')
   .description('Trace controller script logs.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', defaultUrl)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(logsCommand))
 
@@ -155,8 +155,7 @@ async function configCommand(options) {
     }
   }
   if (dirty) {
-    await bitwig(options.url, config)
-    config = await _getCurrentConfig(options.url)
+    config = await bitwig(options.url, config)
   }
   if (options.print) {
     _print(config)
@@ -350,7 +349,7 @@ function _print(obj) {
 
 async function _getCurrentConfig(url) {
   const ws = await _bwsOpen(url),
-        config = await ws.call('rpc.config', null, requestTimeoutMillis)
+        config = await ws.call('rpc.config', null, REQUEST_TIMEOUT_MILLIS)
   ws.close()
   return config
 }

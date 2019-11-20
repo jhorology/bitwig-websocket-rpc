@@ -23,11 +23,13 @@
 package com.github.jhorology.bitwig.ext.impl;
 
 // bitwig api
+import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Device;
-import com.github.jhorology.bitwig.ext.api.ChannelExt;
 
 // source
+import com.github.jhorology.bitwig.ext.api.ApplicationExt;
+import com.github.jhorology.bitwig.ext.api.ChannelExt;
 import com.github.jhorology.bitwig.ext.api.ExtApi;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
@@ -42,10 +44,21 @@ public class DefaultExtApiFactory implements ExtApi {
      * {@inheritDoc}
      */
     @Override
+    public ApplicationExt createApplicationExt(Application application) {
+        return new ApplicationExtImpl(application);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public DeviceExt createDeviceExt(Device device) {
         return new DeviceExtImpl(device);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
         return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
