@@ -146,7 +146,9 @@ public class BitwigAdapters {
             JsonObject json = new JsonObject();
             json.addProperty("id", src.getId());
             json.addProperty("name", src.getName());
+            //#if bitwig.extension.api.version >= 10
             json.addProperty("enabled", src.isEnabled().get());
+            //#endif
             json.add("category", context.serialize(src.getCategory(), ActionCategory.class));
             json.addProperty("menuItemText", src.getMenuItemText());
             return json;

@@ -31,12 +31,14 @@ import com.bitwig.extension.controller.api.Device;
  * An abstract factory interface for extended API.
  */
 public interface ExtApi {
+    //#if bitwig.extension.api.version >= 10
     /**
      * create an instance of extended Application API.
      * @param application the instance of base application
      * @return 
      */
     ApplicationExt createApplicationExt(Application application);
+    //#endif
     
     /**
      * create an instance of extended Device API.

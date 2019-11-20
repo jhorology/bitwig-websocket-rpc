@@ -1,3 +1,4 @@
+//#excludeif bitwig.extension.api.version < 10
 /*
  * Copyright (c) 2019 Masafumi Fujimaru
  *

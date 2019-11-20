@@ -136,12 +136,12 @@
       <scope>provided</scope> <!-- provided by libs.jar -->
     </dependency>
     <!--
-    <dependency>
-      <groupId>org.msgpack</groupId>
-      <artifactId>msgpack</artifactId>
-      <version>0.6.11</version>
-      <scope>provided</scope>
-    </dependency>
+        <dependency>
+        <groupId>org.msgpack</groupId>
+        <artifactId>msgpack</artifactId>
+        <version>0.6.11</version>
+        <scope>provided</scope>
+        </dependency>
     -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
@@ -163,6 +163,27 @@
   <build>
     <plugins>
       
+      <plugin>
+        <groupId>com.igormaznitsa</groupId>
+        <artifactId>jcp</artifactId>
+        <version>7.0.2</version>
+        <executions>
+          <!-- make preprocessing of sources -->
+          <execution>
+            <id>preprocess-sources</id>
+            <goals>
+              <goal>preprocess</goal>
+            </goals>
+          </execution>
+          <!-- make preprocessing of test sources -->
+        </executions>
+        <configuration>
+          <vars>
+            <jdk.version>${build.java.version}</jdk.version>
+            <bitwig.extension.api.version>${build.bitwig.extension.api.version}</bitwig.extension.api.version>
+          </vars>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>

@@ -29,7 +29,10 @@ import com.bitwig.extension.controller.api.CursorDevice;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Device;
 import com.github.jhorology.bitwig.Config;
+
+//#if bitwig.extension.api.version >= 10
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
+//#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.ExtApi;
@@ -67,9 +70,11 @@ public class ExtApiFactory implements ExtApi {
      * @return a extended api class
      */
     public static Class<?> getExtApiInterface(Config config, Class<?> bitwigApi) {
+        //#if bitwig.extension.api.version >= 10
         if (Application.class.isAssignableFrom(bitwigApi)) {
             return ApplicationExt.class;
         }
+        //#endif
         if (CursorDevice.class.isAssignableFrom(bitwigApi)) {
             if (config.useCursorDeviceDirectParameter()) {
                 return DeviceExt.class;
@@ -129,6 +134,7 @@ public class ExtApiFactory implements ExtApi {
         this.factory = factory;
     }
     
+    //#if bitwig.extension.api.version >= 10
     /**
      * {@inheritDoc}
      */
@@ -136,6 +142,7 @@ public class ExtApiFactory implements ExtApi {
     public ApplicationExt createApplicationExt(Application application) {
         return factory.createApplicationExt(application);
     }
+    //#endif
     
     /**
      * {@inheritDoc}
@@ -154,9 +161,11 @@ public class ExtApiFactory implements ExtApi {
     }
 
     private static Object newExtApiInstance(Config config, Class<?> bitwigApiInterface, Object bitwigApiInstance) {
+        //#if bitwig.extension.api.version >= 10
         if (Application.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createApplicationExt((Application)bitwigApiInstance);
         }
+        //#endif
         if (Device.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createDeviceExt((Device)bitwigApiInstance);
         }

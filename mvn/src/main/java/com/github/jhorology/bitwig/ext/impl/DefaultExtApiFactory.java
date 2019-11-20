@@ -28,7 +28,9 @@ import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Device;
 
 // source
+//#if bitwig.extension.api.version >= 10
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
+//#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
 import com.github.jhorology.bitwig.ext.api.ExtApi;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
@@ -40,6 +42,7 @@ import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
  * @author masafumi
  */
 public class DefaultExtApiFactory implements ExtApi {
+    //#if bitwig.extension.api.version >= 10
     /**
      * {@inheritDoc}
      */
@@ -47,6 +50,7 @@ public class DefaultExtApiFactory implements ExtApi {
     public ApplicationExt createApplicationExt(Application application) {
         return new ApplicationExtImpl(application);
     }
+    //#endif
     
     /**
      * {@inheritDoc}
