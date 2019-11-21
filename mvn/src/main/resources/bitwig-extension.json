@@ -9,11 +9,9 @@
   "errorReportingEMail": "${extension.errorReportingEMail}",
   "hardwareVendor": "${extension.hardwareVendor}",
   "hardwareModel": "${extension.hardwareModel}",
-  "config": {
+  "defaultConfig": {
     "logLevel": "${extension.config.logLevel}",
     "logOutputSystemConsole": ${extension.config.logOutputSystemConsole},
-    "webSocketPort": ${extension.config.webSocketPort},
-    "useAbbreviatedMethodNames": ${extension.config.useAbbreviatedMethodNames},
-    "production": ${extension.config.production}
+    "webSocketPort": ${extension.config.webSocketPort}
   }
 }

@@ -52,8 +52,7 @@ public interface RpcRegistry {
     
     /**
      * report all registered methods and evnnts.
-     * @param production  build env, production or not.
      * @return
      */
-    Object report(boolean production);
+    Object report();
 }

@@ -24,13 +24,14 @@ package com.github.jhorology.bitwig.extension;
 
 /**
  * An event class for notification of extension's start of lifecycle.
+ * @param <T> the type of configuration
  */
-public class InitEvent extends AbstractExtensionEvent {
+public class InitEvent<T extends AbstractConfiguration> extends ExtensionContextBase<T> {
     /**
-     * Construct an instanice with extension.
+     * Constructor.
      * @param extension 
      */
-    InitEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
+    InitEvent(AbstractExtension<T> extension) {
         super(extension);
     }
 }

@@ -62,16 +62,13 @@ import com.google.gson.annotations.Expose;
  *   "windowsMidiOutPortNames": [],                     // optional, default null
  *   "linuxMidiInPortNames": [],                        // optional, default null
  *   "linuxMidiOutPortNames": [],                       // optional, default null
- *   "config": {                                        // optional, should define field(s) in inherited class.
- *       "webSocketPort": 8887,
- *       "logLevel": "WARN",
- *       "useRcFile": true,
- *       "writeThroughtRcFile": false
+ *   "defaultConfig": {                                 // optional
  *   }
  * }
  * }</pre>
+ * @param <T>
  */
-public abstract class AbstractExtensionDefinition
+public abstract class AbstractExtensionDefinition<T extends AbstractConfiguration>
     extends ControllerExtensionDefinition {
     private static final String EXTENSION_JSON = "bitwig-extension.json";
     private static final String[] EMPTY_STRING_ARRAY = {};
@@ -288,4 +285,10 @@ public abstract class AbstractExtensionDefinition
             break;
         }
     }
+    
+    /**
+     * Returns configuration defaults
+     * @return 
+     */
+    abstract public T getDefaultConfig();
 }

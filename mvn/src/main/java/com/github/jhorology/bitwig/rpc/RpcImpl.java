@@ -117,12 +117,7 @@ public class RpcImpl implements Rpc {
     public Object report() {
         RequestContext context = RequestContext.getContext();
         RpcRegistry registry = context.getRpcRegistry();
-        boolean production = ((WebSocketRpcServerExtensionDefinition)ExecutionContext
-            .getContext()
-            .getExtensionDefinition())
-            .getConfig()
-            .isProduction();
-        return registry.report(production);
+        return registry.report();
     }
 
     /**
@@ -131,10 +126,8 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public void config(Config config) {
-        ExecutionContext context = ExecutionContext.getContext();
-        ControllerHost host = context.getHost();
-        config.writeRcFile(context.getExtensionDefinition());
-        host.restart();
+        ExecutionContext.getContext()
+            .getExtension().setConfig(config);
     }
 
     /**
@@ -143,10 +136,7 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Config config() {
-        return ((WebSocketRpcServerExtensionDefinition)ExecutionContext
-            .getContext()
-            .getExtensionDefinition())
-            .getConfig();
+        return ((Config)ExecutionContext.getContext().getConfig());
     }
     
     private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {

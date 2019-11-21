@@ -32,10 +32,6 @@ import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 
-// source
-import org.slf4j.impl.LogSeverity;
-import org.slf4j.impl.ScriptConsoleLogger;
-
 /**
  * Bitwig Studio extension to support RPC over WebSocket.
  */
@@ -44,15 +40,9 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
      * Constructor
      * @param definition
      * @param host
-     * @param config
-     */
-    protected WebSocketRpcServerExtension(WebSocketRpcServerExtensionDefinition definition, ControllerHost host, Config config) {
-        super(definition, host, config);
-        // TODO temporary fix
-        // some log messages causes breaking terminal by binary data.
-        if (config.getLogLevel() == LogSeverity.TRACE) {
-            ScriptConsoleLogger.setLogLevel("org.java_websocket", LogSeverity.DEBUG);
-        }
+s     */
+    protected WebSocketRpcServerExtension(WebSocketRpcServerExtensionDefinition definition, ControllerHost host) {
+        super(definition, host, new Config());
     }
 
     /**

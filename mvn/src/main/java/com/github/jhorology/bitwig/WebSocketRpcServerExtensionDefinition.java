@@ -35,13 +35,13 @@ import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
 /**
  * A Definition class of this extension. 
  */
-public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefinition
+public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefinition<Config>
 {
     // populate from json -->
     @Expose
-    private Config config;
+    protected Config defaultConfig;
     // <--
-
+    
     /**
      * Creates an instance of this extension.<br>
      * An implementation of {@link com.bitwig.extension.controller.ControllerExtensionDefinition#createInstance(com.bitwig.extension.controller.api.ControllerHost)}
@@ -50,14 +50,15 @@ public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefi
      */
     @Override
     public ControllerExtension createInstance(ControllerHost host) {
-        return new WebSocketRpcServerExtension(this, host, config);
+        return new WebSocketRpcServerExtension(this, host);
     }
     
     /**
-     * Return a configuration object.
+     * Returns configuration defaults
      * @return 
      */
-    public Config getConfig() {
-        return config;
+    @Override
+    public Config getDefaultConfig() {
+        return defaultConfig;
     }
 }

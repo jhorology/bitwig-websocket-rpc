@@ -24,13 +24,14 @@ package com.github.jhorology.bitwig.extension;
 
 /**
  * An event class for notification of recommended point to feedback to control surface.
+ * @param <T> the type of configuration.
  */
-public class FlushEvent extends AbstractExtensionEvent {
+public class FlushEvent<T extends AbstractConfiguration> extends ExtensionContextBase<T> {
     /**
-     * Construct an instance with extension.
+     * Constructor.
      * @param extension 
      */
-    FlushEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
+    FlushEvent(AbstractExtension<T> extension) {
         super(extension);
     }
 }

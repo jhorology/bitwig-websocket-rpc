@@ -98,13 +98,14 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     public static final String NODE_DELIMITER = ".";
 
-    private final Config config;
-    private final ProtocolHandler protocol;
     // server sent evnt bus.
     private final List<ModuleHolder> modules;
     private final Map<MethodIdentifier, MethodHolder> methods;
     private final Map<String, EventHolder> events;
 
+    private final Config config;
+    private final ProtocolHandler protocol;
+    
     private ControllerHost host;
     private ControllerExtensionDefinition definition;
 
@@ -124,7 +125,7 @@ public class ReflectionRegistry implements RpcRegistry {
     @Subscribe
     public void onInit(InitEvent e) {
         host = e.getHost();
-        definition = e.getExtension().getExtensionDefinition();
+        definition = e.getDefinition();
 
         String id = definition.getId().toString();
 
@@ -453,19 +454,18 @@ public class ReflectionRegistry implements RpcRegistry {
 
     /**
      * return a report object of this registry.
-     * @param production build env, production or not.
      * @return An object for expression of this registry.
      */
     @Override
-    public Object report(boolean production) {
+    public Object report() {
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("reportedOn", new Date());
         report.put("host", reportHost());
         report.put("extension", reportExtension());
-        if (!production) {
-            report.put("system", System.getProperties());
-            report.put("env", System.getenv());
-        }
+        //#if build.development
+        report.put("system", System.getProperties());
+        report.put("env", System.getenv());
+        //#endif
         report.put("methods", reportMethods());
         report.put("events", reportEvents());
         return report;

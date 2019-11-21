@@ -24,13 +24,14 @@ package com.github.jhorology.bitwig.extension;
 
 /**
  * An event class for notification of extension's end of lifecycle.
+ * @param <T> the type of confituration
  */
-public class ExitEvent extends AbstractExtensionEvent {
+public class ExitEvent<T extends AbstractConfiguration> extends ExtensionContextBase<T> {
     /**
-     * Construct an instance with extension.
+     * Constructor.
      * @param extension 
      */
-    ExitEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
+    ExitEvent(AbstractExtension<T> extension) {
         super(extension);
     }
 }

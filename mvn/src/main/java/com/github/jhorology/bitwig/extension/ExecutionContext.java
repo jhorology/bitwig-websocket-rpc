@@ -23,48 +23,31 @@
 package com.github.jhorology.bitwig.extension;
 
 // jdk
-import java.util.Map;
 import java.util.HashMap;
-
-// bitwig api
-import com.bitwig.extension.controller.ControllerExtensionDefinition;
-import com.bitwig.extension.controller.api.ControllerHost;
+import java.util.Map;
 
 // dependencies
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A context holder for executor task state. <br>
- * This class assumes that all methods are called from within "Control Surface Session" thread.
+ * A context holder for executor task state.<br>
+ This class assumes that all methods are called from within "Control Surface Session" thread.
  */
-public class ExecutionContext {
+public class ExecutionContext extends ExtensionContextBase {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionContext.class);
     private static ExecutionContext instance;
-    private AbstractExtension<? extends AbstractConfiguration> extension;
     private final Map<String, Object> values;
+    private boolean initialized;
     
     /**
-     * initialize the context
-     * @exception IllegalStateException throws when reentrant context.
+     * Constructor.
+     * @param extension 
      */
-    static void init(AbstractExtension<? extends AbstractConfiguration> extension) {
-        // for debug
-        // checking re-entrant context
-        if (instance != null) {
-            IllegalStateException ex = new IllegalStateException("re-entrant context.");
-            LOG.error("Error re-entrant context.");
-            throw ex;
-        }
-        instance = new ExecutionContext(extension);
-    }
-
-    /**
-     * destroy the context
-     */
-    static void destroy() {
-        instance.values.clear();
-        instance = null;
+    ExecutionContext(AbstractExtension extension) {
+        super(extension);
+        values = new HashMap<>();
+        instance = this;
     }
     
     /**
@@ -75,40 +58,30 @@ public class ExecutionContext {
         return instance;
     }
 
-    private ExecutionContext() {
-        values = new HashMap<>();
-    }
-    
-    private ExecutionContext(AbstractExtension<? extends AbstractConfiguration> extension) {
-        this();
-        this.extension = extension;
-    }
-    
     /**
-     * get a Extension instance.
-     * @return
+     * initialize the context
+     * @exception IllegalStateException throws when reentrant context.
      */
-    public AbstractExtension<? extends AbstractConfiguration> getExtension() {
-        return extension;
+    void init() {
+        // for debug
+        // checking re-entrant context
+        if (initialized) {
+            IllegalStateException ex = new IllegalStateException("re-entrant context.");
+            LOG.error("Error re-entrant context.");
+            throw ex;
+        }
+        initialized = true;
     }
-    
+
     /**
-     * get a ControllerExtensionDefinition interface.
-     * @return 
+     * destroy the context
      */
-    public ControllerExtensionDefinition getExtensionDefinition() {
-        return extension.getExtensionDefinition();
+    void destroy() {
+        instance.values.clear();
+        initialized = false;
     }
     
-    /**
-     * get a ControllerHost interface.
-     * @return 
-     */
-    public ControllerHost getHost() {
-        return extension.getHost();
-    }
-    
-    /**
+   /**
      * set a contextual value with name.
      * @param name
      * @param value
@@ -125,25 +98,25 @@ public class ExecutionContext {
     public Object get(String name) {
         return values.get(name);
     }
-    
+
     /**
      * set a contextual value with class.
-     * @param <T>
+     * @param <C>
      * @param clazz
      * @param value
      */
-    public <T> void set(Class<T> clazz, T value) {
+    public <C> void set(Class<C> clazz, C value) {
         values.put(clazz.getName(), value);
     }
 
     /**
      * get a contextual value by class.
-     * @param <T>
+     * @param <C>
      * @param clazz
      * @return value
      */
     @SuppressWarnings("unchecked")
-    public <T> T get(Class<T> clazz) {
-        return (T)values.get(clazz.getName());
+    public <C> C get(Class<C> clazz) {
+        return (C)values.get(clazz.getName());
     }
 }

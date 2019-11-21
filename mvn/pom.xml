@@ -15,66 +15,128 @@
     <!-- Bitwig extension definition -->
     <extension.name>WebSocket RPC API 8</extension.name>
     <extension.author>Masafumi</extension.author>
-    <extension.version>0.2.0-SNAPSHOT</extension.version>
-    <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
-    <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
-    <extension.usingBetaAPI>true</extension.usingBetaAPI>
-    <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
+    <extension.errorReportingEMail>jhorology2014@gmail.com</extension.errorReportingEMail>
+    <extension.version>${project.version}</extension.version>
     <extension.hardwareVendor>WebSocket RPC</extension.hardwareVendor>
     <extension.hardwareModel>WebSocket RPC</extension.hardwareModel>
+    
+    <!-- default configuration values -->
+    <extension.config.webSocketPort>8887</extension.config.webSocketPort>
+    
+    <!-- build env -->
+    <build.target.java.version>1.8</build.target.java.version>
+
+    <!-- =====================================
+         default development profile for IDE
+         ===================================== -->
+    
+    <!-- Bitwig extension definition -->
+    <extension.usingBetaAPI>true</extension.usingBetaAPI>
+    <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
     <!-- default configuration values -->
     <extension.config.logLevel>TRACE</extension.config.logLevel>
     <extension.config.logOutputSystemConsole>true</extension.config.logOutputSystemConsole>
-    <extension.config.webSocketPort>8887</extension.config.webSocketPort>
-    <extension.config.useAbbreviatedMethodNames>false</extension.config.useAbbreviatedMethodNames>
-    <extension.config.production>false</extension.config.production>
+    
     <!-- build env -->
-    <build.java.version>1.8</build.java.version>
-    <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
-    <build.bitwig.extension.api.version>8</build.bitwig.extension.api.version>
-    <build.commons.lang3.version>3.1</build.commons.lang3.version>
+    <build.production>false</build.production>
+
+    <!-- default api-10 profile -->
+    
+    <!-- dependenceies versions -->
+    <commons.lang3.version>3.5</commons.lang3.version>
+    <bitwig.extension.api.version>10</bitwig.extension.api.version>
+    
+    <!-- extension definition -->
+    <extension.name>WebSocket RPC API 10</extension.name>
+    <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+    <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
+    
+    <!-- build env -->
+    <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
   </properties>
   
   <profiles>
-    <!-- To activate: mvn -P production install...  -->
     <profile>
       <id>production</id>
       <properties>
-        <!-- Bitwig extension definition -->
-        <extension.version>0.2.0-SNAPSHOT</extension.version>
+        <!-- extension definition -->
         <extension.usingBetaAPI>false</extension.usingBetaAPI>
         <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
+        
         <!-- default configuration values -->
         <extension.config.logLevel>WARN</extension.config.logLevel>
         <extension.config.logOutputSystemConsole>false</extension.config.logOutputSystemConsole>
-        <extension.config.production>true</extension.config.production>
+        
         <!-- build env -->
+        <build.development>false</build.development>
+        <build.production>true</build.production>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>development</id>
+      <properties>
+        <!-- Bitwig extension definition -->
+        <extension.usingBetaAPI>true</extension.usingBetaAPI>
+        <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
+        <!-- default configuration values -->
+        <extension.config.logLevel>TRACE</extension.config.logLevel>
+        <extension.config.logOutputSystemConsole>true</extension.config.logOutputSystemConsole>
+        
+        <!-- build env -->
+        <build.development>true</build.development>
+        <build.production>false</build.production>
+      </properties>
+    </profile>
+    
+    <profile>
+      <id>extension-api-8</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.1</commons.lang3.version>
+        <bitwig.extension.api.version>8</bitwig.extension.api.version>
+        
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 8</extension.name>
+        <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
+        <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
+        
+        <!-- build env -->
+        <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
       </properties>
     </profile>
     
     <profile>
       <id>extension-api-9</id>
       <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.1</commons.lang3.version>
+        <bitwig.extension.api.version>9</bitwig.extension.api.version>
+        
+        <!-- extension definition -->
         <extension.name>WebSocket RPC API 9</extension.name>
         <extension.uuid>841a3f11-ed53-4b4f-999e-51b4e90f4c7b</extension.uuid>
         <extension.requiredAPIVersion>9</extension.requiredAPIVersion>
+        
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API9.bwextension</build.extension.file.name>
-        <build.bitwig.extension.api.version>9</build.bitwig.extension.api.version>
       </properties>
     </profile>
     
     <profile>
       <id>extension-api-10</id>
       <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <bitwig.extension.api.version>10</bitwig.extension.api.version>
+        
+        <!-- extension definition -->
         <extension.name>WebSocket RPC API 10</extension.name>
         <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
         <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
+        
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
-        <!-- <build.java.version>12</build.java.version> -->
-        <build.bitwig.extension.api.version>10</build.bitwig.extension.api.version>
-        <build.commons.lang3.version>3.5</build.commons.lang3.version>
       </properties>
     </profile>
     
@@ -120,7 +182,7 @@
     <dependency>
       <groupId>com.bitwig</groupId>
       <artifactId>extension-api</artifactId>
-      <version>${build.bitwig.extension.api.version}</version>
+      <version>${bitwig.extension.api.version}</version>
       <scope>provided</scope> <!-- provided by bitwig.jar -->
     </dependency>
     <dependency>
@@ -132,7 +194,7 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
-      <version>${build.commons.lang3.version}</version>
+      <version>${commons.lang3.version}</version>
       <scope>provided</scope> <!-- provided by libs.jar -->
     </dependency>
     <!--
@@ -179,8 +241,10 @@
         </executions>
         <configuration>
           <vars>
-            <jdk.version>${build.java.version}</jdk.version>
-            <bitwig.extension.api.version>${build.bitwig.extension.api.version}</bitwig.extension.api.version>
+            <build.target.java.version>${build.target.java.version}</build.target.java.version>
+            <bitwig.extension.api.version>${bitwig.extension.api.version}</bitwig.extension.api.version>
+            <build.production>${build.production}</build.production>
+            <build.development>${build.development}</build.development>
           </vars>
         </configuration>
       </plugin>
@@ -206,8 +270,8 @@
         <configuration>
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
-          <source>${build.java.version}</source>
-          <target>${build.java.version}</target>
+          <source>${build.target.java.version}</source>
+          <target>${build.target.java.version}</target>
           <encoding>UTF-8</encoding>
           <showDeprecation>true</showDeprecation>
         </configuration>

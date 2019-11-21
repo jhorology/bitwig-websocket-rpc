@@ -28,15 +28,16 @@ import com.bitwig.extension.controller.api.ControllerHost;
 
 /**
  * An abstract base class for extension event. 
+ * @param <T> the type of configuration
  */
-public abstract class AbstractExtensionEvent {
-    protected final AbstractExtension<? extends AbstractConfiguration> extension;
+public abstract class ExtensionContextBase<T extends AbstractConfiguration> {
+    protected final AbstractExtension<T> extension;
     
     /**
      * Construct an instance with extension.
-     * @param extension 
+     * @param extension
      */
-    protected AbstractExtensionEvent(AbstractExtension<? extends AbstractConfiguration> extension) {
+    protected ExtensionContextBase(AbstractExtension<T> extension) {
         this.extension = extension;
     }
     
@@ -57,10 +58,35 @@ public abstract class AbstractExtensionEvent {
     }
     
     /**
+     * Returns configuration.
+     * @return 
+     */
+    public T getConfig() {
+        return extension.getConfig();
+    }
+
+    /**
      * get a Executor to run the task from other than 'Control Surface Session' thread.
      * @return 
      */
     public Executor getAsyncExecutor() {
         return extension.getAsyncExecutor();
     }
+    
+    /**
+     * get a ControllerExtension definition
+     * @return 
+     */
+    public AbstractExtensionDefinition<T> getDefinition() {
+        return (AbstractExtensionDefinition<T>)extension.getExtensionDefinition();
+    }
+    
+    /**
+     * get a default configuration
+     * @return 
+     */
+    public T getDefaultConfig() {
+        return getDefinition().getDefaultConfig();
+    }
 }
+

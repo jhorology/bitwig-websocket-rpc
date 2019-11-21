@@ -26,10 +26,13 @@ package com.github.jhorology.bitwig.extension;
 import java.util.Stack;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtension;
-import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 
 // provided dependencies
@@ -40,6 +43,7 @@ import com.google.common.eventbus.SubscriberExceptionHandler;
 // dependencies
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.LogSeverity;
 import org.slf4j.impl.ScriptConsoleLogger;
 
 // source
@@ -49,19 +53,18 @@ import org.slf4j.impl.ScriptConsoleLogger;
  * @param <T> the type of this extension's configuration.
  */
 public abstract class AbstractExtension<T extends AbstractConfiguration>
-        extends ControllerExtension
-        implements SubscriberExceptionHandler {
+    extends ControllerExtension
+    implements SubscriberExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractExtension.class);
 
-    protected final T config;
+    protected T config;
     private EventBus eventBus;
-    private InitEvent initEvent;
-    private ExitEvent exitEvent;
-    private FlushEvent flushEvent;
+    private InitEvent<T> initEvent;
+    private ExitEvent<T> exitEvent;
+    private FlushEvent<T> flushEvent;
     private Executor asyncExecutor;
     private Stack<Object> extensionModules;
-    private Logger log;
-    
+        
     /**
      * Constructor.
      * Inherited class should call this as super().
@@ -69,7 +72,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
      * @param host
      * @param config
      */
-    protected AbstractExtension(ControllerExtensionDefinition definition, ControllerHost host, T config) {
+    protected AbstractExtension(AbstractExtensionDefinition<T> definition, ControllerHost host, T config) {
         super(definition, host);
         this.config = config;
     }
@@ -94,20 +97,30 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
      */
     @Override
     public void init() {
-        ControllerHost host = getHost();
-        // always return intial value at this time.
-        config.init(host, getExtensionDefinition());
+        // read rc file. if exists
+        if (!readRcFile()) {
+            ExtensionUtils.deepCopy(getDefinition().getDefaultConfig(), this.config);
+        }
+        // setup logger
         ScriptConsoleLogger.setGlobalLogLevel(config.getLogLevel());
-        ScriptConsoleLogger.setOutputSystemConsole(config.getLogOutputSystemConsole());
-        ScriptConsoleLogger.setControllerHost(host);
+        //#if build.development
+        ScriptConsoleLogger.setOutputSystemConsole(config.isLogOutputSystemConsole());
+        //#endif
+        ScriptConsoleLogger.setControllerHost(getHost());
+        // TODO temporary fix
+        // some log messages causes breaking terminal by binary data.
+        if (config.getLogLevel() == LogSeverity.TRACE) {
+            ScriptConsoleLogger.setLogLevel("org.java_websocket", LogSeverity.DEBUG);
+        }
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
-        asyncExecutor = new ControlSurfaceSessionExecutor(this);
-        initEvent = new InitEvent(this);
-        exitEvent = new ExitEvent(this);
-        flushEvent = new FlushEvent(this);
+        asyncExecutor = new ControlSurfaceSessionExecutor();
+        initEvent = new InitEvent<>(this);
+        exitEvent = new ExitEvent<>(this);
+        flushEvent = new FlushEvent<>(this);
         extensionModules = new Stack<>();
         // register internal core module first
+        register(config);
         register(asyncExecutor);
         try {
             Object[] modules = createModules();
@@ -122,7 +135,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     }
     
     /**
-     * This method is called from host at the extension's start of lifecycle.
+     * This method is called from host at the extension's end of lifecycle.
      */
     @Override
     public void exit() {
@@ -133,7 +146,11 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         while(!extensionModules.empty()) {
             eventBus.unregister(extensionModules.pop());
         }
-        config.exit();
+        if (config.isRequestReset()) {
+            deleteRcFiles();
+        } else if (config.isValueChanged()) {
+            writeRcFile();
+        }
         extensionModules.clear();
     }
 
@@ -154,11 +171,34 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     @Override
     public void handleException(Throwable ex,
                                 SubscriberExceptionContext context) {
-        if (log != null) {
-            LOG.error( "Error handling extension event:" +  context.getEvent().toString(), ex);
-        }
+        LOG.error( "Error handling extension event:" +  context.getEvent().toString(), ex);
     }
 
+    /**
+     * Returns configuration of this extension.
+     * @return
+     */
+    public T getConfig() {
+        return config;
+    }
+    
+    /**
+     * set a new configuration of this extension.
+     */
+    public void setConfig(T config) {
+        this.config = config;
+        this.config.setValueChanged(true);
+        getHost().restart();
+    }
+    
+    /**
+     * Returns definition of this extension.
+     * @return
+     */
+    public AbstractExtensionDefinition<T> getDefinition() {
+        return (AbstractExtensionDefinition<T>)this.getExtensionDefinition();
+    }
+    
     /**
      * register a subscriber of extension events.
      * @param module The subscriber of extension events.
@@ -167,4 +207,55 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         eventBus.register(module);
         extensionModules.push(module);
     }
+
+    private boolean readRcFile() {
+        // read rc file
+        Path rcFilePath = getRcFilePath();
+        if (Files.exists(rcFilePath)) {
+            try {
+               ExtensionUtils.populateJsonProperties(rcFilePath, config);
+               return true;
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return false;
+    }
+    
+    private void writeRcFile() {
+        try {
+            ExtensionUtils.writeJsonFile(config, getRcFilePath());
+        } catch (IOException ex) {
+            LOG.error("Error writing rc file.", ex);
+        }
+    }
+    private void deleteRcFiles() {
+        String prefix = ".bitwig.extension." + getExtensionDefinition().getName();
+        try {
+            Files.list(Paths.get(System.getProperty("user.home")))
+                .filter(Files::isRegularFile)
+                .filter(path -> path.getFileName().toString().startsWith(prefix))
+                .forEach((path) -> {
+                        try {
+                            Files.delete(path);
+                        } catch (IOException ex) {
+                            LOG.error("Error deleting RC file.", ex);
+                        }
+                    });
+        } catch (IOException ex) {
+            LOG.error("Error deleting RC file.", ex);
+        }
+    }
+    
+    private Path getRcFilePath() {
+        StringBuilder fileName = new StringBuilder(".bitwig.extension.");
+        fileName.append(getExtensionDefinition().getName());
+        fileName.append("-");
+        fileName.append(getExtensionDefinition().getVersion());
+        //#if build.development
+        fileName.append("-DEV");
+        //#endif
+        return Paths.get(System.getProperty("user.home"), fileName.toString());
+    }
+
 }

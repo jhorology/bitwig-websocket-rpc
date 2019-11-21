@@ -23,24 +23,27 @@
 package com.github.jhorology.bitwig.extension;
 
 // jdk
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 // bitwig api
-import com.bitwig.extension.controller.ControllerExtensionDefinition;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
+import com.bitwig.extension.controller.api.SettableEnumValue;
+import com.bitwig.extension.controller.api.SettableRangedValue;
+
+// provided dependencies
+import com.google.gson.annotations.Expose;
 
 // dependencies
-import com.google.gson.annotations.Expose;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
 import org.slf4j.impl.LogSeverity;
-import org.slf4j.impl.ScriptConsoleLogger;
 
 /**
  * A base class for managing extension's configuration.
@@ -48,23 +51,19 @@ import org.slf4j.impl.ScriptConsoleLogger;
 public abstract class AbstractConfiguration {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractConfiguration.class);
 
-    // options for future use.
-    protected static final boolean USE_RC_FILE = true;
-    private static final boolean WRITE_THROUGHT_RC_FILE = false;
-
     // populate from json -->
-    @Expose(serialize = false)
-    private LogSeverity logLevel;
-    @Expose(serialize = false)
-    protected boolean logOutputSystemConsole;
-    @Expose(serialize = false)
-    protected boolean production;
+    @Expose
+    private LogSeverity logLevel = LogSeverity.WARN;
+
+    //#if build.development
+    @Expose
+    //#endif
+    protected boolean logOutputSystemConsole = false;
     // <--
 
-    protected boolean ignoreValueChanged;
-    private ControllerExtensionDefinition definition;
-    private Path rcFilePath;
-    private boolean valueChanged;
+    protected ControllerHost host;
+    private boolean ignoreHostPrefValue;
+    protected boolean valueChanged;
     private boolean requestReset;
 
     /**
@@ -72,131 +71,6 @@ public abstract class AbstractConfiguration {
      */
     @SuppressWarnings("OverridableMethodCallInConstructor")
     public AbstractConfiguration() {
-        resetToDefaults();
-    }
-
-    /**
-     * write configuration to rc file.
-     */
-    public void writeRcFile(ControllerExtensionDefinition definition) {
-        try {
-            ExtensionUtils.writeJsonFile(this, getRcFilePath(definition));
-        } catch (IOException ex) {
-            LOG.error("Error writing rc file.", ex);
-        }
-    }
-
-    /**
-     * Return a build environment value, production build or not.
-     */
-    public boolean isProduction() {
-        return production;
-    }
-    
-    /**
-     * Initialize the this configuration.
-     * @param host
-     */
-    protected abstract void onInit(ControllerHost host);
-
-    /**
-     * De-initialize the this configuration.
-     */
-    protected abstract void onExit();
-
-    /**
-     * Reset to defaults.
-     */
-    protected void resetToDefaults() {
-        if (logLevel == null)
-            logLevel = LogSeverity.ERROR;
-        logOutputSystemConsole = false;
-    }
-
-    /**
-     * Initialize the this configuration.
-     * @param extension
-     */
-    void init(ControllerHost host, ControllerExtensionDefinition definition) {
-        this.definition = definition;
-        this.rcFilePath = getRcFilePath(definition);
-        if (USE_RC_FILE) {
-            if (Files.exists(rcFilePath)) {
-                try {
-                    ExtensionUtils.populateJsonProperties(rcFilePath, this);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            }
-            ignoreValueChanged = true;
-            host.scheduleTask(() -> {
-                    ignoreValueChanged = false;
-                },
-                500L);
-        }
-
-        LogSeverity severity = ExtensionUtils.getPreferenceAsEnum
-            (host, "Log Level", "Logging", LogSeverity.WARN, logLevel, (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(logLevel.name());
-                } else if (logLevel != e) {
-                    logLevel = e;
-                    ScriptConsoleLogger.setGlobalLogLevel(e);
-                    valueChanged();
-                }
-            });
-
-        if (!production) {
-            SettableBooleanValue logOutputSystemConsoleValue = host.getPreferences().getBooleanSetting
-                ("Output system console", "Logging", false);
-            logOutputSystemConsoleValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    logOutputSystemConsoleValue.set(logOutputSystemConsole);
-                } else if (logOutputSystemConsole != v) {
-                    logOutputSystemConsole = v;
-                    valueChanged();
-                }
-            });
-        }
-
-
-        if (!USE_RC_FILE) {
-            logLevel = severity;
-        }
-        requestReset = false;
-        valueChanged = false;
-        onInit(host);
-
-        host.getPreferences().getSignalSetting
-            ("Apply new settings", "Restart (new settings need restart)", "Restart")
-            .addSignalObserver(() -> host.restart());
-        // TODO preference panel dosen't update at restat.
-        host.getPreferences().getSignalSetting
-            ("Reset to defaults", "Restart (new settings need restart)", "Restart")
-            .addSignalObserver(() -> {
-                    requestReset = true;;
-                    host.restart();
-                });
-    }
-
-    /**
-     * De-initialize the this configuration.
-     */
-    void exit() {
-        if (USE_RC_FILE && !WRITE_THROUGHT_RC_FILE &&
-            valueChanged &&
-            !requestReset) {
-            try {
-                ExtensionUtils.writeJsonFile(this, rcFilePath);
-            } catch (IOException ex) {
-                LOG.error("Error writing JSON file.",ex);
-            }
-        }
-        if (requestReset) {
-            resetToDefaults();
-            deleteRcFiles();
-        }
-        onExit();
     }
 
     /**
@@ -211,51 +85,243 @@ public abstract class AbstractConfiguration {
      * Return a flag to output log to system console, or not.
      * @return
      */
-    boolean getLogOutputSystemConsole() {
+    public boolean isLogOutputSystemConsole() {
         return logOutputSystemConsole;
+    }
+
+    protected void onInit(InitEvent e) {
+        host = e.getHost();
+        requestReset = false;
+        valueChanged = false;
+        
+        ignoreHostPrefValue();
+
+        addEnumPrefItem("Log Level", "Logging",
+                        this::getLogLevel,
+                        v -> {logLevel = v;});
+
+        //#if build.development
+        addBoolPrefItem("Output system console", "Logging",
+                        this::isLogOutputSystemConsole,
+                        v -> {logOutputSystemConsole = v;});
+        //#endif
+
+        insertPrefItems();
+        
+        host.getPreferences()
+            .getSignalSetting("Apply new settings", "Restart (new settings need restart)", "Restart")
+            .addSignalObserver(host::restart);
+
+        host.getPreferences()
+            .getSignalSetting("Reset to defaults", "Restart (new settings need restart)", "Restart")
+            .addSignalObserver(() -> {
+                    requestReset = true;;
+                    host.restart();
+                });
     }
     
     /**
-     * Inherited class should call this method when configuration value has been changed.
+     * insert input element of preferences panel.
      */
-    protected void valueChanged() {
-        if (USE_RC_FILE && WRITE_THROUGHT_RC_FILE) {
-            try {
-                ExtensionUtils.writeJsonFile(this, rcFilePath);
-            } catch (IOException ex) {
-                LOG.error("Error writing JSON file.", ex);
-            }
+    abstract protected void insertPrefItems();
+
+    protected void onExit(ExitEvent e) {
+    }
+    
+    /**
+     * Returns configuration has bean changed, or not.
+     * @return
+     */
+    boolean isValueChanged() {
+        return valueChanged;
+    }
+    
+    /**
+     * Sets configuration has bean changed, or not.
+     * @param valueChanged
+     */
+    void setValueChanged(boolean valueChanged) {
+        this.valueChanged = valueChanged; 
+    }
+
+    /**
+     * Returns configuration has bean requested to reset, or not.
+     * @return
+     */
+    boolean isRequestReset() {
+        return requestReset;
+    }
+
+    /**
+     * Add a input item to prefrences panel.
+     * @param <T>           the enum type
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param getter
+     * @param setter
+     */
+    protected <T extends Enum<T>> void addEnumPrefItem(String label,
+                                                       String category,
+                                                       Supplier<T> getter,
+                                                       Consumer<T> setter) {
+        addEnumPrefItem(label, category, null, getter, setter);
+    }
+
+
+    /**
+     * Add a input item to prefrences panel.
+     * @param <T>           the enum type.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
+     *                      return value should be unique.
+     * @param getter
+     * @param setter
+     */
+    protected <T extends Enum<T>> void addEnumPrefItem(String label,
+                                                       String category,
+                                                       Function<T, String> mapper,
+                                                       Supplier<T> getter,
+                                                       Consumer<T> setter) {
+        Class<T> enumClass = getter.get().getDeclaringClass();
+        T[] values = enumClass.getEnumConstants();
+        // host thrown exception
+        // Enum settings should have least two options.
+        if (values.length <= 1) {
+            return;
         }
-        valueChanged = true;
+
+        // enum -> display string
+        Function<T, String> toStr = mapper != null ? mapper : (e -> e.name());
+
+        // display string -> enum
+        Function<String, T> valueOf = mapper == null
+            ? (s -> T.valueOf(enumClass, s))
+            : (s -> Stream.of(values)
+               .filter(e -> mapper.apply(e).equals(s))
+               .findFirst().orElse(getter.get()));
+
+        SettableEnumValue value = host.getPreferences().getEnumSetting
+            (label, category,
+             Stream.of(values).map(toStr).toArray(String[]::new),
+             toStr.apply(getter.get()));
+
+        value.set(toStr.apply(getter.get()));
+        value.addValueObserver((String s) -> {
+                if (ignoreHostPrefValue) {
+                    value.set(toStr.apply(getter.get()));
+                } else {
+                    T v = valueOf.apply(s);
+                    if (getter.get() != v) {
+                        setter.accept(v);
+                        valueChanged = true;
+                    }
+                }
+            });
     }
 
-    protected void requestReset() {
-        requestReset = true;
-    }
-
-    private void deleteRcFiles() {
-        String prefix = ".bitwig.extension." + definition.getName();
-        try {
-            Files.list(Paths.get(System.getProperty("user.home")))
-                .filter(Files::isRegularFile)
-                .filter(path -> path.getFileName().toString().startsWith(prefix))
-                .forEach((path) -> {
-                        try {
-                            Files.delete(path);
-                        } catch (IOException ex) {
-                            LOG.error("Error deleting RC file.", ex);
-                        }
-                    });
-        } catch (IOException ex) {
-            LOG.error("Error deleting RC file.", ex);
+    /**
+     * Add a input item to prefrences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param options       the array of value options.
+     * @param getter
+     * @param setter
+     */
+    protected void addIntPrefItem(String label,
+                                  String category,
+                                  int[] options,
+                                  Supplier<Integer> getter,
+                                  Consumer<Integer> setter) {
+        // host thrown exception
+        // Enum settings should have least two options.
+        if (options == null || options.length <= 1) {
+            return;
         }
+        SettableEnumValue value = host.getPreferences().getEnumSetting
+            (label, category,
+             IntStream.of(options).mapToObj(String::valueOf).toArray(String[]::new),
+             String.valueOf(getter.get()));
+
+        value.set(String.valueOf(getter.get()));
+        value.addValueObserver((String s) -> {
+                if (ignoreHostPrefValue) {
+                    value.set(String.valueOf(getter.get()));
+                } else {
+                    int v = Integer.valueOf(s);
+                    if (getter.get() != v) {
+                        setter.accept(v);
+                        valueChanged = true;
+                    }
+                }
+            });
     }
 
-    private Path getRcFilePath(ControllerExtensionDefinition def) {
-        StringBuilder fileName = new StringBuilder(".bitwig.extension.");
-        fileName.append(def.getName());
-        fileName.append("-");
-        fileName.append(def.getVersion());
-        return Paths.get(System.getProperty("user.home"), fileName.toString());
+    /**
+     * Add a input item to prefrences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param minValue
+     * @param maxValue
+     * @param unit
+     * @param getter
+     * @param setter
+     */
+    protected void addIntPrefItem(String label,
+                                  String category,
+                                  int minValue,
+                                  int maxValue,
+                                  String unit,
+                                  Supplier<Integer> getter,
+                                  Consumer<Integer> setter) {
+
+        SettableRangedValue value =
+            host.getPreferences().getNumberSetting
+            (label, category, (double)minValue, (double)maxValue, 1, unit, (double)getter.get());
+
+        value.setRaw(getter.get());
+        value.addValueObserver((double v) -> {
+                if (ignoreHostPrefValue) {
+                    value.setRaw(getter.get());
+                } else if (getter.get() != (int)v){
+                    setter.accept((int)v);
+                    valueChanged = true;
+                }
+            });
+    }
+
+    /**
+     * Add a input item to prefrences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param getter
+     * @param setter
+     */
+    protected void addBoolPrefItem(String label,
+                                   String category,
+                                   Supplier<Boolean> getter,
+                                   Consumer<Boolean> setter) {
+
+        SettableBooleanValue value =
+            host.getPreferences().getBooleanSetting
+            (label, category, getter.get());
+
+        value.set(getter.get());
+        value.addValueObserver((boolean v) -> {
+                if (ignoreHostPrefValue) {
+                    value.set(getter.get());
+                } else if (getter.get() != v){
+                    setter.accept(v);
+                    valueChanged = true;
+                }
+            });
+    }
+    
+    private void ignoreHostPrefValue() {
+        ignoreHostPrefValue = true;
+        host.scheduleTask(() -> {
+                ignoreHostPrefValue = false;
+            },
+            500L);
     }
 }

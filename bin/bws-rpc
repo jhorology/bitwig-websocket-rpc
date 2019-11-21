@@ -167,7 +167,7 @@ async function configCommand(options) {
  */
 async function reportCommand(options) {
   const ws = await _bwsOpen(options.url),
-        report = await ws.call('rpc.report', null, requestTimeoutMillis)
+        report = await ws.call('rpc.report', null, REQUEST_TIMEOUT_MILLIS)
   ws.close()
   _print(report)
 }
@@ -185,7 +185,7 @@ async function actionsCommand(options) {
         method = config.useAbbreviatedMethodNames
           ? 'app.actions'
           : 'application.getActions',
-        actions = await ws.call(method, null, requestTimeoutMillis)
+        actions = await ws.call(method, null, REQUEST_TIMEOUT_MILLIS)
   ws.close()
   _print(actions)
 }
@@ -201,7 +201,7 @@ async function eventsCommand(options) {
       max_reconnects: 0 // 0 means unlimited
     })
     ws.on('open', async () => {
-      const report = await ws.call('rpc.report', null, requestTimeoutMillis),
+      const report = await ws.call('rpc.report', null, REQUEST_TIMEOUT_MILLIS),
             events = report.events
               .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
               .map((e) => e.event)
@@ -217,7 +217,7 @@ async function eventsCommand(options) {
     })
   } else {
     const ws = await _bwsOpen(options.url),
-          report = await ws.call('rpc.report', null, requestTimeoutMillis),
+          report = await ws.call('rpc.report', null, REQUEST_TIMEOUT_MILLIS),
           events = report.events
             .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
             .map((e) => e.event)

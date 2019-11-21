@@ -24,24 +24,24 @@ package com.github.jhorology.bitwig;
 
 // bitwig api
 import com.bitwig.extension.controller.api.Channel;
-import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.CursorDeviceFollowMode;
 import com.bitwig.extension.controller.api.CursorTrack;
-import com.bitwig.extension.controller.api.Preferences;
-import com.bitwig.extension.controller.api.SettableBooleanValue;
-import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.bitwig.extension.controller.api.Track;
 
 // provided dependencies
+import com.google.common.eventbus.Subscribe;
+
+// dependencies
 import com.google.gson.annotations.Expose;
 
 // source
 import com.github.jhorology.bitwig.extension.AbstractConfiguration;
-import com.github.jhorology.bitwig.extension.ExtensionUtils;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 import com.github.jhorology.bitwig.ext.api.VuMeterUsedFor;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
+import com.github.jhorology.bitwig.extension.ExitEvent;
+import com.github.jhorology.bitwig.extension.InitEvent;
 
 public class Config extends AbstractConfiguration {
     private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
@@ -53,13 +53,11 @@ public class Config extends AbstractConfiguration {
     private static final int[] INT_OPTIONS_16TO128 = {16,32,64,128};
     // populate from json -->
     @Expose
-    private int webSocketPort;
+    private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
     @Expose(serialize = false)
-    private Protocols rpcProtocol;
+    private Protocols rpcProtocol = Protocols.JSONRPC20;
     @Expose
     private boolean useAbbreviatedMethodNames;
-    @Expose
-    private boolean useProject;
     @Expose
     private boolean useApplication;
     @Expose
@@ -67,7 +65,7 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useArranger;
     @Expose
-    private int arrangerCueMarkerSize;
+    private int arrangerCueMarkerSize = 16;
     @Expose
     private boolean useGroove;
     @Expose
@@ -75,27 +73,27 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useArrangerCursorClip;
     @Expose
-    private int arrangerCursorClipGridWidth;
+    private int arrangerCursorClipGridWidth = 16;
     @Expose
-    private int arrangerCursorClipGridHeight;
+    private int arrangerCursorClipGridHeight = 16;
     @Expose
     private boolean useLauncherCursorClip;
     @Expose
-    private int launcherCursorClipGridWidth;
+    private int launcherCursorClipGridWidth = 16;
     @Expose
-    private int launcherCursorClipGridHeight;
+    private int launcherCursorClipGridHeight = 16;
     @Expose
     private boolean useCursorTrack;
     @Expose
-    private int cursorTrackNumSends;
+    private int cursorTrackNumSends = 2;
     @Expose
-    private int cursorTrackNumScenes;
+    private int cursorTrackNumScenes = 8;
     @Expose
     private boolean cursorTrackShouldFollowSelection;
     @Expose
     private boolean useSiblingsTrackBank;
     @Expose
-    private int siblingsTrackBankNumTracks;
+    private int siblingsTrackBankNumTracks = 8;
     @Expose
     private boolean siblingsTrackBankIncludeEffectTracks;
     @Expose
@@ -103,15 +101,15 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useChildTrackBank;
     @Expose
-    private int childTrackBankNumTracks;
+    private int childTrackBankNumTracks = 8;
     @Expose
     private boolean childTrackBankHasFlatList;
     @Expose
     private boolean useCursorDevice;
     @Expose
-    private int cursorDeviceNumSends;
+    private int cursorDeviceNumSends = 2;
     @Expose
-    private CursorDeviceFollowMode cursorDeviceFollowMode;
+    private CursorDeviceFollowMode cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
     @Expose
     private boolean useCursorDeviceDirectParameter;
     @Expose
@@ -121,75 +119,75 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useCursorRemoteControlsPage;
     @Expose
-    private int cursorRemoteControlsPageParameterCount;
+    private int cursorRemoteControlsPageParameterCount = 8;
     @Expose
     private boolean useDeviceLayerBank;
     @Expose
-    private int deviceLayerBankNumChannels;
+    private int deviceLayerBankNumChannels = 8;
     @Expose
     private boolean useDrumPadBank;
     @Expose
-    private int drumPadBankNumPads;
+    private int drumPadBankNumPads = 16;
     @Expose
     private boolean useSiblingsDeviceBank;
     @Expose
-    private int siblingsDeviceBankNumDevices;
+    private int siblingsDeviceBankNumDevices = 4;
     @Expose
     private boolean useChainDeviceBank;
     @Expose
-    private int chainDeviceBankNumDevices;
+    private int chainDeviceBankNumDevices = 4;
     @Expose
     private boolean useSceneBank;
     @Expose
-    private int sceneBankNumScenes;
+    private int sceneBankNumScenes = 8;
     @Expose
     private boolean useMainTrackBank;
     @Expose
     private boolean mainTrackBankFollowCursorTrack;
     @Expose
-    private int mainTrackBankNumTracks;
+    private int mainTrackBankNumTracks = 8;
     @Expose
-    private int mainTrackBankNumSends;
+    private int mainTrackBankNumSends = 2;
     @Expose
-    private int mainTrackBankNumScenes;
+    private int mainTrackBankNumScenes = 8;
     @Expose
     private boolean useEffectTrackBank;
     @Expose
-    private int effectTrackBankNumTracks;
+    private int effectTrackBankNumTracks = 2;
     @Expose
-    private int effectTrackBankNumScenes;
+    private int effectTrackBankNumScenes = 8;
     @Expose
     private boolean useMasterTrack;
     @Expose
-    private int masterTrackNumScenes;
+    private int masterTrackNumScenes = 8;
     @Expose
     private boolean useBrowser;
     @Expose
-    private int browserSmartCollectionRows;
+    private int browserSmartCollectionRows = 8;
     @Expose
-    private int browserLocationRows;
+    private int browserLocationRows = 32;
     @Expose
-    private int browserDeviceRows;
+    private int browserDeviceRows = 32;
     @Expose
-    private int browserCategoryRows;
+    private int browserCategoryRows = 32;
     @Expose
-    private int browserTagRows;
+    private int browserTagRows = 32;
     @Expose
-    private int browserDeviceTypeRows;
+    private int browserDeviceTypeRows = 16;
     @Expose
-    private int browserFileTypeRows;
+    private int browserFileTypeRows = 16;
     @Expose
-    private int browserCreatorRows;
+    private int browserCreatorRows = 32;
     @Expose
-    private int browserResultsRows;
+    private int browserResultsRows = 32;
     @Expose
-    private VuMeterUsedFor vuMeterUsedFor;
+    private VuMeterUsedFor vuMeterUsedFor = VuMeterUsedFor.NONE;
     @Expose
-    private int vuMeterRange;
+    private int vuMeterRange = 32;
     @Expose
-    private VuMeterChannelMode vuMeterChannelMode;
+    private VuMeterChannelMode vuMeterChannelMode = VuMeterChannelMode.MONO;
     @Expose
-    private VuMeterPeakMode vuMeterPeakMode;
+    private VuMeterPeakMode vuMeterPeakMode = VuMeterPeakMode.RMS;
     // <--
 
     /**
@@ -214,14 +212,6 @@ public class Config extends AbstractConfiguration {
      */
     public boolean useAbbreviatedMethodNames() {
         return useAbbreviatedMethodNames;
-    }
-
-    /**
-     * Returns a configuration value of the use or not use Project API.
-     * @return
-     */
-    public boolean useProject() {
-        return useProject;
     }
 
     /**
@@ -439,7 +429,7 @@ public class Config extends AbstractConfiguration {
     public boolean useCursorDeviceDirectParameter() {
         return useCursorDeviceDirectParameter;
     }
-    
+
     /**
      * Returns a configuration value of the use or not use ChainSelector API.
      * @return
@@ -719,7 +709,7 @@ public class Config extends AbstractConfiguration {
     public VuMeterUsedFor getVuMeterUsedFor() {
         return vuMeterUsedFor;
     }
-    
+
     /**
      * Returns a configuration value of VuMeter channel mode
      * @return
@@ -727,7 +717,7 @@ public class Config extends AbstractConfiguration {
     public VuMeterChannelMode getVuMeterChannelMode() {
         return vuMeterChannelMode;
     }
-    
+
     /**
      * Returns a configuration value of VuMeter channel mode
      * @return
@@ -735,7 +725,7 @@ public class Config extends AbstractConfiguration {
     public VuMeterPeakMode getVuMeterPeakMode() {
         return vuMeterPeakMode;
     }
-    
+
     /**
      * Returns a configuration value of VuMeter range
      * @return
@@ -743,7 +733,7 @@ public class Config extends AbstractConfiguration {
     public int getVuMeterRange() {
         return vuMeterRange;
     }
-        
+
     /**
      * Returns true if specified interface is needed VU Meter.
      * @param interfaceType
@@ -763,991 +753,288 @@ public class Config extends AbstractConfiguration {
     }
 
     /**
-     * Reset to defaults.
+     * {@inheritDoc}
      */
+    @Subscribe
     @Override
-    protected void resetToDefaults() {
-        super.resetToDefaults();
-        webSocketPort = DEFAULT_WEBSOCKET_PORT;
-        rpcProtocol = Protocols.JSONRPC20;
-        useAbbreviatedMethodNames = false;
-        useProject = false;
-        useApplication = false;
-        useTransport = false;
-        useArranger = false;
-        arrangerCueMarkerSize = 16;
-        useGroove = false;
-        useMixer = false;
-        useArrangerCursorClip = false;
-        arrangerCursorClipGridWidth = 16;
-        arrangerCursorClipGridHeight = 16;
-        useLauncherCursorClip = false;
-        launcherCursorClipGridWidth = 16;
-        launcherCursorClipGridHeight = 16;
-
-        useCursorTrack = false;
-        cursorTrackNumSends = 2;
-        cursorTrackNumScenes = 8;
-        cursorTrackShouldFollowSelection = true;
-
-        useSiblingsTrackBank = false;
-        siblingsTrackBankNumTracks = 8;
-        siblingsTrackBankIncludeEffectTracks = false;
-        siblingsTrackBankIncludeMasterTrack = false;
-
-        useChildTrackBank = false;
-        childTrackBankNumTracks = 8;
-        childTrackBankHasFlatList = false;
-
-        useCursorDevice = false;
-        cursorDeviceNumSends = 2;
-        cursorDeviceFollowMode = CursorDeviceFollowMode.FOLLOW_SELECTION;
-        useCursorDeviceDirectParameter = false;
-
-        useChainSelector = false;
-
-        useCursorDeviceLayer = false;
-
-        useCursorRemoteControlsPage = false;
-        cursorRemoteControlsPageParameterCount = 8;
-
-        useDeviceLayerBank = false;
-        deviceLayerBankNumChannels = 8;
-
-        useDrumPadBank = false;
-        drumPadBankNumPads = 16;
-
-        useSiblingsDeviceBank = false;
-        siblingsDeviceBankNumDevices = 4;
-
-        useChainDeviceBank = false;
-        chainDeviceBankNumDevices = 4;
-
-        useSceneBank = false;
-        sceneBankNumScenes = 8;
-
-        useMainTrackBank = false;
-        mainTrackBankFollowCursorTrack = true;
-        mainTrackBankNumTracks = 8;
-        mainTrackBankNumSends = 2;
-        mainTrackBankNumScenes = 8;
-
-        useEffectTrackBank = false;
-        effectTrackBankNumTracks = 2;
-        effectTrackBankNumScenes = 8;
-
-        useMasterTrack = false;
-        masterTrackNumScenes = 8;
-
-        useBrowser = false;
-        browserSmartCollectionRows = 32;
-        browserLocationRows = 32;
-        browserDeviceRows =32;
-        browserCategoryRows = 32;
-        browserTagRows = 32;
-        browserDeviceTypeRows = 16;
-        browserFileTypeRows = 16;
-        browserCreatorRows = 32;
-        browserResultsRows = 32;
-        
-        vuMeterUsedFor = VuMeterUsedFor.NONE;
-        vuMeterChannelMode = VuMeterChannelMode.MONO;
-        vuMeterPeakMode = VuMeterPeakMode.RMS;
-        vuMeterRange = 64;
+    public void onInit(InitEvent event) {
+        super.onInit(event);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void onInit(ControllerHost host) {
-        Preferences pref = host.getPreferences();
-        SettableRangedValue webSocketPortValue = pref.getNumberSetting
-            ("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, 1, "", DEFAULT_WEBSOCKET_PORT);
-        webSocketPortValue.addRawValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    webSocketPortValue.setRaw(webSocketPort);
-                } else if (webSocketPort != (int)v) {
-                    webSocketPort = (int)v;
-                    valueChanged();
-                }
-            });
+    protected void insertPrefItems() {
+        addIntPrefItem("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, "",
+                       this::getWebSocketPort,
+                       v -> {webSocketPort = (int)v;});
 
-        Protocols protocol = ExtensionUtils.getPreferenceAsEnum
-            (pref, "Protocol", WEBSOCKET_PREF_CATEGORY,
-             e -> e.getDisplayName(), Protocols.JSONRPC20, rpcProtocol,
-             (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(Protocols.JSONRPC20.getDisplayName());
-                } else if (rpcProtocol != e) {
-                    rpcProtocol = e;
-                    valueChanged();
-                }
-            });
+        addEnumPrefItem("Protocol", WEBSOCKET_PREF_CATEGORY,
+                        v -> v.getDisplayName(),
+                        this::getRpcProtocol,
+                        v -> {rpcProtocol = v;});
 
-        // who can understand this preferences...
-        if (isProduction()) {
-            return;
-        }
-        
-        SettableBooleanValue useAbbreviatedMethodNamesValue = pref.getBooleanSetting
-            ("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY, true);
-        useAbbreviatedMethodNamesValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useAbbreviatedMethodNamesValue.set(useAbbreviatedMethodNames);
-                } else if (useAbbreviatedMethodNames != v) {
-                    useAbbreviatedMethodNames = v;
-                    valueChanged();
-                }
-            });
+        //#if build.development
+        addBoolPrefItem("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY,
+                        this::useAbbreviatedMethodNames,
+                        v -> {useAbbreviatedMethodNames = v;});
 
-        // SettableBooleanValue useProjectValue = pref.getBooleanSetting
-        //     ("Use", "Project", false);
-        // useProjectValue.set(useProject);
-        // useProjectValue.addValueObserver(v -> {
-        //         if (useProject != v) {
-        //             useProject = v;
-        //             valueChanged();
-        //         }
-        //     });
 
-        SettableBooleanValue useApplicationValue = pref.getBooleanSetting
-            ("Use", "Application", false);
-        useApplicationValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useApplicationValue.set(useApplication);
-                } else if (useApplication != v) {
-                    useApplication = v;
-                    valueChanged();
-                }
-            });
+        // --> Application
+        addBoolPrefItem("Use", "Application",
+                        this::useApplication,
+                        v -> {useApplication = v;});
 
-        SettableBooleanValue useTransportValue = pref.getBooleanSetting
-            ("Use", "Transport", false);
-        useTransportValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useTransportValue.set(useTransport);
-                } else if (useTransport != v) {
-                    useTransport = v;
-                    valueChanged();
-                }
-            });
+        // --> Transport
+        addBoolPrefItem("Use", "Transport",
+                        this::useTransport,
+                        v -> {useTransport = v;});
 
-        SettableBooleanValue useArrangerValue = pref.getBooleanSetting
-            ("Use", "Arranger", false);
-        useArrangerValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useArrangerValue.set(useArranger);
-                } else if (useArranger != v) {
-                    useArranger = v;
-                    valueChanged();
-                }
-            });
+        // --> Arranger
+        addBoolPrefItem("Use", "Arranger",
+                        this::useArranger,
+                        v -> {useArranger = v;});
+        addIntPrefItem("cue markers", "Arranger", INT_OPTIONS_8TO64,
+                       this::getArrangerCueMakerSize,
+                       v -> {arrangerCueMarkerSize = v;});
 
-        int arrangerCueMarkerSizeValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "cue markers", "Arranger", INT_OPTIONS_8TO64[1], arrangerCueMarkerSize,
-             INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(arrangerCueMarkerSize));
-                } else if (arrangerCueMarkerSize != i) {
-                    arrangerCueMarkerSize = i;
-                    valueChanged();
-                }
-            });
+        // --> Groove
+        addBoolPrefItem("Use", "Groove",
+                        this::useGroove,
+                        v -> {useGroove = v;});
 
-        SettableBooleanValue useGrooveValue = pref.getBooleanSetting
-            ("Use", "Groove", false);
-        useGrooveValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useGrooveValue.set(useGroove);
-                } else if (useGroove != v) {
-                    useGroove = v;
-                    valueChanged();
-                }
-            });
+        // --> Mixer
+        addBoolPrefItem("Use", "Mixer",
+                        this::useMixer,
+                        v -> {useMixer = v;});
 
-        SettableBooleanValue useMixerValue = pref.getBooleanSetting
-            ("Use", "Mixer", false);
-        useMixerValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useMixerValue.set(useMixer);
-                } else if (useMixer != v) {
-                    useMixer = v;
-                    valueChanged();
-                }
-            });
+        // --> ArrangerCursorClip
+        addBoolPrefItem("Use", "ArrangerCursorClip",
+                        this::useArrangerCursorClip,
+                        v -> {useArrangerCursorClip = v;});
+        addIntPrefItem("Grid Width", "ArrangerCursorClip", INT_OPTIONS_8TO64,
+                       this::getArrangerCursorClipGridWidth,
+                       v -> {arrangerCursorClipGridWidth = v;});
+        addIntPrefItem("Grid Height", "ArrangerCursorClip", INT_OPTIONS_8TO64,
+                       this::getArrangerCursorClipGridHeight,
+                       v -> {arrangerCursorClipGridHeight = v;});
 
-        SettableBooleanValue useArrangerCursorClipValue = pref.getBooleanSetting
-            ("Use", "ArrangerCursorClip", false);
-        useArrangerCursorClipValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useArrangerCursorClipValue.set(useArrangerCursorClip);
-                } else if (useArrangerCursorClip != v) {
-                    useArrangerCursorClip = v;
-                    valueChanged();
-                }
-            });
-
-        int arrangerCursorClipGridWidthValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Grid Width", "ArrangerCursorClip", INT_OPTIONS_8TO64[1], arrangerCursorClipGridWidth,
-             INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(arrangerCursorClipGridWidth));
-                } else if (arrangerCursorClipGridWidth != i) {
-                    arrangerCursorClipGridWidth = i;
-                    valueChanged();
-                }
-            });
-
-        int arrangerCursorClipGridHeightValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Grid Height", "ArrangerCursorClip", INT_OPTIONS_8TO64[1], arrangerCursorClipGridHeight,
-             INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(arrangerCursorClipGridHeight));
-                } else if (arrangerCursorClipGridHeight != i) {
-                    arrangerCursorClipGridHeight = i;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue useLauncherCursorClipValue = pref.getBooleanSetting
-            ("Use", "LauncherCursorClip", false);
-        useLauncherCursorClipValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useLauncherCursorClipValue.set(useLauncherCursorClip);
-                } else if (useLauncherCursorClip != v) {
-                    useLauncherCursorClip = v;
-                    valueChanged();
-                }
-            });
-
-        int launcherCursorClipGridWidthValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Grid Width", "LauncherCursorClip", INT_OPTIONS_8TO64[1], launcherCursorClipGridWidth,
-             INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(launcherCursorClipGridWidth));
-                } else if (launcherCursorClipGridWidth != i) {
-                    launcherCursorClipGridWidth = i;
-                    valueChanged();
-                }
-            });
-
-        int launcherCursorClipGridHeightValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Grid Height", "LauncherCursorClip", INT_OPTIONS_8TO64[1], launcherCursorClipGridHeight,
-             INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(launcherCursorClipGridHeight));
-                } else if (launcherCursorClipGridHeight != i) {
-                    launcherCursorClipGridHeight = i;
-                    valueChanged();
-                }
-            });
-
+        // --> LauncherCursorClip
+        addBoolPrefItem("Use", "LauncherCursorClip",
+                        this::useLauncherCursorClip,
+                        v -> {useLauncherCursorClip = v;});
+        addIntPrefItem("Grid Width", "LauncherCursorClip", INT_OPTIONS_8TO64,
+                       this::getLauncherCursorClipGridWidth,
+                       v -> {launcherCursorClipGridWidth = v;});
+        addIntPrefItem("Grid Height", "LauncherCursorClip", INT_OPTIONS_8TO64,
+                       this::getLauncherCursorClipGridHeight,
+                       v -> {launcherCursorClipGridHeight = v;});
 
         // --> CursorTrack
-        SettableBooleanValue useCursorTrackValue = pref.getBooleanSetting
-            ("Use", "CursorTrack", false);
-        useCursorTrackValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useCursorTrackValue.set(useCursorTrack);
-                } else if (useCursorTrack != v) {
-                    useCursorTrack = v;
-                    valueChanged();
-                }
-            });
-
-        int cursorTrackNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Sends", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumSends,
-             INT_OPTIONS_1TO8, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(cursorTrackNumSends));
-                } else if (cursorTrackNumSends != i) {
-                    cursorTrackNumSends = i;
-                    valueChanged();
-                }
-            });
-
-        int cursorTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "CursorTrack", INT_OPTIONS_1TO8[1], cursorTrackNumScenes,
-             INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(cursorTrackNumScenes));
-                } else if (cursorTrackNumScenes != i) {
-                    cursorTrackNumScenes = i;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue cursorTrackShouldFollowSelectionValue = pref.getBooleanSetting
-            ("Should follow selection", "CursorTrack", false);
-        cursorTrackShouldFollowSelectionValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    cursorTrackShouldFollowSelectionValue.set(cursorTrackShouldFollowSelection);
-                } else if (cursorTrackShouldFollowSelection != v) {
-                    cursorTrackShouldFollowSelection = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "CursorTrack",
+                        this::useCursorTrack,
+                        v -> {useCursorTrack = v;});
+        addIntPrefItem("Sends", "CursorTrack", INT_OPTIONS_1TO8,
+                       this::getCursorTrackNumSends,
+                       v -> {cursorTrackNumSends = v;});
+        addIntPrefItem("Scenes", "CursorTrack", INT_OPTIONS_4TO32,
+                       this::getCursorTrackNumScenes,
+                       v -> {cursorTrackNumScenes = v;});
+        addBoolPrefItem("Should follow selection", "CursorTrack",
+                        this::cursorTrackShouldFollowSelection,
+                        v -> {cursorTrackShouldFollowSelection = v;});
 
         // --> SiblingsTrackBank
-        SettableBooleanValue useSiblingsTrackBankValue = pref.getBooleanSetting
-            ("Use", "SiblingsTrackBank (needs CursorTrack)", false);
-        useSiblingsTrackBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useSiblingsTrackBankValue.set(useSiblingsTrackBank);
-                } else  if (useSiblingsTrackBank != v) {
-                    useSiblingsTrackBank = v;
-                    valueChanged();
-                }
-            });
-
-        int siblingsTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "SiblingsTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1],
-             siblingsTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(siblingsTrackBankNumTracks));
-                } else if (siblingsTrackBankNumTracks != i) {
-                    siblingsTrackBankNumTracks = i;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue siblingsTrackBankIncludeEffectTracksValue = pref.getBooleanSetting
-            ("Include effect tracks", "SiblingsTrackBank (needs CursorTrack)", false);
-        siblingsTrackBankIncludeEffectTracksValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    siblingsTrackBankIncludeEffectTracksValue.set(siblingsTrackBankIncludeEffectTracks);
-                } else if (siblingsTrackBankIncludeEffectTracks != v) {
-                    siblingsTrackBankIncludeEffectTracks = v;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue siblingsTrackBankIncludeMasterTrackValue = pref.getBooleanSetting
-            ("Include master track", "SiblingsTrackBank (needs CursorTrack)", false);
-        siblingsTrackBankIncludeMasterTrackValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    siblingsTrackBankIncludeMasterTrackValue.set(siblingsTrackBankIncludeMasterTrack);
-                } else  if (siblingsTrackBankIncludeMasterTrack != v) {
-                    siblingsTrackBankIncludeMasterTrack = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "SiblingsTrackBank (needs CursorTrack)",
+                        this::useSiblingsTrackBank,
+                        v -> {useSiblingsTrackBank = v;});
+        addIntPrefItem("Tracks", "SiblingsTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32,
+                       this::getSiblingsTrackBankNumTracks,
+                       v -> {siblingsTrackBankNumTracks = v;});
+        addBoolPrefItem("Include effect tracks", "SiblingsTrackBank (needs CursorTrack)",
+                        this::isSiblingsTrackBankIncludeEffectTracks,
+                        v -> {siblingsTrackBankIncludeEffectTracks = v;});
+        addBoolPrefItem("Include master track", "SiblingsTrackBank (needs CursorTrack)",
+                        this::isSiblingsTrackBankIncludeMasterTrack,
+                        v -> {siblingsTrackBankIncludeMasterTrack = v;});
 
         // --> SiblingsTrackBank
-        SettableBooleanValue useChildTrackBankValue = pref.getBooleanSetting
-            ("Use", "ChildTrackBank (needs CursorTrack)", false);
-        useChildTrackBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useChildTrackBankValue.set(useChildTrackBank);
-                } else if (useChildTrackBank != v) {
-                    useChildTrackBank = v;
-                    valueChanged();
-                }
-            });
-
-        int childTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "ChildTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32[1],
-             childTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(childTrackBankNumTracks));
-                } else if (childTrackBankNumTracks != i) {
-                    childTrackBankNumTracks = i;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue childTrackBankHasFlatListValue = pref.getBooleanSetting
-            ("Has flat track list", "ChildTrackBank (needs CursorTrack)", false);
-        childTrackBankHasFlatListValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    childTrackBankHasFlatListValue.set(childTrackBankHasFlatList);
-                } else if (childTrackBankHasFlatList != v) {
-                    childTrackBankHasFlatList = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "ChildTrackBank (needs CursorTrack)",
+                        this::useChildTrackBank,
+                        v -> {useChildTrackBank = v;});
+        addIntPrefItem("Tracks", "ChildTrackBank (needs CursorTrack)", INT_OPTIONS_4TO32,
+                       this::getChildTrackBankNumTracks,
+                       v -> {childTrackBankNumTracks = v;});
+        addBoolPrefItem("Has flat track list", "ChildTrackBank (needs CursorTrack)",
+                        this::isChildTrackBankHasFlatList,
+                        v -> {childTrackBankHasFlatList = v;});
 
         // --> CursorDevice
-        SettableBooleanValue useCursorDeviceValue = pref.getBooleanSetting
-            ("Use", "CursorDevice (needs CursorTrack)", false);
-        useCursorDeviceValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useCursorDeviceValue.set(useCursorDevice);
-                } else if (useCursorDevice != v) {
-                    useCursorDevice = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "CursorDevice (needs CursorTrack)",
+                        this::useCursorDevice,
+                        v -> {useCursorDevice = v;});
+        addIntPrefItem("sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8,
+                       this::getCursorDeviceNumSends,
+                       v -> {cursorDeviceNumSends = v;});
+        addEnumPrefItem("Follow mode", "CursorDevice (needs CursorTrack)",
+                        this::getCursorDeviceFollowMode,
+                        v -> {cursorDeviceFollowMode = v;});
+        addBoolPrefItem("Use DirectParameter", "CursorDevice (needs CursorTrack)",
+                        this::useCursorDeviceDirectParameter,
+                        v -> {useCursorDeviceDirectParameter = v;});
 
-        int cursorDeviceNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8[1],
-             cursorDeviceNumSends, INT_OPTIONS_1TO8, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(cursorDeviceNumSends));
-                } else if (cursorDeviceNumSends != i) {
-                    cursorDeviceNumSends = i;
-                    valueChanged();
-                }
-            });
-
-        CursorDeviceFollowMode cursorDeviceFollowModeValue = ExtensionUtils.getPreferenceAsEnum
-            (pref, "Follow mode", "CursorDevice (needs CursorTrack)", CursorDeviceFollowMode.FOLLOW_SELECTION,
-             cursorDeviceFollowMode, (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(cursorDeviceFollowMode.name());
-                } else if (cursorDeviceFollowMode != e) {
-                    cursorDeviceFollowMode = e;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue useCursorDeviceDirectParameterValue = pref.getBooleanSetting
-            ("Use DirectParameter", "CursorDevice (needs CursorTrack)", false);
-        useCursorDeviceDirectParameterValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useCursorDeviceDirectParameterValue.set(useCursorDeviceDirectParameter);
-                } else if (useCursorDeviceDirectParameter != v) {
-                    useCursorDeviceDirectParameter = v;
-                    valueChanged();
-                }
-            });
-        
         // --> ChainSelector
-        SettableBooleanValue useChainSelectorValue = pref.getBooleanSetting
-            ("Use", "ChainSelector (needs CursorDevice)", false);
-        useChainSelectorValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useChainSelectorValue.set(useChainSelector);
-                } else if (useChainSelector != v) {
-                    useChainSelector = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "ChainSelector (needs CursorDevice)",
+                        this::useChainSelector,
+                        v -> {useChainSelector = v;});
 
         // --> CursorDeviceLayer
-        SettableBooleanValue useCursorDeviceLayerValue = pref.getBooleanSetting
-            ("Use", "CursorDeviceLayer (needs CursorDevice)", false);
-        useCursorDeviceLayerValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useCursorDeviceLayerValue.set(useCursorDeviceLayer);
-                } else if (useCursorDeviceLayer != v) {
-                    useCursorDeviceLayer = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "CursorDeviceLayer (needs CursorDevice)",
+                        this::useCursorDeviceLayer,
+                        v -> {useCursorDeviceLayer = v;});
 
         // --> CursorRemoteControlPage
-        SettableBooleanValue useCursorRemoteControlsPageValue = pref.getBooleanSetting
-            ("Use", "CursorRemoteControlPage (needs CursorDevice)", false);
-        useCursorRemoteControlsPageValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useCursorRemoteControlsPageValue.set(useCursorRemoteControlsPage);
-                } else if (useCursorRemoteControlsPage != v) {
-                    useCursorRemoteControlsPage = v;
-                    valueChanged();
-                }
-            });
-
-        int cursorRemoteControlsPageParameterCountValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Controls", "CursorRemoteControlPage (needs CursorDevice)", INT_OPTIONS_4TO32[1],
-             cursorRemoteControlsPageParameterCount, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(cursorRemoteControlsPageParameterCount));
-                } else if (cursorRemoteControlsPageParameterCount != i) {
-                    cursorRemoteControlsPageParameterCount = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "CursorRemoteControlPage (needs CursorDevice)",
+                        this::useCursorRemoteControlsPage,
+                        v -> {useCursorRemoteControlsPage = v;});
+        addIntPrefItem("Controls", "CursorRemoteControlPage (needs CursorDevice)", INT_OPTIONS_4TO32,
+                       this::getCursorRemoteControlsPageParameterCount,
+                       v -> {cursorRemoteControlsPageParameterCount = v;});
 
         // --> DeviceLayerBank
-        SettableBooleanValue useDeviceLayerBankValue = pref.getBooleanSetting
-            ("Use", "DeviceLayerBank (needs CursorDevice)", false);
-        useDeviceLayerBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useDeviceLayerBankValue.set(useDeviceLayerBank);
-                } else if (useDeviceLayerBank != v) {
-                    useDeviceLayerBank = v;
-                    valueChanged();
-                }
-            });
-
-        int deviceLayerBankNumChannelsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Channels", "DeviceLayerBank (needs CursorDevice)", INT_OPTIONS_4TO32[1],
-             deviceLayerBankNumChannels, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(deviceLayerBankNumChannels));
-                } else if (deviceLayerBankNumChannels != i) {
-                    deviceLayerBankNumChannels = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "DeviceLayerBank (needs CursorDevice)",
+                        this::useDeviceLayerBank,
+                        v -> {useDeviceLayerBank = v;});
+        addIntPrefItem("Channels", "DeviceLayerBank (needs CursorDevice)", INT_OPTIONS_4TO32,
+                       this::getDeviceLayerBankNumChannels,
+                       v -> {deviceLayerBankNumChannels = v;});
 
         // --> DrumPadBank
-        SettableBooleanValue useDrumPadBankValue = pref.getBooleanSetting
-            ("Use", "DrumPadBank (needs CursorDevice)", false);
-        useDrumPadBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useDrumPadBankValue.set(useDrumPadBank);
-                } else if (useDrumPadBank != v) {
-                    useDrumPadBank = v;
-                    valueChanged();
-                }
-            });
-
-        int drumPadBankNumPadsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Pads", "DrumPadBank (needs CursorDevice)", INT_OPTIONS_8TO64[1],
-             drumPadBankNumPads, INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(drumPadBankNumPads));
-                } else if (drumPadBankNumPads != i) {
-                    drumPadBankNumPads = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "DrumPadBank (needs CursorDevice)",
+                        this::useDrumPadBank,
+                        v -> {useDrumPadBank = v;});
+        addIntPrefItem("Pads", "DrumPadBank (needs CursorDevice)", INT_OPTIONS_8TO64,
+                       this::getDrumPadBankNumPads,
+                       v -> {drumPadBankNumPads = v;});
 
         // --> SiblingsDeviceBank
-        SettableBooleanValue useSiblingsDeviceBankValue = pref.getBooleanSetting
-            ("Use", "SiblingsDeviceBank (needs CursorDevice)", false);
-        useSiblingsDeviceBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useSiblingsDeviceBankValue.set(useSiblingsDeviceBank);
-                } else if (useSiblingsDeviceBank != v) {
-                    useSiblingsDeviceBank = v;
-                    valueChanged();
-                }
-            });
-
-        int siblingsDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Devices", "SiblingsDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1],
-             siblingsDeviceBankNumDevices, INT_OPTIONS_2TO16, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(siblingsDeviceBankNumDevices));
-                } else if (siblingsDeviceBankNumDevices != i) {
-                    siblingsDeviceBankNumDevices = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "SiblingsDeviceBank (needs CursorDevice)",
+                        this::useSiblingsDeviceBank,
+                        v -> {useSiblingsDeviceBank = v;});
+        addIntPrefItem("Devices", "SiblingsDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16,
+                       this::getSiblingsDeviceBankNumDevices,
+                       v -> {siblingsDeviceBankNumDevices = v;});
 
         // --> ChainDeviceBank
-        SettableBooleanValue useChainDeviceBankValue = pref.getBooleanSetting
-            ("Use", "ChainDeviceBank (needs CursorDevice)", false);
-        useChainDeviceBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useChainDeviceBankValue.set(useChainDeviceBank);
-                } else if (useChainDeviceBank != v) {
-                    useChainDeviceBank = v;
-                    valueChanged();
-                }
-            });
-
-        int chainDeviceBankNumDevicesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Devices", "ChainDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16[1],
-             chainDeviceBankNumDevices, INT_OPTIONS_2TO16, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(chainDeviceBankNumDevices));
-                } else if (chainDeviceBankNumDevices != i) {
-                    chainDeviceBankNumDevices = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "ChainDeviceBank (needs CursorDevice)",
+                        this::useChainDeviceBank,
+                        v -> {useChainDeviceBank = v;});
+        addIntPrefItem("Devices", "ChainDeviceBank (needs CursorDevice)", INT_OPTIONS_2TO16,
+                       this::getChainDeviceBankNumDevices,
+                       v -> {chainDeviceBankNumDevices = v;});
 
         // --> SceneBank
-        SettableBooleanValue useSceneBankValue = pref.getBooleanSetting
-            ("Use", "SceneBank", false);
-        useSceneBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useSceneBankValue.set(useSceneBank);
-                } else if (useSceneBank != v) {
-                    useSceneBank = v;
-                    valueChanged();
-                }
-            });
-
-        int sceneBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "SceneBank", INT_OPTIONS_4TO32[1],
-             sceneBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(sceneBankNumScenes));
-                } else if (sceneBankNumScenes != i) {
-                    sceneBankNumScenes = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "SceneBank",
+                        this::useSceneBank,
+                        v -> {useSceneBank = v;});
+        addIntPrefItem("Scenes", "SceneBank", INT_OPTIONS_4TO32,
+                       this::getSceneBankNumScenes,
+                       v -> {sceneBankNumScenes = v;});
 
         // --> MainTrackBank
-        SettableBooleanValue useMainTrackBankValue = pref.getBooleanSetting
-            ("Use", "MainTrackBank", false);
-        useMainTrackBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useMainTrackBankValue.set(useMainTrackBank);
-                } else if (useMainTrackBank != v) {
-                    useMainTrackBank = v;
-                    valueChanged();
-                }
-            });
-
-        int mainTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "MainTrackBank", INT_OPTIONS_4TO32[1],
-             mainTrackBankNumTracks, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(mainTrackBankNumTracks));
-                } else if (mainTrackBankNumTracks != i) {
-                    mainTrackBankNumTracks = i;
-                    valueChanged();
-                }
-            });
-
-        int mainTrackBankNumSendsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Sends", "MainTrackBank", INT_OPTIONS_1TO8[1],
-             mainTrackBankNumSends, INT_OPTIONS_1TO8, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(mainTrackBankNumSends));
-                } else if (mainTrackBankNumSends != i) {
-                    mainTrackBankNumSends = i;
-                    valueChanged();
-                }
-            });
-
-        int mainTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "MainTrackBank", INT_OPTIONS_4TO32[1],
-             mainTrackBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(mainTrackBankNumScenes));
-                } else if (mainTrackBankNumScenes != i) {
-                    mainTrackBankNumScenes = i;
-                    valueChanged();
-                }
-            });
-
-        SettableBooleanValue mainTrackBankFollowCursorTrackValue = pref.getBooleanSetting
-            ("Follow CursorTrack", "MainTrackBank", false);
-        useMainTrackBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    mainTrackBankFollowCursorTrackValue.set(mainTrackBankFollowCursorTrack);
-                } else if (mainTrackBankFollowCursorTrack != v) {
-                    mainTrackBankFollowCursorTrack = v;
-                    valueChanged();
-                }
-            });
-
+        addBoolPrefItem("Use", "MainTrackBank",
+                        this::useMainTrackBank,
+                        v -> {useMainTrackBank = v;});
+        addIntPrefItem("Tracks", "MainTrackBank", INT_OPTIONS_4TO32,
+                       this::getMainTrackBankNumTracks,
+                       v -> {mainTrackBankNumTracks = v;});
+        addIntPrefItem("Sends", "MainTrackBank", INT_OPTIONS_1TO8,
+                       this::getMainTrackBankNumSends,
+                       v -> {mainTrackBankNumSends = v;});
+        addIntPrefItem("Scenes", "MainTrackBank", INT_OPTIONS_4TO32,
+                       this::getMainTrackBankNumScenes,
+                       v -> {mainTrackBankNumScenes = v;});
+        addBoolPrefItem("Follow CursorTrack", "MainTrackBank",
+                        this::isMainTrackBankFollowCursorTrack,
+                        v -> {mainTrackBankFollowCursorTrack = v;});
 
         // --> EffectrackBank
-        SettableBooleanValue useEffectTrackBankValue = pref.getBooleanSetting
-            ("Use", "EffectTrackBank", false);
-        useEffectTrackBankValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useEffectTrackBankValue.set(useEffectTrackBank);
-                } else if (useEffectTrackBank != v) {
-                    useEffectTrackBank = v;
-                    valueChanged();
-                }
-            });
-
-        int effectTrackBankNumTracksValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tracks", "EffectTrackBank", INT_OPTIONS_1TO8[1],
-             effectTrackBankNumTracks, INT_OPTIONS_1TO8, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(effectTrackBankNumTracks));
-                } else if (effectTrackBankNumTracks != i) {
-                    effectTrackBankNumTracks = i;
-                    valueChanged();
-                }
-            });
-
-        int effectTrackBankNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "EffectTrackBank", INT_OPTIONS_4TO32[1],
-             effectTrackBankNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(effectTrackBankNumScenes));
-                } else if (effectTrackBankNumScenes != i) {
-                    effectTrackBankNumScenes = i;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "EffectTrackBank",
+                        this::useEffectTrackBank,
+                        v -> {useEffectTrackBank = v;});
+        addIntPrefItem("Tracks", "EffectTrackBank", INT_OPTIONS_1TO8,
+                       this::getEffectTrackBankNumTracks,
+                       v -> {effectTrackBankNumTracks = v;});
+        addIntPrefItem("Scenes", "EffectTrackBank", INT_OPTIONS_4TO32,
+                       this::getEffectTrackBankNumScenes,
+                       v -> {effectTrackBankNumScenes = v;});
 
         // --> MasterTrack
-        SettableBooleanValue useMasterTrackValue = pref.getBooleanSetting
-            ("Use", "MasterTrack", false);
-        useMasterTrackValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useMasterTrackValue.set(useMasterTrack);
-                } else if (useMasterTrack != v) {
-                    useMasterTrack = v;
-                    valueChanged();
-                }
-            });
-
-        int masterTrackNumScenesValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Scenes", "MasterTrack", INT_OPTIONS_4TO32[1],
-             masterTrackNumScenes, INT_OPTIONS_4TO32, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(masterTrackNumScenes));
-                } else {
-                    if (masterTrackNumScenes != i) {
-                        masterTrackNumScenes = i;
-                        valueChanged();
-                    }
-                }
-            });
+        addBoolPrefItem("Use", "MasterTrack",
+                        this::useMasterTrack,
+                        v -> {useMasterTrack = v;});
+        addIntPrefItem("Scenes", "MasterTrack", INT_OPTIONS_4TO32,
+                       this::getMasterTrackNumScenes,
+                       v -> {masterTrackNumScenes = v;});
 
         // --> PopupBrowser
-        SettableBooleanValue useBrowserValue = pref.getBooleanSetting
-            ("Use", "PopupBrowser", false);
-        useBrowserValue.addValueObserver(v -> {
-                if (ignoreValueChanged) {
-                    useBrowserValue.set(useBrowser);
-                } else if (useBrowser != v) {
-                    useBrowser = v;
-                    valueChanged();
-                }
-            });
+        addBoolPrefItem("Use", "PopupBrowser",
+                        this::useBrowser,
+                        v -> {useBrowser = v;});
+        addIntPrefItem("Smart collection rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserSmartCollectionRows,
+                       v -> {browserSmartCollectionRows = v;});
+        addIntPrefItem("Location rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserLocationRows,
+                       v -> {browserLocationRows = v;});
+        addIntPrefItem("Device rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserDeviceRows,
+                       v -> {browserDeviceRows = v;});
+        addIntPrefItem("Category rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserCategoryRows,
+                       v -> {browserCategoryRows = v;});
+        addIntPrefItem("Tag rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserTagRows,
+                       v -> {browserTagRows = v;});
+        addIntPrefItem("Device type rows", "PopupBrowser", INT_OPTIONS_8TO64,
+                       this::getBrowserDeviceTypeRows,
+                       v -> {browserDeviceTypeRows = v;});
+        addIntPrefItem("File type rows", "PopupBrowser", INT_OPTIONS_8TO64,
+                       this::getBrowserFileTypeRows,
+                       v -> {browserFileTypeRows = v;});
+        addIntPrefItem("Creator rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserCreatorRows,
+                       v -> {browserCreatorRows = v;});
+        addIntPrefItem("Result rows", "PopupBrowser", INT_OPTIONS_16TO128,
+                       this::getBrowserResultsRows,
+                       v -> {this.browserResultsRows = v;});
 
-        int browserSmartCollectionRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Smart collection rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserSmartCollectionRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserSmartCollectionRows));
-                } else if (browserSmartCollectionRows != i) {
-                    browserSmartCollectionRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserLocationRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Location rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserLocationRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserLocationRows));
-                } else if (browserLocationRows != i) {
-                    browserLocationRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserDeviceRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Device rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserDeviceRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserDeviceRows));
-                } else if (browserDeviceRows != i) {
-                    browserDeviceRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserCategoryRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Category rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserCategoryRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserCategoryRows));
-                } else if (browserCategoryRows != i) {
-                    browserCategoryRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserTagRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Tag rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserTagRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserTagRows));
-                } else if (browserTagRows != i) {
-                    browserTagRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserDeviceTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Device type rows", "PopupBrowser", INT_OPTIONS_8TO64[1],
-             browserDeviceTypeRows, INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserDeviceTypeRows));
-                } else if (browserDeviceTypeRows != i) {
-                    browserDeviceTypeRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserFileTypeRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "File type rows", "PopupBrowser", INT_OPTIONS_8TO64[1],
-             browserFileTypeRows, INT_OPTIONS_8TO64, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserFileTypeRows));
-                } else if (browserFileTypeRows != i) {
-                    browserFileTypeRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserCreatorRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Creator rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserCreatorRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserCreatorRows));
-                } else if (browserCreatorRows != i) {
-                    browserCreatorRows = i;
-                    valueChanged();
-                }
-            });
-
-        int browserResultsRowsValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "Results rows", "PopupBrowser", INT_OPTIONS_16TO128[1],
-             browserResultsRows, INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(browserResultsRows));
-                } else if (browserResultsRows != i) {
-                    browserResultsRows = i;
-                    valueChanged();
-                }
-            });
-        
-        VuMeterUsedFor vuMeterUsedForValue = ExtensionUtils.getPreferenceAsEnum
-            (pref, "used for", "VU Meter",
-             e -> e.getDisplayValue(), VuMeterUsedFor.NONE, vuMeterUsedFor,
-             (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(vuMeterUsedFor.getDisplayValue());
-                } else if (vuMeterUsedFor != e) {
-                    vuMeterUsedFor = e;
-                    valueChanged();
-                }
-            });
-
-        VuMeterChannelMode vuMeterChannelModeValue = ExtensionUtils.getPreferenceAsEnum
-            (pref, "channel mode", "VU Meter",
-             e -> e.getDisplayValue(), VuMeterChannelMode.MONO, vuMeterChannelMode,
-             (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(vuMeterChannelMode.getDisplayValue());
-                } else if (vuMeterChannelMode != e) {
-                    vuMeterChannelMode = e;
-                    valueChanged();
-                }
-            });
-        
-        VuMeterPeakMode vuMeterPeakModeValue = ExtensionUtils.getPreferenceAsEnum
-            (pref, "peak mode", "VU Meter",
-             e -> e.getDisplayValue(), VuMeterPeakMode.RMS, vuMeterPeakMode,
-             (e, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(vuMeterPeakMode.getDisplayValue());
-                } else if (vuMeterPeakMode != e) {
-                    vuMeterPeakMode = e;
-                    valueChanged();
-                }
-            });
-        
-        int vuMeterRangeValue = ExtensionUtils.getPreferenceAsIntOptions
-            (pref, "range", "VU Meter", INT_OPTIONS_8TO64[1], vuMeterRange,
-             INT_OPTIONS_16TO128, (i, v) -> {
-                if (ignoreValueChanged) {
-                    v.set(String.valueOf(vuMeterRange));
-                } else if (vuMeterRange != i) {
-                    vuMeterRange = i;
-                    valueChanged();
-                }
-            });
-
-
-        // for future use
-        if (!USE_RC_FILE) {
-            webSocketPort = (int)webSocketPortValue.getRaw();
-            rpcProtocol = protocol;
-
-            // useProject = useProjectValue.get();
-
-            useApplication = useApplicationValue.get();
-            useTransport = useTransportValue.get();
-            useArranger = useArrangerValue.get();
-            arrangerCueMarkerSize = arrangerCueMarkerSizeValue;
-            
-            useArrangerCursorClip = useArrangerCursorClipValue.get();
-            arrangerCursorClipGridWidth = arrangerCursorClipGridWidthValue;
-            arrangerCursorClipGridHeight = arrangerCursorClipGridHeightValue;
-
-            useLauncherCursorClip = useLauncherCursorClipValue.get();
-            launcherCursorClipGridWidth = launcherCursorClipGridWidthValue;
-            launcherCursorClipGridHeight = launcherCursorClipGridHeightValue;
-            
-            useGroove = useGrooveValue.get();
-            useMixer = useMixerValue.get();
-
-            useCursorTrack = useCursorTrackValue.get();
-            cursorTrackNumSends = cursorTrackNumSendsValue;
-            cursorTrackNumScenes = cursorTrackNumScenesValue;
-            cursorTrackShouldFollowSelection = cursorTrackShouldFollowSelectionValue.get();
-
-            useSiblingsTrackBank = useSiblingsTrackBankValue.get();
-            siblingsTrackBankNumTracks = siblingsTrackBankNumTracksValue;
-            siblingsTrackBankIncludeEffectTracks = siblingsTrackBankIncludeEffectTracksValue.get();
-            siblingsTrackBankIncludeMasterTrack = siblingsTrackBankIncludeMasterTrackValue.get();
-
-            useChildTrackBank = useChildTrackBankValue.get();
-            childTrackBankNumTracks = childTrackBankNumTracksValue;
-            childTrackBankHasFlatList = childTrackBankHasFlatListValue.get();
-
-            useCursorDevice = useCursorDeviceValue.get();
-            cursorDeviceNumSends = cursorDeviceNumSendsValue;
-            cursorDeviceFollowMode = cursorDeviceFollowModeValue;
-            useCursorDeviceDirectParameter = useCursorDeviceDirectParameterValue.get();
-
-            useChainSelector = useChainSelectorValue.get();
-
-
-            useCursorRemoteControlsPage = useCursorRemoteControlsPageValue.get();
-            cursorRemoteControlsPageParameterCount = cursorRemoteControlsPageParameterCountValue;
-
-            useDeviceLayerBank = useDeviceLayerBankValue.get();
-            deviceLayerBankNumChannels = deviceLayerBankNumChannelsValue;
-
-            useDrumPadBank = useDrumPadBankValue.get();
-            drumPadBankNumPads = drumPadBankNumPadsValue;
-
-            useSiblingsDeviceBank = useSiblingsDeviceBankValue.get();
-            siblingsDeviceBankNumDevices = siblingsDeviceBankNumDevicesValue;
-
-            useChainDeviceBank = useChainDeviceBankValue.get();
-            chainDeviceBankNumDevices = chainDeviceBankNumDevicesValue;
-
-            useSceneBank = useSceneBankValue.get();
-            sceneBankNumScenes = sceneBankNumScenesValue;
-
-            useMainTrackBank = useMainTrackBankValue.get();
-            mainTrackBankNumTracks = mainTrackBankNumTracksValue;
-            mainTrackBankNumSends = mainTrackBankNumSendsValue;
-            mainTrackBankNumScenes = mainTrackBankNumScenesValue;
-            mainTrackBankFollowCursorTrack = mainTrackBankFollowCursorTrackValue.get();
-
-            useEffectTrackBank = useEffectTrackBankValue.get();
-            effectTrackBankNumTracks = effectTrackBankNumTracksValue;
-            effectTrackBankNumScenes = effectTrackBankNumScenesValue;
-
-            useMasterTrack = useMasterTrackValue.get();
-            masterTrackNumScenes = masterTrackNumScenesValue;
-
-            useBrowser = useBrowserValue.get();
-            browserSmartCollectionRows = browserSmartCollectionRowsValue;
-            browserLocationRows = browserLocationRowsValue;
-            browserDeviceRows = browserDeviceRowsValue;
-            browserCategoryRows = browserCategoryRowsValue;
-            browserTagRows = browserTagRowsValue;
-            browserDeviceTypeRows = browserDeviceTypeRowsValue;
-            browserFileTypeRows = browserFileTypeRowsValue;
-            browserCreatorRows = browserCreatorRowsValue;
-            browserResultsRows = browserResultsRowsValue;
-            
-            vuMeterUsedFor = vuMeterUsedForValue;
-            vuMeterChannelMode = vuMeterChannelModeValue;
-            vuMeterPeakMode = vuMeterPeakModeValue;
-            vuMeterRange = vuMeterRangeValue;
-        }
+        // --> VU Meter
+        addEnumPrefItem("Used for", "VU Meter",
+                        e -> e.getDisplayValue(),
+                        this::getVuMeterUsedFor,
+                        v -> {vuMeterUsedFor = v;});
+        addIntPrefItem("Range", "VU Meter", INT_OPTIONS_16TO128,
+                       this::getVuMeterRange,
+                       v -> {vuMeterRange = v;});
+        addEnumPrefItem("Channel mode", "VU Meter",
+                        e -> e.getDisplayValue(),
+                        this::getVuMeterChannelMode,
+                        v -> {vuMeterChannelMode = v;});
+        addEnumPrefItem("Peak mode", "VU Meter",
+                        e -> e.getDisplayValue(),
+                        this::getVuMeterPeakMode,
+                        v -> {vuMeterPeakMode = v;});
+        //#endif
     }
 
     /**
      * {@inheritDoc}
      */
+    @Subscribe
     @Override
-    protected void onExit() {
+    public void onExit(ExitEvent event) {
+        super.onExit(event);
     }
 }
