@@ -50,6 +50,7 @@ s     */
      */
     @Override
     protected Object[] createModules() throws Exception {
+        Config config = getConfig();
         ProtocolHandler protocol =
             Protocols.newProtocolHandler(config.getRpcProtocol());
         ReflectionRegistry registry = new ReflectionRegistry(config, protocol);

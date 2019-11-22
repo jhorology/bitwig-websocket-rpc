@@ -110,7 +110,7 @@ public class WebSocketRpcServer
      * @param e
      */
     @Subscribe
-    public void onInit(InitEvent e) {
+    public void onInit(InitEvent<?> e) {
         // event bus for dispatching events to 'Control Surface Session' thread.
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
@@ -125,7 +125,7 @@ public class WebSocketRpcServer
      */
     @Subscribe
     @SuppressWarnings("UseSpecificCatch")
-    public void onExit(ExitEvent e) {
+    public void onExit(ExitEvent<?> e) {
         try {
             LOG.info("waiting for WebSocket RPC server stop.");
             eventBus.post(new StopEvent());

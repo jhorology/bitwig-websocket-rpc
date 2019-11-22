@@ -757,7 +757,7 @@ public class Config extends AbstractConfiguration {
      */
     @Subscribe
     @Override
-    public void onInit(InitEvent event) {
+    public void onInit(InitEvent<?> event) {
         super.onInit(event);
     }
 
@@ -1034,7 +1034,7 @@ public class Config extends AbstractConfiguration {
      */
     @Subscribe
     @Override
-    public void onExit(ExitEvent event) {
+    public void onExit(ExitEvent<?> event) {
         super.onExit(event);
     }
 }

@@ -57,7 +57,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     implements SubscriberExceptionHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractExtension.class);
 
-    protected T config;
+    private T config;
     private EventBus eventBus;
     private InitEvent<T> initEvent;
     private ExitEvent<T> exitEvent;
@@ -184,6 +184,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     
     /**
      * set a new configuration of this extension.
+     * @param config
      */
     public void setConfig(T config) {
         this.config = config;
@@ -195,8 +196,9 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
      * Returns definition of this extension.
      * @return
      */
+    @SuppressWarnings("unchecked")
     public AbstractExtensionDefinition<T> getDefinition() {
-        return (AbstractExtensionDefinition<T>)this.getExtensionDefinition();
+        return (AbstractExtensionDefinition<T>)getExtensionDefinition();
     }
     
     /**

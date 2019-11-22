@@ -43,7 +43,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
     private static final int QUEUE_SIZE = 64;
     
     private final ConcurrentLinkedQueue<Runnable> tasks;
-    private ExecutionContext context;
+    private ExecutionContext<?> context;
     private Thread controlSurfaceSession;
     
     /**
@@ -55,7 +55,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
     
     @Subscribe
     public void onInit(InitEvent<?> e) {
-        context = new ExecutionContext(e.getExtension());
+        context = new ExecutionContext<>(e.getExtension());
         e.getHost().scheduleTask(this, 0L);
         this.controlSurfaceSession = Thread.currentThread();
     }
@@ -79,7 +79,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
         tasks.offer(command);
         if (Thread.currentThread() == controlSurfaceSession) {
             runAllQueuedTasks();
-        } else {
+        } else if (context != null){
             context.getHost().requestFlush();
         }
         if (LOG.isWarnEnabled()) {

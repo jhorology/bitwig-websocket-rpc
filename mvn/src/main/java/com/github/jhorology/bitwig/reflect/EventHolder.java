@@ -32,8 +32,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 // bitwig api
-import com.bitwig.extension.callback.ObjectValueChangedCallback;
-import com.bitwig.extension.callback.ValueChangedCallback;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Value;
 import com.github.jhorology.bitwig.Config;
@@ -80,28 +78,22 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         // the last reported value from host
         private Object lastReportedParams;
         private final Object[] bankIndexes;
-        private Value value;
+        private Value<?> value;
         private boolean collectionValue;
         
         /**
          * Constructor.
          * @param bankIndexes 
          */
-        @SuppressWarnings({"UseSpecificCatch", "unchecked"})
+        @SuppressWarnings({"UseSpecificCatch"})
         private PrimitiveEvent(int[] bankIndexes) {
             this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
             try {
-                value = (Value)invoke(this.bankIndexes);
+                value = (Value<?>)invoke(this.bankIndexes);
                 this.collectionValue = value instanceof CollectionValue;
-                ValueChangedCallback callback =
-                    BitwigCallbacks.newValueChangedCallback(value, this::onValueChanged);
                 value.unsubscribe();
-                // for debug
-                if (LOG.isDebugEnabled() && ObjectValueChangedCallback.class.equals(callback.getClass())) {
-                    LOG.debug(event() + " event uses ObjectValueChangedCallback.");
-                }
-                // addValueObserver raise callback calls even after call unsubscribe()
-                value.addValueObserver(callback);
+                BitwigCallbacks.registerObserver(value, this::onValueChanged);
+                value.unsubscribe();
             } catch (Exception ex) {
                 setError(ex, "Failed registering observer.");
                 LOG.error(event() + " event: Failed registering observer.", ex);
@@ -143,7 +135,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         @SuppressWarnings({"UseSpecificCatch"})
         private boolean syncSubscribedState() {
             try {
-                Value value = (Value)invoke(bankIndexes);
                 if (clients.isEmpty() && value.isSubscribed()) {
                     value.unsubscribe();
                     return false;

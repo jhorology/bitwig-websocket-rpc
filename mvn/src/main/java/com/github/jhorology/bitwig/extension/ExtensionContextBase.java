@@ -78,7 +78,7 @@ public abstract class ExtensionContextBase<T extends AbstractConfiguration> {
      * @return 
      */
     public AbstractExtensionDefinition<T> getDefinition() {
-        return (AbstractExtensionDefinition<T>)extension.getExtensionDefinition();
+        return extension.getDefinition();
     }
     
     /**

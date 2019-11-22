@@ -28,6 +28,7 @@
 
     <!-- =====================================
          default development profile for IDE
+         same as -Pdevelopment,extension-api-10
          ===================================== -->
     
     <!-- Bitwig extension definition -->
@@ -52,6 +53,8 @@
     <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
     
     <!-- build env -->
+    <build.development>true</build.development>
+    <build.production>false</build.production>
     <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
   </properties>
   

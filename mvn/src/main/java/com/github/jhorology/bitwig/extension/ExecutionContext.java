@@ -34,9 +34,9 @@ import org.slf4j.LoggerFactory;
  * A context holder for executor task state.<br>
  This class assumes that all methods are called from within "Control Surface Session" thread.
  */
-public class ExecutionContext extends ExtensionContextBase {
+public class ExecutionContext<T extends AbstractConfiguration> extends ExtensionContextBase<T> {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionContext.class);
-    private static ExecutionContext instance;
+    private static ExecutionContext<?> instance;
     private final Map<String, Object> values;
     private boolean initialized;
     
@@ -44,7 +44,7 @@ public class ExecutionContext extends ExtensionContextBase {
      * Constructor.
      * @param extension 
      */
-    ExecutionContext(AbstractExtension extension) {
+    ExecutionContext(AbstractExtension<T> extension) {
         super(extension);
         values = new HashMap<>();
         instance = this;
@@ -54,7 +54,7 @@ public class ExecutionContext extends ExtensionContextBase {
      * get a current context.
      * @return
      */
-    public static ExecutionContext getContext() {
+    public static ExecutionContext<?> getContext() {
         return instance;
     }
 

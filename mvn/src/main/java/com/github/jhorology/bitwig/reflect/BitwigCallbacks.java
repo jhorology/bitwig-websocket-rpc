@@ -92,22 +92,33 @@ public class BitwigCallbacks {
         GENERAL_CALLBACKS.add(new ImmutablePair<>(StringValueChangedCallback.class,      BitwigCallbacks::newStringValueChangedCallback));
         GENERAL_CALLBACKS.add(new ImmutablePair<>(ObjectValueChangedCallback.class,      BitwigCallbacks::newObjectValueChangedCallback));
     }
+    /**
+     * create a new optimum callback for 'addValueObserber' of specified Value instance.
+     * @param <T> the type of bitwig observer.
+     * @param value the instance of Value interface.
+     * @param observer the consumer to observe the callback parameter(s).
+     */
+    public static <T extends ValueChangedCallback> void registerObserver(Value<T> value, Consumer<Object> observer) {
+        T callback = newValueChangedCallback(value, observer);
+        value.addValueObserver(callback);
+    }
 
     /**
      * create a new optimum callback for 'addValueObserber' of specified Value instance.
+     * @param <T> the type of bitwig observer.
      * @param value the instance of Value interface.
-     * @param lambda the lambda consumer to observe the callback parameter(s).
+     * @param observer the consumer to observe the callback parameter(s).
      * @return new callback instance
      */
-    public static ValueChangedCallback newValueChangedCallback(Value<?> value, Consumer<Object> lambda) {
+    @SuppressWarnings("unchecked")
+    public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> observer) {
         // special callbacks
         if (value instanceof BeatTimeValue) {
-            return newBeatTimeValueChangedCallback((BeatTimeValue)value, lambda);
+            return (T)newBeatTimeValueChangedCallback((BeatTimeValue)value, observer);
         }
         // general callbacks
-        return newGeneralValueChangedCallback(value, lambda);
+        return newGeneralValueChangedCallback(value, observer);
     }
-    
     
     /**
      * create a new optimum callback for 'addValueObserber' of specified Value instance.
@@ -122,18 +133,18 @@ public class BitwigCallbacks {
      *     StringValueChangedCallback
      *   StringArrayValueChangedCallback
      * }</pre>
-     * @param <T>
+     * @param <T> the type of bitwig observer.
      * @param value the instance of Value interface.
-     * @param lambda the lambda consumer to observe the callback parameter(s).
+     * @param observer the consumer to observe the callback parameter(s).
      * @return new callback instance
      */
     @SuppressWarnings({"unchecked"})
-    public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(Value<T> value, Consumer<Object> lambda) {
+    public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(Value<T> value, Consumer<Object> observer) {
         Function<Consumer<Object>, ? extends ValueChangedCallback> factory = GENERAL_CALLBACKS
             .stream()
             .filter(p -> {
                     try {
-                        return value.getClass().getMethod("addValueObserver", (Class<?>)p.getLeft()) != null;
+                        return value.getClass().getMethod("addValueObserver", p.getLeft()) != null;
                     } catch (NoSuchMethodException | SecurityException ex) {
                         return false;
                     }
@@ -145,7 +156,7 @@ public class BitwigCallbacks {
             throw new UnsupportedOperationException("Couldn't identify callback type from Value instance type:"
                                                     + value.getClass());
         }
-        return (T)factory.apply(lambda);
+        return (T)factory.apply(observer);
     }
 
     /**

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 // bitwig api
-import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.StringValue;
 
 // provided dependencies
@@ -42,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.Config;
-import com.github.jhorology.bitwig.WebSocketRpcServerExtensionDefinition;
+import com.github.jhorology.bitwig.WebSocketRpcServerExtension;
 import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
@@ -53,7 +52,7 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  */
 public class RpcImpl implements Rpc {
     private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);
-    
+
     /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
@@ -85,7 +84,7 @@ public class RpcImpl implements Rpc {
         log.info("Hello!");
         return (StringValue)log;
     }
-    
+
     /**
      * just return back message to remote connection.
      * @param message
@@ -95,7 +94,7 @@ public class RpcImpl implements Rpc {
     public String echo(String message) {
         return message;
     }
-    
+
     /**
      * broadcast message to all remote connections.
      * @param message
@@ -126,8 +125,10 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public void config(Config config) {
-        ExecutionContext.getContext()
-            .getExtension().setConfig(config);
+        ((WebSocketRpcServerExtension)ExecutionContext
+         .getContext()
+         .getExtension())
+            .setConfig(config);
     }
 
     /**
@@ -138,13 +139,13 @@ public class RpcImpl implements Rpc {
     public Config config() {
         return ((Config)ExecutionContext.getContext().getConfig());
     }
-    
+
     private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
         return Stream.of(eventNames)
             .map(s -> acceptEvent(s, lambda))
             .collect(Collectors.toMap(r -> r[0], r -> r[1]));
     }
-    
+
     private String[] acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
         RequestContext context = RequestContext.getContext();
         RpcRegistry registry = context.getRpcRegistry();

@@ -90,7 +90,7 @@ public class ReflectUtils {
      */
     public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
     public static final Class<?>[] BANK_METHOD_PARAM_TYPES = {int.class};
-    private static final Map<Class<? extends Bank>, Class<?>> BANK_ITEM_TYPES;
+    private static final Map<Class<?>, Class<?>> BANK_ITEM_TYPES;
     private static final Map<Class<?>, Class<?>> SEMI_BANK_ITEM_TYPES;
     private static final Set<Method> BANK_METHODS;
     static {

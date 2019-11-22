@@ -34,7 +34,6 @@ import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
-import com.bitwig.extension.controller.api.Action;
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Arranger;
 import com.bitwig.extension.controller.api.BrowserFilterColumn;
@@ -123,7 +122,7 @@ public class ReflectionRegistry implements RpcRegistry {
     }
 
     @Subscribe
-    public void onInit(InitEvent e) {
+    public void onInit(InitEvent<?> e) {
         host = e.getHost();
         definition = e.getDefinition();
 
@@ -404,7 +403,7 @@ public class ReflectionRegistry implements RpcRegistry {
     }
 
     @Subscribe
-    public void onExit(ExitEvent e) {
+    public void onExit(ExitEvent<?> e) {
         modules.forEach(ModuleHolder::clear);
         modules.clear();
         methods.values().forEach(MethodHolder::clear);

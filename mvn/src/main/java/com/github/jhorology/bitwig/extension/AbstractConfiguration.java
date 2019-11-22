@@ -38,10 +38,6 @@ import com.bitwig.extension.controller.api.SettableRangedValue;
 // provided dependencies
 import com.google.gson.annotations.Expose;
 
-// dependencies
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 // source
 import org.slf4j.impl.LogSeverity;
 
@@ -49,8 +45,6 @@ import org.slf4j.impl.LogSeverity;
  * A base class for managing extension's configuration.
  */
 public abstract class AbstractConfiguration {
-    private final static Logger LOG = LoggerFactory.getLogger(AbstractConfiguration.class);
-
     // populate from json -->
     @Expose
     private LogSeverity logLevel = LogSeverity.WARN;
@@ -89,7 +83,7 @@ public abstract class AbstractConfiguration {
         return logOutputSystemConsole;
     }
 
-    protected void onInit(InitEvent e) {
+    protected void onInit(InitEvent<?> e) {
         host = e.getHost();
         requestReset = false;
         valueChanged = false;
@@ -125,7 +119,7 @@ public abstract class AbstractConfiguration {
      */
     abstract protected void insertPrefItems();
 
-    protected void onExit(ExitEvent e) {
+    protected void onExit(ExitEvent<?> e) {
     }
     
     /**
