@@ -178,7 +178,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public boolean isSerializableBitwigType(Class<?> bitwigType) {
-        return BitwigAdapters.isAdaptedType(bitwigType);
+        return bitwigType.isEnum() || BitwigAdapters.isAdaptedType(bitwigType);
     }
     
     /**

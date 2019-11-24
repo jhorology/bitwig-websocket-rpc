@@ -34,6 +34,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.SettableEnumValue;
 import com.bitwig.extension.controller.api.SettableRangedValue;
+import com.google.common.eventbus.Subscribe;
 
 // provided dependencies
 import com.google.gson.annotations.Expose;
@@ -83,7 +84,15 @@ public abstract class AbstractConfiguration {
         return logOutputSystemConsole;
     }
 
-    protected void onInit(InitEvent<?> e) {
+    // TODO Guava 19 or above are able to register non-public @﻿Subscribe
+    
+    /**
+     * this method is called at extension's start of lifecycle.
+     * Do not call or override this method.
+     * @param e
+     */
+    @Subscribe
+    public final void onInit(InitEvent<?> e) {
         host = e.getHost();
         requestReset = false;
         valueChanged = false;
@@ -100,7 +109,7 @@ public abstract class AbstractConfiguration {
                         v -> {logOutputSystemConsole = v;});
         //#endif
 
-        insertPrefItems();
+        addPrefItems();
         
         host.getPreferences()
             .getSignalSetting("Apply new settings", "Restart (new settings need restart)", "Restart")
@@ -109,17 +118,25 @@ public abstract class AbstractConfiguration {
         host.getPreferences()
             .getSignalSetting("Reset to defaults", "Restart (new settings need restart)", "Restart")
             .addSignalObserver(() -> {
-                    requestReset = true;;
+                    requestReset = true;
                     host.restart();
                 });
     }
     
     /**
-     * insert input element of preferences panel.
+     * Add input elements of preferences panel.
      */
-    abstract protected void insertPrefItems();
+    abstract protected void addPrefItems();
 
-    protected void onExit(ExitEvent<?> e) {
+    // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
+    
+    /**
+     * this method is called at extension's end of lifecycle.
+     * Do not call this method.
+     * @param e
+     */
+    @Subscribe
+    public final void onExit(ExitEvent<?> e) {
     }
     
     /**

@@ -28,7 +28,6 @@ import com.bitwig.extension.controller.api.Action;
 import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -191,8 +190,7 @@ abstract class RegistryNode {
     
     private List<Method> getMethods(Class<?> api) {
         // may be a proxy class that implements extended API.
-        Stream<Method> methodsStream = Arrays.asList(api.getMethods())
-            .stream()
+        Stream<Method> methodsStream = Stream.of(api.getMethods())
             .filter(m -> !ReflectUtils.isDeprecated(m))
             .filter(m -> !ReflectUtils.isDeprecated(m.getReturnType()))
             .filter(m -> !ReflectUtils.hasAnyBitwigObjectParameter(m))
@@ -281,12 +279,16 @@ abstract class RegistryNode {
                                && Object.class.equals(m.getReturnType())));
         }
 
+        // TODO since bitwig 3.1, API methods are annotated with @OscMethod, @OscNode
+        // Will OSC server be released soon ?
         
         // Color class is difficult to use via remote. ColorValue class is enough. 
         methodsStream = methodsStream
             .filter(m -> !Color.class.equals(m.getReturnType()));
 
         // TODO since API10 uhmmmm..., but I need this.
+        // need to support that intermediate node of event has arguments other than bank indexes.
+        // BooleanValue applocation.getActions(id).isEnabled();
         if (Action.class.isAssignableFrom(nodeType)) {
             methodsStream = methodsStream
                 .filter(m -> !"isEnabled".equals(m.getName()));

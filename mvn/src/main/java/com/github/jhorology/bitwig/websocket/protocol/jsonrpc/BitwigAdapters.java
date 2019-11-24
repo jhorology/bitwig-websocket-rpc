@@ -38,6 +38,9 @@ import com.bitwig.extension.controller.api.ColorValue;
 import com.bitwig.extension.controller.api.DoubleValue;
 import com.bitwig.extension.controller.api.EnumValue;
 import com.bitwig.extension.controller.api.IntegerValue;
+//#if bitwig.extension.api.version >= 10
+import com.bitwig.extension.controller.api.NoteStep;
+//#endif
 import com.bitwig.extension.controller.api.PlayingNote;
 import com.bitwig.extension.controller.api.RangedValue;
 import com.bitwig.extension.controller.api.StringArrayValue;
@@ -79,6 +82,9 @@ public class BitwigAdapters {
         ADAPTED_TYPES.add(new ImmutablePair<>(StringArrayValue.class, StringArrayValueAdapter::new));
         ADAPTED_TYPES.add(new ImmutablePair<>(StringValue.class,      StringValueAdapter::new));
         ADAPTED_TYPES.add(new ImmutablePair<>(CollectionValue.class,  CollectionValueAdapter::new));
+        //#if bitwig.extension.api.version >= 10
+        ADAPTED_TYPES.add(new ImmutablePair<>(NoteStep.class,         NoteStepAdapter::new));
+        //#endif
     }
 
     /**
@@ -316,4 +322,33 @@ public class BitwigAdapters {
             return new JsonPrimitive(src.get());
         }
     }
+    
+    //#if bitwig.extension.api.version >= 10
+    /**
+     * A GSON type adapter for ColorValue.
+     */
+    public static class NoteStepAdapter implements JsonSerializer<NoteStep> {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JsonElement serialize(NoteStep src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject json = new JsonObject();
+            json.addProperty("x", src.x());
+            json.addProperty("y", src.y());
+            json.addProperty("channel", src.channel());
+            json.addProperty("state", src.state().name());
+            json.addProperty("velocity", src.velocity());
+            json.addProperty("releaseVelocity", src.releaseVelocity());
+            json.addProperty("duration", src.duration());
+            json.addProperty("pan", src.pan());
+            json.addProperty("timbre", src.timbre());
+            json.addProperty("pressure", src.pressure());
+            json.addProperty("volume", src.volume());
+            json.addProperty("transpose", src.transpose());
+            json.addProperty("selected", src.isIsSelected());
+            return json;
+        }
+    }
+    //#endif
 }

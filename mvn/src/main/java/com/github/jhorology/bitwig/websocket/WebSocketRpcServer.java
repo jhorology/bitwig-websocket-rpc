@@ -104,13 +104,15 @@ public class WebSocketRpcServer
         setReuseAddr(true);
     }
 
+    // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
+    
     /**
      * Initialize at extension's start of life-cycle.<b>
      * This method is called from within 'Control Surfaces Session' thread.
      * @param e
      */
     @Subscribe
-    public void onInit(InitEvent<?> e) {
+    public final void onInit(InitEvent<?> e) {
         // event bus for dispatching events to 'Control Surface Session' thread.
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
@@ -125,7 +127,7 @@ public class WebSocketRpcServer
      */
     @Subscribe
     @SuppressWarnings("UseSpecificCatch")
-    public void onExit(ExitEvent<?> e) {
+    public final void onExit(ExitEvent<?> e) {
         try {
             LOG.info("waiting for WebSocket RPC server stop.");
             eventBus.post(new StopEvent());
@@ -152,6 +154,7 @@ public class WebSocketRpcServer
             eventBus.unregister(protocol);
         }
     }
+    
     /**
      * An implementation of Runnable#run().<br>
      * A override of {@link WebSocketServer#run()}

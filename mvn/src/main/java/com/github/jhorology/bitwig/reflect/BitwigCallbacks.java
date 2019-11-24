@@ -381,11 +381,11 @@ public class BitwigCallbacks {
     public static ObjectValueChangedCallback<?> newObjectValueChangedCallback(Consumer<Object> lambda) {
         return (Object value) -> {
             // for debug
-            if (LOG.isWarnEnabled() &&
+            if (LOG.isDebugEnabled() &&
                 value != null &&
                 ReflectUtils.isBitwigAPI(value.getClass()) &&
                 !BitwigAdapters.isAdapted(value)) {
-                LOG.warn("maybe need seiralization adapter valueType:" + value.getClass());
+                LOG.debug("maybe need seiralization adapter valueType:" + value.getClass());
             }
             lambda.accept(value);
         };

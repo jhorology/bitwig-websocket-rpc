@@ -53,20 +53,22 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
         this.tasks = new ConcurrentLinkedQueue<>();
     }
     
+    // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
+
     @Subscribe
-    public void onInit(InitEvent<?> e) {
+    public final void onInit(InitEvent<?> e) {
         context = new ExecutionContext<>(e.getExtension());
         e.getHost().scheduleTask(this, 0L);
         this.controlSurfaceSession = Thread.currentThread();
     }
     
     @Subscribe
-    public void onFlush(FlushEvent<?> e) {
+    public final void onFlush(FlushEvent<?> e) {
         runAllQueuedTasks();
     }
     
     @Subscribe
-    public void onExit(ExitEvent<?> e) {
+    public final void onExit(ExitEvent<?> e) {
         runAllQueuedTasks();
     }
     

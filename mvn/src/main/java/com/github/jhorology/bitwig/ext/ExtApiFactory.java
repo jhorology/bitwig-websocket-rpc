@@ -25,6 +25,7 @@ package com.github.jhorology.bitwig.ext;
 // bitwig api
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
+import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.CursorDevice;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Device;
@@ -34,6 +35,7 @@ import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 //#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
+import com.github.jhorology.bitwig.ext.api.ClipExt;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.ExtApi;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
@@ -41,7 +43,6 @@ import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 
 // source
 import com.github.jhorology.bitwig.ext.impl.DefaultExtApiFactory;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -51,13 +52,13 @@ import java.lang.reflect.Proxy;
 public class ExtApiFactory implements ExtApi {
     private static final ExtApiFactory instance = new ExtApiFactory();
     private ExtApi factory = new DefaultExtApiFactory();
-    
+
     private ExtApiFactory() {
     }
 
     /**
      * Gets a default factory.
-     * @return 
+     * @return
      */
     public static ExtApiFactory getInstance() {
         return instance;
@@ -82,50 +83,49 @@ public class ExtApiFactory implements ExtApi {
         }
         if (Channel.class.isAssignableFrom(bitwigApi)) {
             switch(config.getVuMeterUsedFor()) {
-                case NONE:
-                    break;
-                case CURSOR_TRACK:
-                    if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
-                        return ChannelExt.class;
-                    }
-                    break;
-                case TRACK:
-                    if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
-                        return ChannelExt.class;
-                    }
-                    break;
-                case CHANNEL:
+            case NONE:
+                break;
+            case CURSOR_TRACK:
+                if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
                     return ChannelExt.class;
+                }
+                break;
+            case TRACK:
+                if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
+                    return ChannelExt.class;
+                }
+                break;
+            case CHANNEL:
+                return ChannelExt.class;
             }
         }
         return null;
     }
-    
+
     /**
      * Create a new mixin instance.
      * @param config Configuration.
      * @param bitwigApi bitwig API interface
      * @param bitwigApiInstance bitwig API instance
-     * @return 
+     * @return
      */
     public static Object newMixinInstance(Config config, Class<?> bitwigApi, Object bitwigApiInstance) {
         Class<?> extApi = getExtApiInterface(config, bitwigApi);
         if (extApi != null) {
-            final Object mixinInstance = newExtApiInstance(config, bitwigApi, bitwigApiInstance);
-            return Proxy.newProxyInstance(ExtApiFactory.class.getClassLoader(), new Class<?>[] {bitwigApi, extApi}, new InvocationHandler() {
-                @Override
-                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    if (method.getDeclaringClass().isAssignableFrom(extApi)) {
-                        return method.invoke(mixinInstance, args);
-                    } else {
-                        return method.invoke(bitwigApiInstance, args);
-                    }
-                }
-            });
+            final Object extApiInstance = newExtApiInstance(config, bitwigApi, bitwigApiInstance);
+            return Proxy.newProxyInstance(ExtApiFactory.class.getClassLoader(),
+                                          new Class<?>[] {bitwigApi, extApi},
+                                          (Object proxy, Method method, Object[] args) -> {
+                                              if (method.getDeclaringClass().isAssignableFrom(extApi)) {
+                                                  return method.invoke(extApiInstance, args);
+                                              } else {
+                                                  return method.invoke(bitwigApiInstance, args);
+                                              }
+                                          });
         }
         return bitwigApiInstance;
     }
-    
+
     /**
      * Sets a custom factory.
      * @param factory
@@ -133,7 +133,7 @@ public class ExtApiFactory implements ExtApi {
     public void setFactory(ExtApi factory) {
         this.factory = factory;
     }
-    
+
     //#if bitwig.extension.api.version >= 10
     /**
      * {@inheritDoc}
@@ -143,7 +143,7 @@ public class ExtApiFactory implements ExtApi {
         return factory.createApplicationExt(application);
     }
     //#endif
-    
+
     /**
      * {@inheritDoc}
      */
@@ -156,25 +156,42 @@ public class ExtApiFactory implements ExtApi {
      * {@inheritDoc}
      */
     @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
+    public ChannelExt createChannelExt(Channel channel,
+                                       int vuMeterRange,
+                                       VuMeterChannelMode vuMeterChannelMode,
+                                       VuMeterPeakMode vuMeterPeakMode) {
         return factory.createChannelExt(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
     }
 
-    private static Object newExtApiInstance(Config config, Class<?> bitwigApiInterface, Object bitwigApiInstance) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ClipExt createClipExt(Clip clip, int gridWidth, int gridHeight) {
+        return factory.createClipExt(clip, gridWidth, gridHeight);
+    }
+
+    protected static Object newExtApiInstance(Config config, Class<?> bitwigApiInterface, Object bitwigApiInstance) {
         //#if bitwig.extension.api.version >= 10
         if (Application.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createApplicationExt((Application)bitwigApiInstance);
         }
         //#endif
+
+        // TODO how to find Clip is Arranger or Launcher.
+        if (Clip.class.isAssignableFrom(bitwigApiInterface)) {
+            return getInstance().createClipExt((Clip)bitwigApiInstance,
+                                               config.getLauncherCursorClipGridWidth(),
+                                               config.getLauncherCursorClipGridHeight());
+        }
         if (Device.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createDeviceExt((Device)bitwigApiInstance);
         }
         if (Channel.class.isAssignableFrom(bitwigApiInterface)) {
-            return getInstance().createChannelExt(
-                    (Channel)bitwigApiInstance,
-                    config.getVuMeterRange(),
-                    config.getVuMeterChannelMode(),
-                    config.getVuMeterPeakMode());
+            return getInstance().createChannelExt((Channel)bitwigApiInstance,
+                                                  config.getVuMeterRange(),
+                                                  config.getVuMeterChannelMode(),
+                                                  config.getVuMeterPeakMode());
         }
         return null;
     }

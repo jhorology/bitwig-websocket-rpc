@@ -23,58 +23,54 @@
 package com.github.jhorology.bitwig.ext.impl;
 
 // bitwig api
-import com.bitwig.extension.controller.api.Application;
-import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Clip;
-import com.bitwig.extension.controller.api.Device;
+
+//#if bitwig.extension.api.version >= 10
+import com.bitwig.extension.controller.api.NoteStep;
+//#endif
 
 // source
-//#if bitwig.extension.api.version >= 10
-import com.github.jhorology.bitwig.ext.api.ApplicationExt;
-//#endif
-import com.github.jhorology.bitwig.ext.api.ChannelExt;
+import com.github.jhorology.bitwig.ext.NoteStepState;
 import com.github.jhorology.bitwig.ext.api.ClipExt;
-import com.github.jhorology.bitwig.ext.api.ExtApi;
-import com.github.jhorology.bitwig.ext.api.DeviceExt;
-import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
-import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
+import com.github.jhorology.bitwig.ext.api.CollectionValue;
+
 
 /**
- * A Default factory class for extended API
- * @author masafumi
+ * an implementation of extended Clip API.
  */
-public class DefaultExtApiFactory implements ExtApi {
+class ClipExtImpl implements ClipExt {
+    private final NoteStepStateValueImpl noteStepState;
+    //#if bitwig.extension.api.version >= 10
+    private final NoteStepValueImpl noteStep;
+    //#endif
+    
+    /**
+     * Constructor.
+     * @param device
+     */
+    ClipExtImpl(Clip clip, int gridWidth, int gridHeight) {
+        noteStepState = new NoteStepStateValueImpl(clip, gridWidth, gridHeight);
+        //#if bitwig.extension.api.version >= 10
+        noteStep = new NoteStepValueImpl(clip, gridWidth, gridHeight);
+        //#endif
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CollectionValue<NoteStepState> noteStepState() {
+        return noteStepState;
+    }
+    
     //#if bitwig.extension.api.version >= 10
     /**
      * {@inheritDoc}
      */
     @Override
-    public ApplicationExt createApplicationExt(Application application) {
-        return new ApplicationExtImpl(application);
+    public CollectionValue<NoteStep> noteStep() {
+        return noteStep;
     }
     //#endif
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return new DeviceExtImpl(device);
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ClipExt createClipExt(Clip clip, int gridWidth, int gridHeight) {
-        return new ClipExtImpl(clip, gridWidth, gridHeight);
-    }
 }

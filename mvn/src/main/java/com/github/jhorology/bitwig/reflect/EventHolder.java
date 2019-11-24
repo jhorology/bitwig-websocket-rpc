@@ -59,8 +59,6 @@ import com.github.jhorology.bitwig.ext.api.CollectionValue;
 public class EventHolder extends MethodHolder implements RpcEvent {
     private static final Logger LOG = LoggerFactory.getLogger(EventHolder.class);
     
-    // gurantee the posting current value on 'subscibe' is called.
-    private static final boolean NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE = true;
     private static final long WAIT_HOST_TRIGGER_ON_SUBSCRIBE = 150L;
 
     private final List<int[]> bankIndexCombinations;
@@ -87,7 +85,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          */
         @SuppressWarnings({"UseSpecificCatch"})
         private PrimitiveEvent(int[] bankIndexes) {
-            this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
+            // TODO need to support that intermediate node has arguments other than bank indexes.
+            // e.g) BooleanValue applocation.getActions(id).isEnabled();
+             this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
             try {
                 value = (Value<?>)invoke(this.bankIndexes);
                 this.collectionValue = value instanceof CollectionValue;
@@ -156,7 +156,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          * post current value to client.
          */
         private void notifyCurrentValueIfHostNotTriggered(WebSocket client) {
-            if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE && pushModel != null) {
+            if (pushModel != null) {
                 host.scheduleTask(() -> {
                         if (hostTriggered ||
                             lastReportedParams == null) {
@@ -174,16 +174,14 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         private void notifyCurrentValue() {
             // do not post message directly in here.
             // 'cause message should be sent at after Request/Reponse sequence.
-            if (NOTIFY_CURRENT_VALUE_ON_SUBSCRIBE) {
-                if (collectionValue) {
-                    ((CollectionValue<?>)value).values().stream().forEach(v -> {
+            if (collectionValue) {
+                ((CollectionValue<?>)value).values().stream().forEach(v -> {
                         RequestContext.getContext()
                             .addNotification(newNotification(v));
                     });
-                } else if (lastReportedParams != null) {
-                    RequestContext.getContext()
-                        .addNotification(newNotification(lastReportedParams));
-                }
+            } else if (lastReportedParams != null) {
+                RequestContext.getContext()
+                    .addNotification(newNotification(lastReportedParams));
             }
         }
 

@@ -52,7 +52,9 @@ public class ModuleHolder extends RegistryNode {
         // instance may be proxy object that implements extended API.
         this.moduleInstance = ExtApiFactory.newMixinInstance(config, nodeType, moduleInstance);
     }
-
+    
+    // TODO need to support Bank#setSizeOfBank()
+    
     /**
      * Register item count of specified Bank class.
      * @param bankType the type of bank.

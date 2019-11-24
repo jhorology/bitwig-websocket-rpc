@@ -28,9 +28,6 @@ import com.bitwig.extension.controller.api.CursorDeviceFollowMode;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Track;
 
-// provided dependencies
-import com.google.common.eventbus.Subscribe;
-
 // dependencies
 import com.google.gson.annotations.Expose;
 
@@ -40,8 +37,6 @@ import com.github.jhorology.bitwig.websocket.protocol.Protocols;
 import com.github.jhorology.bitwig.ext.api.VuMeterUsedFor;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
-import com.github.jhorology.bitwig.extension.ExitEvent;
-import com.github.jhorology.bitwig.extension.InitEvent;
 
 public class Config extends AbstractConfiguration {
     private static final String WEBSOCKET_PREF_CATEGORY = "Websocket RPC";
@@ -163,7 +158,7 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useBrowser;
     @Expose
-    private int browserSmartCollectionRows = 8;
+    private int browserSmartCollectionRows = 16;
     @Expose
     private int browserLocationRows = 32;
     @Expose
@@ -683,7 +678,7 @@ public class Config extends AbstractConfiguration {
      * @return
      */
     public int getBrowserFileTypeRows() {
-        return browserDeviceTypeRows;
+        return browserFileTypeRows;
     }
 
     /**
@@ -752,20 +747,12 @@ public class Config extends AbstractConfiguration {
         return false;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Subscribe
-    @Override
-    public void onInit(InitEvent<?> event) {
-        super.onInit(event);
-    }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    protected void insertPrefItems() {
+    protected void addPrefItems() {
         addIntPrefItem("Server Port", WEBSOCKET_PREF_CATEGORY, 80, 9999, "",
                        this::getWebSocketPort,
                        v -> {webSocketPort = (int)v;});
@@ -982,7 +969,7 @@ public class Config extends AbstractConfiguration {
         addBoolPrefItem("Use", "PopupBrowser",
                         this::useBrowser,
                         v -> {useBrowser = v;});
-        addIntPrefItem("Smart collection rows", "PopupBrowser", INT_OPTIONS_16TO128,
+        addIntPrefItem("Smart collection rows", "PopupBrowser", INT_OPTIONS_8TO64,
                        this::getBrowserSmartCollectionRows,
                        v -> {browserSmartCollectionRows = v;});
         addIntPrefItem("Location rows", "PopupBrowser", INT_OPTIONS_16TO128,
@@ -1027,14 +1014,5 @@ public class Config extends AbstractConfiguration {
                         this::getVuMeterPeakMode,
                         v -> {vuMeterPeakMode = v;});
         //#endif
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Subscribe
-    @Override
-    public void onExit(ExitEvent<?> event) {
-        super.onExit(event);
     }
 }

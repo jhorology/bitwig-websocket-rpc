@@ -121,8 +121,10 @@ public class ReflectionRegistry implements RpcRegistry {
         events = new LinkedHashMap<>(256);
     }
 
+    // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
+
     @Subscribe
-    public void onInit(InitEvent<?> e) {
+    public final void onInit(InitEvent<?> e) {
         host = e.getHost();
         definition = e.getDefinition();
 
@@ -179,6 +181,9 @@ public class ReflectionRegistry implements RpcRegistry {
             register("arrangerCursorClip",
                      Clip.class,
                      arrangerCursorClip);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("arrangeCursorClip class:{}", arrangerCursorClip.getClass());
+            }
         }
         if (config.useLauncherCursorClip()) {
             Clip launcherCursorClip = host.createLauncherCursorClip(config.getLauncherCursorClipGridWidth(),
@@ -186,6 +191,9 @@ public class ReflectionRegistry implements RpcRegistry {
             register("launcherCursorClip",
                      Clip.class,
                      launcherCursorClip);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("launcherCursorClip class:{}", launcherCursorClip.getClass());
+            }
         }
 
         CursorTrack cursorTrack = null;

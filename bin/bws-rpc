@@ -62,6 +62,7 @@ program
 program
   .command('actions')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', DEFAULT_URL)
+  .option('-c, --categorize','Group by category.')
   .description('Report result of Application#getActions() as JSON.')
   .action(_execCommand(actionsCommand))
 
@@ -184,9 +185,25 @@ async function actionsCommand(options) {
   const ws = await _bwsOpen(options.url),
         method = config.useAbbreviatedMethodNames
           ? 'app.actions'
-          : 'application.getActions',
-        actions = await ws.call(method, null, REQUEST_TIMEOUT_MILLIS)
+          : 'application.getActions'
+  let actions = await ws.call(method, null, REQUEST_TIMEOUT_MILLIS)
   ws.close()
+  if (options.categorize) {
+    actions = actions.reduce((categories, action) => {
+      let category = categories.find(category => category.id === action.category.id)
+      if (!category) {
+        category = {
+          id: action.category.id,
+          name: action.category.name,
+          actions:[]
+        }
+        categories.push(category);
+      }
+      delete action.category
+      category.actions.push(action)
+      return categories
+    }, [])
+  }
   _print(actions)
 }
 

@@ -25,6 +25,7 @@ package com.github.jhorology.bitwig.ext.api;
 // bitwig API
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
+import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.Device;
 
 /**
@@ -56,4 +57,13 @@ public interface ExtApi {
      * @return 
      */
     ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChammelMode, VuMeterPeakMode vuMeterPeakMode);
+    
+    /**
+     * create an instance of extended Clip API.
+     * @param clip
+     * @param gridWidth
+     * @param gridHeight
+     * @return 
+     */
+    ClipExt createClipExt(Clip clip, int gridWidth, int gridHeight);
 }
