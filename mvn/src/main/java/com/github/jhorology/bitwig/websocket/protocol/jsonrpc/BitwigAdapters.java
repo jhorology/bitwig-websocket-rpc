@@ -325,7 +325,7 @@ public class BitwigAdapters {
     
     //#if bitwig.extension.api.version >= 10
     /**
-     * A GSON type adapter for ColorValue.
+     * A GSON type adapter for NoteStep.
      */
     public static class NoteStepAdapter implements JsonSerializer<NoteStep> {
         /**

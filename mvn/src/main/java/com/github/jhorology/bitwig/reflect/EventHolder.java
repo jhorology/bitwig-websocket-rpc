@@ -124,7 +124,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             }
             
             if (LOG.isDebugEnabled())  {
-                LOG.debug(event() + " event has been subscribed by " + client(client));
+                LOG.debug("[{}] event has been subscribed by {}", event(), client(client));
             }
         }
         
@@ -203,13 +203,10 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          * Create a new notification message.
          * @param params
          */
-        private Notification newNotification(Object params) {
+        private Notification newNotification(Object... params) {
             if (bankIndexes.length > 0) {
                 // to Object array
-                Object[] array = params != null && params.getClass().isArray()
-                    ? (Object[])params
-                    : new Object[] {params};
-                params = ArrayUtils.addAll((Object[])bankIndexes, array);
+                params = ArrayUtils.addAll((Object[])bankIndexes, params);
             }
             return new Notification(absoluteName, params);
         }
@@ -237,7 +234,13 @@ public class EventHolder extends MethodHolder implements RpcEvent {
      * @param pushModel
      * @param host 
      */
-    EventHolder(Config config, Method method, Class<?> nodeType, RegistryNode parantNode, int bankItemCount, ControllerHost host, PushModel pushModel) {
+    EventHolder(Config config,
+                Method method,
+                Class<?> nodeType,
+                RegistryNode parantNode,
+                int bankItemCount,
+                ControllerHost host,
+                PushModel pushModel) {
         super(config, method, nodeType, parantNode, bankItemCount);
         // clients = new LinkedList<>();
         this.host = host;
@@ -272,8 +275,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             } else {
                 primitiveEvents.stream().forEach(e -> e.internalSubscribe(client));
             }
-            if (LOG.isDebugEnabled())  {
-                LOG.debug("[" + absoluteName + "] event has been subscribed by " + client(client));
+            if (LOG.isTraceEnabled())  {
+                LOG.trace("[{}] event has been subscribed by {}.",
+                          absoluteName, client(client));
             }
         }
     }
@@ -289,7 +293,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (clients.remove(client)) {
             syncSubscribedState();
             if (LOG.isTraceEnabled())  {
-                LOG.trace("[" + absoluteName + "] event has been unsubscribed by " + client(client));
+                LOG.trace("[{}] event has been unsubscribed by {}.",
+                          absoluteName, client(client));
             }
         }
     }
@@ -300,7 +305,8 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (removed) {
             syncSubscribedState();
             if (LOG.isTraceEnabled())  {
-                LOG.trace("subscriber of [" + absoluteName + "] event has been disconnected. client:" + client(client));
+                LOG.trace("subscriber of [{}] event has been disconnected. client:{}",
+                          absoluteName, client(client));
             }
         }
     }

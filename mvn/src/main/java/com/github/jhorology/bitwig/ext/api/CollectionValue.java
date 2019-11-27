@@ -23,9 +23,11 @@
 package com.github.jhorology.bitwig.ext.api;
 
 // jdk
+import java.util.Collection;
+
+// source
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.controller.api.Value;
-import java.util.Collection;
 
 /**
  * The interface for value object that manage collection of element values.
@@ -33,7 +35,7 @@ import java.util.Collection;
  */
 public interface CollectionValue<T> extends Value<ObjectValueChangedCallback<T>> {
     /**
-     * Return a set of managed current value.
+     * Return a set of managed current values.
      * @return 
      */
     Collection<T> values();

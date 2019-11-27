@@ -8,7 +8,7 @@ package com.github.jhorology.bitwig.websocket.protocol;
  */
 public class Notification {
     private String notification;
-    private Object params;
+    private Object[] params;
 
     /**
      * construct a notification message.
@@ -19,9 +19,9 @@ public class Notification {
     /**
      * construct a notification message with message and parameters.
      * @param notification The notification message. Basically use this as event name.
-     * @param params       The array or named parameters.
+     * @param params       The array of parameters.
      */
-    public Notification(String notification, Object params) {
+    public Notification(String notification, Object[] params) {
         this.notification = notification;
         this.params = params;
     }
@@ -43,18 +43,18 @@ public class Notification {
     }
 
     /**
-     * Get an array or named parameters.
+     * Get an array of parameters.
      * @return
      */
-    public Object getParams() {
+    public Object[] getParams() {
         return params;
     }
 
     /**
-     * Set an array or named parameters.
+     * Set an array of parameters.
      * @param params
      */
-    public void setParams(Object params) {
+    public void setParams(Object[] params) {
         this.params = params;
     }
 }

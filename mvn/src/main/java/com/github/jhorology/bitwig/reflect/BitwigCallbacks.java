@@ -77,9 +77,6 @@ import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
 public class BitwigCallbacks {
     private static final Logger LOG = LoggerFactory.getLogger(BitwigCallbacks.class);
     
-    // TODO make it configurable
-    private static final boolean PREFER_NAMED_PARAMS = true;
-
     // All knwown Subinterfaces of ValueChangedCallback
     private static final List<ImmutablePair<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>>> GENERAL_CALLBACKS = new ArrayList<>();
     static {
@@ -385,7 +382,7 @@ public class BitwigCallbacks {
                 value != null &&
                 ReflectUtils.isBitwigAPI(value.getClass()) &&
                 !BitwigAdapters.isAdapted(value)) {
-                LOG.debug("maybe need seiralization adapter valueType:" + value.getClass());
+                LOG.debug("maybe need seiralization adapter valueType:{}", value.getClass());
             }
             lambda.accept(value);
         };
@@ -466,10 +463,11 @@ public class BitwigCallbacks {
      * @param names
      * @param values
      */
-    private static Object createParams(final String[] names, final Object[] values) {
-        if (PREFER_NAMED_PARAMS && values.length > 1) {
-            return IntStream.range(0, values.length)
+    private static Object[] createParams(final String[] names, final Object[] values) {
+        if (values.length > 1) {
+            Map<String, Object> namedParams = IntStream.range(0, values.length)
                 .collect(HashMap::new,(m,i) -> m.put(names[i], values[i]), Map::putAll);
+            return new Object[] {namedParams};
         }
         return values;
     }

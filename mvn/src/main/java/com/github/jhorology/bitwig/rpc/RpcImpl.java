@@ -97,14 +97,15 @@ public class RpcImpl implements Rpc {
 
     /**
      * broadcast message to all remote connections.
-     * @param message
+     * @param notification
+     * @param params
      */
     @Override
-    public void broadcast(String message, Object params) {
+    public void broadcast(String notification, Object... params) {
         RequestContext context = RequestContext.getContext();
         PushModel pushModel = context.getPushModel();
         if (pushModel != null) {
-            pushModel.broadcast(new Notification(message, params));
+            pushModel.broadcast(new Notification(notification, params));
         }
     }
 

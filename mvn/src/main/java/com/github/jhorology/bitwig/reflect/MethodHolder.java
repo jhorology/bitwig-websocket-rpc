@@ -219,23 +219,25 @@ class MethodHolder extends RegistryNode implements RpcMethod {
     Object reportRpcMethod() {
         Map<String, Object> report = new LinkedHashMap<>();
         report.put("method", absoluteName);
+        // TODO if nodeType or paramType are implemented Itreator, result type should be array "[]".
+        // it's difficult to resolve generic type of Iterator.
         report.put("params", Stream.of(paramTypes)
                    .map(t -> RpcParamType.of(t))
                    .map(t -> t.getExpression())
                    .collect(Collectors.toList()));
         report.put("result", rpcNodeType.getExpression());
-        report.put("expression", getExpression(true));
+        report.put("expression", getJavaExpression());
         return report;
     }
 
     /**
-     * return a Java API expression.<be>
-     * @param withReturnType
+     * return a Java API expression of this node.<be>
+     * @param returnType
      * @retuen
      */
-    String getExpression(boolean withReturnType) {
+    String getExpression(boolean returnType) {
         StringBuilder sb = new StringBuilder();
-        if (withReturnType) {
+        if (returnType) {
             sb.append(nodeType.getSimpleName());
             sb.append(" ");
         }
@@ -249,9 +251,8 @@ class MethodHolder extends RegistryNode implements RpcMethod {
         sb.append(method.getName());
         sb.append("(");
         sb.append(Stream.of(method.getGenericParameterTypes())
-                  .map(t -> RpcParamType.of(t))
-                  .map(t -> t.getExpression())
-                  .collect(Collectors.joining(", ")));
+            .map(t -> t.getTypeName())
+            .collect(Collectors.joining(", ")));
         sb.append(")");
         return sb.toString();
     }
@@ -273,5 +274,48 @@ class MethodHolder extends RegistryNode implements RpcMethod {
         return varargs
             ? method.invoke(null, new Object[] {params})
             : method.invoke(null, params);
+    }
+    
+    /**
+     * Returns a java expression of this method.
+     * @return 
+     */
+    String getJavaExpression() {
+        return getJavaExpression(true, true);
+    }
+    
+    String getJavaExpression(boolean returnType, boolean declaringClass) {
+        return javaExpression(this.method, returnType, declaringClass);
+    }
+    
+    /**
+     * Returns a java API expression of specified method.
+     * @return 
+     */
+    static String javaExpression(Method m) {
+        return javaExpression(m, true, true);
+    }
+    
+    /**
+     * Returns a java API expression of specified method.
+     * @return 
+     */
+    private static String javaExpression(Method m, boolean returnType, boolean declaringClass) {
+        StringBuilder sb = new StringBuilder();
+        if (returnType) {
+            sb.append(m.getReturnType().getSimpleName());
+            sb.append(" ");
+        }
+        if (declaringClass) {
+            sb.append(m.getDeclaringClass().getSimpleName());
+            sb.append("#");
+        }
+        sb.append(m.getName());
+        sb.append("(");
+        sb.append(Stream.of(m.getGenericParameterTypes())
+            .map(t -> t.getTypeName())
+            .collect(Collectors.joining(", ")));
+        sb.append(")");
+        return sb.toString();
     }
 }

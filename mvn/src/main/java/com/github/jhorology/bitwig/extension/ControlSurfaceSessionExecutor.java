@@ -86,7 +86,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
         }
         if (LOG.isWarnEnabled()) {
             if (tasks.size() > (QUEUE_SIZE * 3 / 4)) {
-                LOG.warn("task queues will reach full capacity. currently queued tasks:" + tasks.size());
+                LOG.warn("task queues will reach full capacity. currently queued tasks:{}", tasks.size());
             }
         }
     }

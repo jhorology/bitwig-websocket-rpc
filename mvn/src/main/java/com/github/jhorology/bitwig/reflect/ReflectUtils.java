@@ -303,16 +303,14 @@ public class ReflectUtils {
      * @return
      */
     public static boolean isModuleFactory(Method method) {
-        // TODO
-        // need to investigate core modules that can be instantiated at only within init.
-        //
+        // TODO need to investigate core modules that can be instantiated at only within init.
         // this is enough for now.
         boolean result = method.getName().startsWith("create")
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
         if (result && LOG.isTraceEnabled()) {
-            LOG.trace("Method[" + method.getDeclaringClass().getSimpleName() + "#" + method.getName()
-                      + "] has been ignored as factory method for core module.");
+            LOG.trace("Method[{}#{}] has been ignored as factory method for core module.",
+                      method.getDeclaringClass().getSimpleName(), method.getName());
         }
         return result;
     }
@@ -357,14 +355,14 @@ public class ReflectUtils {
         }
         bankItemType = BANK_ITEM_TYPES.keySet().stream()
             .filter(c -> c.isAssignableFrom(bankType))
-            .map(c -> BANK_ITEM_TYPES.get(c))
+            .map(BANK_ITEM_TYPES::get)
             .findFirst().orElse(null);
         if (bankItemType != null) {
             return bankItemType;
         }
         bankItemType = SEMI_BANK_ITEM_TYPES.keySet().stream()
             .filter(c -> c.isAssignableFrom(bankType))
-            .map(c -> SEMI_BANK_ITEM_TYPES.get(c))
+            .map(SEMI_BANK_ITEM_TYPES::get)
             .findFirst().orElse(null);
         return bankItemType;
     }

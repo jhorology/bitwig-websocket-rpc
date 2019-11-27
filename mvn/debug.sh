@@ -40,6 +40,7 @@ case "`uname`" in
         else
             BITWIG_STUDIO="/Applications/Bitwig Studio.app/Contents/MacOS/BitwigStudio"
         fi
+        BITWIG_STUDIO_PREFS="${HOME}/Library/Application Support/Bitwig/Bitwig Studio/prefs/${BITWIG_VERSION}.prefs"
         USER_HOME="$HOME"
         ;;
     *)
@@ -49,6 +50,13 @@ case "`uname`" in
 esac
 
 if [[ -n $clean ]]; then
+    # overwrite clean preferences file
+    echo "${BITWIG_STUDIO_PREFS}.clean"
+    if [ -f "${BITWIG_STUDIO_PREFS}.clean" ]; then
+        cp "${BITWIG_STUDIO_PREFS}.clean" "${BITWIG_STUDIO_PREFS}"
+        echo 'preferences file has bean overwrited'
+    fi
+    
     # clean RC file
     rm -f "${USER_HOME}"/.bitwig.extension.*
 fi

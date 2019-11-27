@@ -28,24 +28,12 @@ import com.bitwig.extension.controller.api.Action;
 import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
-import java.util.List;
-import java.util.stream.Collectors;
 
 // bitwig API
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.DeviceBank;
-import com.bitwig.extension.controller.api.EnumValue;
 import com.bitwig.extension.controller.api.MasterTrack;
-import com.bitwig.extension.controller.api.ObjectArrayValue;
-import com.bitwig.extension.controller.api.Parameter;
-import com.bitwig.extension.controller.api.ParameterBank;
-import com.bitwig.extension.controller.api.RemoteControl;
-import com.bitwig.extension.controller.api.RemoteControlsPage;
-import com.bitwig.extension.controller.api.Scene;
 import com.bitwig.extension.controller.api.SceneBank;
-import com.bitwig.extension.controller.api.StringArrayValue;
-import com.bitwig.extension.controller.api.StringValue;
-import com.bitwig.extension.controller.api.TimeSignatureValue;
 import com.bitwig.extension.controller.api.Value;
 
 // provided dependencies
@@ -176,141 +164,79 @@ abstract class RegistryNode {
     abstract void clear();
 
     /**
-     * Get a list of member methods.
-     * @return the list of methods
+     * Get a stream of member methods.
+     * @return the stream of methods
      */
-    List<Method> getMethods() {
-        List<Method> list = getMethods(nodeType);
+    Stream<Method> getMethodStream() {
+        Stream<Method> stream = getMethodStream(nodeType);
         Class<?> extApi = ExtApiFactory.getExtApiInterface(config, nodeType);
         if (extApi != null) {
-            list.addAll(getMethods(extApi));
+            stream = Stream.concat(stream, getMethodStream(extApi));
         }
-        return list;
+        return stream;
     }
     
-    private List<Method> getMethods(Class<?> api) {
+    private Stream<Method> getMethodStream(Class<?> api) {
         // may be a proxy class that implements extended API.
-        Stream<Method> methodsStream = Stream.of(api.getMethods())
+        Stream<Method> methodStream = Stream.of(api.getMethods())
             .filter(m -> !ReflectUtils.isDeprecated(m))
             .filter(m -> !ReflectUtils.isDeprecated(m.getReturnType()))
             .filter(m -> !ReflectUtils.hasAnyBitwigObjectParameter(m))
             .filter(m -> !ReflectUtils.hasAnyCallbackParameter(m))
-            .filter(m -> !ReflectUtils.isModuleFactory(m));
+            .filter(m -> !ReflectUtils.isModuleFactory(m))
+            .filter(m -> {
+                if(LOG.isDebugEnabled() && m.isBridge()) {
+                    LOG.debug("method:[{}] is bridge method", MethodHolder.javaExpression(m));
+                }
+                return !m.isBridge();
+            });
 
         // markInterested is probably same as Subscribable#subscibe()
         if (Value.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> !("markInterested".equals(m.getName())));
         }
 
-        // TODO limit host methods
+        // TODO other Host methods ?
         if (ControllerHost.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> "getNotificationSettings".equals(m.getName()) ||
                         "showPopupNotification".equals(m.getName()));
         }
 
-
-        // WTF! fixing one by one
-
-        // StringArrayValue has two get() methods.  Object[] get()/String[] get()
-        if (StringArrayValue.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object[].class.equals(m.getReturnType())));
-        }
-        // RemoteControlsPage/ParameterBank has duplicated getParameter method
-        // RemoteControl getParameter(int)
-        // Paramater getParameter(int)
-        if (RemoteControlsPage.class.isAssignableFrom(nodeType)
-            && ParameterBank.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("getParameter".equals(m.getName())
-                               && Parameter.class.equals(m.getReturnType())));
-        }
-        // RemoteContrrol has two name() methods. returnType: StringValue/SettableStringValue
-        if (RemoteControl.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("name".equals(m.getName())
-                               && StringValue.class.equals(m.getReturnType())));
-        }
         // MasterTrack#sendBank() is useless, and host throw exception.
         if (MasterTrack.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> !"sendBank".equals(m.getName()));
         }
 
-        // Scene has two name() methods. returnType: StringValue/SettableStringValue
-        if (Scene.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("name".equals(m.getName())
-                               && StringValue.class.equals(m.getReturnType())));
-        }
         // SceneBank is implemented Bank<Scene>, should use Bank#getItemAt(int) instead of SceneBank#getScene(int)
         if (SceneBank.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> !"getScene".equals(m.getName()));
         }
         // DeviceBank is implemented Bank<Device>, should use Bank#getItemAt(int) instead of DeviceBank#getDevice(int)
         if (DeviceBank.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> !"getDevice".equals(m.getName()));
         }
         
         // since bitwig 3.1
-        if (StringValue.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object.class.equals(m.getReturnType())));
-        }
-        if (EnumValue.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object.class.equals(m.getReturnType())));
-        }
-        if (ObjectArrayValue.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object.class.equals(m.getReturnType())));
-        }
-        if (TimeSignatureValue.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
-                .filter(m -> !("get".equals(m.getName())
-                               && Object.class.equals(m.getReturnType())));
-        }
 
         // TODO since bitwig 3.1, API methods are annotated with @OscMethod, @OscNode
         // Will OSC server be released soon ?
         
         // Color class is difficult to use via remote. ColorValue class is enough. 
-        methodsStream = methodsStream
+        methodStream = methodStream
             .filter(m -> !Color.class.equals(m.getReturnType()));
 
         // TODO since API10 uhmmmm..., but I need this.
         // need to support that intermediate node of event has arguments other than bank indexes.
         // BooleanValue applocation.getActions(id).isEnabled();
         if (Action.class.isAssignableFrom(nodeType)) {
-            methodsStream = methodsStream
+            methodStream = methodStream
                 .filter(m -> !"isEnabled".equals(m.getName()));
         }
-        
-        List<Method> methods = methodsStream.collect(Collectors.toList());
-        // for debug
-        if (LOG.isDebugEnabled()) {
-            methods.stream().forEach(m0 -> {
-                    methods.stream().forEach(m1 -> {
-                            if (m0 != m1) {
-                                MethodIdentifier m0id = new MethodIdentifier(m0.getName(), m0.getGenericParameterTypes());
-                                MethodIdentifier m1id = new MethodIdentifier(m1.getName(), m1.getGenericParameterTypes());
-                                if (m0id.equals(m1id)) {
-                                    LOG.debug("node:" + absoluteName + " has identical methods." +
-                                              "\n0: " + m0.getReturnType().getSimpleName() + " " + m0.getDeclaringClass().getSimpleName() + "#" + m0.getName() +
-                                              "\n1: " + m1.getReturnType().getSimpleName() + " " + m1.getDeclaringClass().getSimpleName() + "#" + m1.getName());
-                                }
-                            }
-                        });
-                });
-        }
-        return methods;
+        return methodStream;
     }
 }

@@ -42,19 +42,22 @@ public class NotificationAdapter implements JsonSerializer<Notification> {
     public JsonElement serialize(Notification src, Type typeOfSrc, JsonSerializationContext context) {
         JsonObject json = new JsonObject();
         json.addProperty("notification", src.getNotifictaion());
-        JsonElement params = context.serialize(src.getParams());
-        // flatten params
-        // params:[{a:1, b:2}] -> params:{a:1, b:2}
-        if (params.isJsonArray()) {
-            JsonArray arrayParams = params.getAsJsonArray();
-            if (arrayParams.size() == 1) {
-                JsonElement singleParam = arrayParams.get(0);
-                if (singleParam.isJsonObject()) {
-                    params = singleParam;
+        Object[] srcParams = src.getParams();
+        if (srcParams != null && srcParams.length > 0) {
+            JsonElement params = context.serialize(srcParams);
+            // flatten params
+            // params:[{a:1, b:2}] -> params:{a:1, b:2}
+            if (params.isJsonArray()) {
+                JsonArray arrayParams = params.getAsJsonArray();
+                if (arrayParams.size() == 1) {
+                    JsonElement singleParam = arrayParams.get(0);
+                    if (singleParam.isJsonObject()) {
+                        params = singleParam;
+                    }
                 }
             }
+            json.add("params", params);
         }
-        json.add("params", params);
         return json;
     }
 }

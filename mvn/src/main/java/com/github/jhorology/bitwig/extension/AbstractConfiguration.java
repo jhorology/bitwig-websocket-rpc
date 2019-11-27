@@ -53,18 +53,17 @@ public abstract class AbstractConfiguration {
     //#if build.development
     @Expose
     //#endif
-    protected boolean logOutputSystemConsole = false;
+    private boolean logOutputSystemConsole = false;
     // <--
 
-    protected ControllerHost host;
+    private ControllerHost host;
     private boolean ignoreHostPrefValue;
-    protected boolean valueChanged;
+    private boolean valueChanged;
     private boolean requestReset;
 
     /**
      * Default constructor.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     public AbstractConfiguration() {
     }
 
@@ -87,7 +86,7 @@ public abstract class AbstractConfiguration {
     // TODO Guava 19 or above are able to register non-public @﻿Subscribe
     
     /**
-     * this method is called at extension's start of lifecycle.
+     * this method is called at extension's start of life-cycle.
      * Do not call or override this method.
      * @param e
      */
@@ -131,7 +130,7 @@ public abstract class AbstractConfiguration {
     // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
     
     /**
-     * this method is called at extension's end of lifecycle.
+     * this method is called at extension's end of life-cycle.
      * Do not call this method.
      * @param e
      */
@@ -164,7 +163,7 @@ public abstract class AbstractConfiguration {
     }
 
     /**
-     * Add a input item to prefrences panel.
+     * Add a input item to preferences panel.
      * @param <T>           the enum type
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
@@ -180,7 +179,7 @@ public abstract class AbstractConfiguration {
 
 
     /**
-     * Add a input item to prefrences panel.
+     * Add a input item to preferences panel.
      * @param <T>           the enum type.
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
@@ -232,7 +231,7 @@ public abstract class AbstractConfiguration {
     }
 
     /**
-     * Add a input item to prefrences panel.
+     * Add a input item to preferences panel.
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param options       the array of value options.
@@ -269,7 +268,7 @@ public abstract class AbstractConfiguration {
     }
 
     /**
-     * Add a input item to prefrences panel.
+     * Add a input item to preferences panel.
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param minValue
@@ -288,7 +287,7 @@ public abstract class AbstractConfiguration {
 
         SettableRangedValue value =
             host.getPreferences().getNumberSetting
-            (label, category, (double)minValue, (double)maxValue, 1, unit, (double)getter.get());
+            (label, category, minValue, maxValue, 1, unit, getter.get());
 
         value.setRaw(getter.get());
         value.addValueObserver((double v) -> {
@@ -302,7 +301,7 @@ public abstract class AbstractConfiguration {
     }
 
     /**
-     * Add a input item to prefrences panel.
+     * Add a input item to preferences panel.
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
      * @param getter

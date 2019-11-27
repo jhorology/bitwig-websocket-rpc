@@ -94,7 +94,9 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void onMessage(WebSocket conn, String message) {
-        if (gson == null) return;
+        if (gson == null) {
+            return;
+        }
         
         BatchOrSingleRequest req;
         try {

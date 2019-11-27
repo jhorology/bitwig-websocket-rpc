@@ -59,27 +59,33 @@ public class RequestAdapter implements JsonDeserializer<Request> {
     public Request deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
         Request req = new Request();
         try {
-            if(!json.isJsonObject())
+            if(!json.isJsonObject()) {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "request should be JSON object.");
+            }
             
             JsonObject request = json.getAsJsonObject();
 
             // "jsonrpc": "2.0"
             JsonPrimitive jsonrpc = request.getAsJsonPrimitive("jsonrpc");
-            if (jsonrpc == null)
+            if (jsonrpc == null) {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'jsonrpc' property does not exist.");
-            if (!jsonrpc.isString())
+            }
+            if (!jsonrpc.isString()) {
                 throw  new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'jsonrpc' property should be string.");
+            }
             req.setJsonrpc(jsonrpc.getAsString());
-            if (!JsonRpcProtocolHandler.JSONRPC_VERSION.equals(req.getJsonrpc()))
+            if (!JsonRpcProtocolHandler.JSONRPC_VERSION.equals(req.getJsonrpc())) {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "unsupported version of 'jsonrpc' property.");
+            }
 
             // "method": "sum"
             JsonPrimitive method = request.getAsJsonPrimitive("method");
-            if (method == null)
+            if (method == null) {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'method' property does not exist.");
-            if (!method.isString())
+            }
+            if (!method.isString()) {
                 throw new JsonRpcException(ErrorEnum.INVALID_REQUEST, "'method' property should be string.");
+            }
             req.setMethod(method.getAsString());
 
             JsonElement params = request.get("params");
@@ -150,16 +156,18 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         }
         // array paramters "params":[1,2,3]
         if (json.isJsonArray()) {
-            if (json.getAsJsonArray().size() == 0)
+            if (json.getAsJsonArray().size() == 0) {
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty array.");
+            }
             return StreamSupport.stream(json.getAsJsonArray().spliterator(), false)
                 .map(e -> paramItemTypeOf(e))
                 .toArray(size -> new RpcParamType[size]);
         }
         // named paramters "params":{"left":1, "right":2}
         if(json.isJsonObject()) {
-            if (json.getAsJsonObject().entrySet().isEmpty())
+            if (json.getAsJsonObject().entrySet().isEmpty()) {
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
+            }
             return new RpcParamType[] {RpcParamType.OBJECT};
         }
         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported type of 'params' property.");
@@ -176,8 +184,9 @@ public class RequestAdapter implements JsonDeserializer<Request> {
             }
             // exclude doble nested array
             StreamSupport.stream(ja.spliterator(), false).forEach(e -> {
-                    if (e.isJsonArray())
+                    if (e.isJsonArray()) {
                         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported double nested array type of 'params' property.");
+                    }
                 });
             final RpcParamType firstParamType = ja.get(0).isJsonPrimitive()
                 ? primitiveParamTypeOf(ja.get(0).getAsJsonPrimitive())

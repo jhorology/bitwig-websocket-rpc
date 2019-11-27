@@ -25,6 +25,7 @@ package com.github.jhorology.bitwig.websocket.protocol;
 // jdk
 import java.net.InetSocketAddress;
 import java.util.Collection;
+import java.util.List;
 
 // bitwig api
 import com.google.common.eventbus.Subscribe;
@@ -44,7 +45,6 @@ import com.github.jhorology.bitwig.websocket.OpenEvent;
 import com.github.jhorology.bitwig.websocket.StartEvent;
 import com.github.jhorology.bitwig.websocket.StopEvent;
 import com.github.jhorology.bitwig.websocket.TextMessageEvent;
-import java.util.List;
 
 /**
  * An abstract base class of ProtocolHandler.<br>
@@ -82,9 +82,10 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public void onOpen(OpenEvent e) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("new connection. conn:" + e.getConnection() +
-                      "\nremoteAddress:" + remoteAddress(e.getConnection()) +
-                      "\nresourceDescriptor:" + e.getHandshake().getResourceDescriptor());
+            LOG.trace("new connection. conn:{}\n\tremoteAddress:{}\n\tresourceDescriptor:{}",
+                      e.getConnection(),
+                      remoteAddress(e.getConnection()),
+                      e.getHandshake().getResourceDescriptor());
         }
         onOpen(e.getConnection(), e.getHandshake());
     }
@@ -92,10 +93,11 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public void onColse(CloseEvent e) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("connection closed. conn:" + e.getConnection() +
-                      "\ncode:" + e.getCode() +
-                      "\nreason:" + e.getReason() +
-                      "\nremote:" + e.isRemote());
+            LOG.trace("connection closed. conn:{}\n\tcode:{}\n\treason:{}\n\tremote:{}",
+                      e.getConnection(),
+                      e.getCode(),
+                      e.getReason(),
+                      e.isRemote());
         }
         if (this instanceof PushModel) {
             registry.disconnect(e.getConnection());
@@ -106,8 +108,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public void onMessage(TextMessageEvent e) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
-                      "\n --> " + e.getMessage());
+            LOG.trace("a message recieved from:{}\n  --> {}",
+                      remoteAddress(e.getConnection()),
+                      e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
                             pushModel ? (PushModel)this : null);
@@ -118,8 +121,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     @Subscribe
     public void onMessage(BinaryMessageEvent e) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace("a message recieved from:" + remoteAddress(e.getConnection()) +
-                      "\n --> " + e.getMessage());
+            LOG.trace("a message recieved from:{}\n  --> {}",
+                      remoteAddress(e.getConnection()),
+                      e.getMessage());
         }
         RequestContext.init(e.getConnection(), registry,
                             pushModel ? (PushModel)this : null);
@@ -129,7 +133,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     
     @Subscribe
     public void onError(ErrorEvent e) {
-        LOG.error("error occurred remoteAddress:"  + remoteAddress(e.getConnection()), e.getException());
+        LOG.error("error occurred remoteAddress:" + remoteAddress(e.getConnection()), e.getException());
         onError(e.getConnection(), e.getException());
     }
 
@@ -149,8 +153,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     protected void send(String message, WebSocket conn) {
         conn.send(message);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("message sended to " + conn.getRemoteSocketAddress() +
-                      "\n <-- " + message);
+            LOG.trace("message sended to {}\n  <-- {}",
+                      conn.getRemoteSocketAddress(), message);
         }
     }
     
@@ -162,8 +166,9 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     protected void push(String message, Collection<WebSocket> clients) {
         server.broadcast(message, clients);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("broadcast message to " + clients.size() + " clients." +
-                      "\n <-- " + message);
+            LOG.trace("broadcast message to {} clients.\n  <-- {}",
+                      clients.size(),
+                      message);
         }
     }
     
@@ -174,8 +179,8 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     protected void broadcast(String message) {
         server.broadcast(message);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("broadcast message to all " + server.getConnections().size() + " clients." +
-                      "\n <-- " + message);
+            LOG.trace("broadcast message to all {} clients.\n  <-- {}",
+                      server.getConnections().size(), message);
         }
     }
     

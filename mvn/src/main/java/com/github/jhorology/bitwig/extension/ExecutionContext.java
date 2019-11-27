@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A context holder for executor task state.<br>
  This class assumes that all methods are called from within "Control Surface Session" thread.
+ * @param <T> the type of configuration.
  */
 public class ExecutionContext<T extends AbstractConfiguration> extends ExtensionContextBase<T> {
     private static final Logger LOG = LoggerFactory.getLogger(ExecutionContext.class);

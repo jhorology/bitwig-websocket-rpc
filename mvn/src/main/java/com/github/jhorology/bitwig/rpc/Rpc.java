@@ -62,10 +62,10 @@ public interface Rpc {
 
     /**
      * broadcast message to all remote connections.
-     * @param message
-     * @param params named parameters
+     * @param notification
+     * @param params parameters
      */
-    void broadcast(String message, Object params);
+    void broadcast(String notification, Object... params);
     
     /**
      * report all RPC methods and events.

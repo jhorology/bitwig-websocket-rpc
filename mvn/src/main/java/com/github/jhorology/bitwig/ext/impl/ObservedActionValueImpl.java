@@ -171,7 +171,9 @@ public class ObservedActionValueImpl implements ObservedActionValue {
     }
 
     private void notifyValue(IdValuePair<String, Boolean> v) {
-        callbacks.stream().forEach(cb -> cb.valueChanged(v));
+        if (subscribed) {
+            callbacks.stream().forEach(cb -> cb.valueChanged(v));
+        }
     }
 
 }

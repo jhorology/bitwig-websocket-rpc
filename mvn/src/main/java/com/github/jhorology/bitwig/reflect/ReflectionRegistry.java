@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 // bitwig api
 import com.bitwig.extension.controller.ControllerExtensionDefinition;
@@ -581,7 +580,7 @@ public class ReflectionRegistry implements RpcRegistry {
 
 
     private void registerMethods(ModuleHolder module) {
-        module.getMethods()
+        module.getMethodStream()
             .forEach(m -> registerMethod(module, m, module, 0));
     }
 
@@ -589,8 +588,9 @@ public class ReflectionRegistry implements RpcRegistry {
         // filter unusable methods
         Class<?> returnType = method.getReturnType();
         if (chainDepth > 5) {
-            LOG.error("##!!! Method chain depth are too long. Something is wrong!!"
-                      + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName());
+            LOG.error("method:[{}.{}] chain depth is too long. Something is wrong !",
+                      parentNode.getAbsoluteName(),
+                      method.getName());
             return;
         }
 
@@ -600,9 +600,10 @@ public class ReflectionRegistry implements RpcRegistry {
             // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
             // TODO is need track.clipLauncherSlotBank or sendBank for Clip#getTrack ?
             if (LOG.isDebugEnabled()) {
-                LOG.warn("##!!! Bank type founded, but bankItemCount is not registered.!!"
-                         + "\nmethod:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
-                         + " bankType:" + returnType);
+                LOG.debug("method:[{}.{}] bankItemCount is not registered !\n  {}",
+                          parentNode.getAbsoluteName(),
+                          method.getName(),
+                          MethodHolder.javaExpression(method));
             }
             return;
         }
@@ -623,9 +624,11 @@ public class ReflectionRegistry implements RpcRegistry {
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("method:" + parentNode.getAbsoluteName() + NODE_DELIMITER + method.getName()
-                                  + "\n map bank item type:" + returnType.getSimpleName()
-                                  + " to type:" + bankItemType.getSimpleName());
+                        LOG.debug("method:[{}.{}] return-type isn't inherited bank item type.\n  expect:{}\n  occurs:{}",
+                                  parentNode.getAbsoluteName(),
+                                  method.getName(),
+                                  bankItemType.getSimpleName(),
+                                  returnType.getSimpleName());
                     }
                     // replace return type
                     returnType = bankItemType;
@@ -660,10 +663,10 @@ public class ReflectionRegistry implements RpcRegistry {
             if (LOG.isWarnEnabled()) {
                 MethodHolder duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
-                    LOG.warn("##!!! duplicated method!!"
-                             + "\nmethod:" + mh.getAbsoluteName()
-                             + "\nold:" + formatMethod(duplicatedMethod.method)  
-                             + "\nnew:" + formatMethod(mh.method));
+                    LOG.warn("method:[{}} confilict with duplicated key !\n  old:{}\n  new:{}",
+                             mh.getAbsoluteName(),
+                             duplicatedMethod.getJavaExpression(),
+                             mh.getJavaExpression());
                 }
             }
             methods.put(mh.getIdentifier(), mh);
@@ -673,31 +676,17 @@ public class ReflectionRegistry implements RpcRegistry {
             if (LOG.isWarnEnabled()) {
                 EventHolder duplicatedEvent = events.get(mh.getAbsoluteName());
                 if (duplicatedEvent != null) {
-                    LOG.warn("##!!! duplicated event!!"
-                             + "\nevent:" + mh.getAbsoluteName()
-                             + "\nold:" + formatMethod(duplicatedEvent.method)  
-                             + "\nnew:" + formatMethod(mh.method));
+                    LOG.warn("event:[{}] confilict with duplicated key !\n  old:{}\n  new:{}",
+                             mh.getAbsoluteName(),
+                             duplicatedEvent.getJavaExpression(),
+                             mh.getJavaExpression());
                 }
             }
             events.put(mh.getAbsoluteName(), (EventHolder)mh);
         }
         if (isReturnTypeBitwigAPI && !returnType.isEnum()) {
             // register method recursively
-            mh.getMethods().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
+            mh.getMethodStream().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
-    }
-    
-    private String formatMethod(Method m) {
-        StringBuilder sb = new StringBuilder(m.getReturnType().getSimpleName());
-        sb.append(" ");
-        sb.append(m.getDeclaringClass().getSimpleName());
-        sb.append("#");
-        sb.append(m.getName());
-        sb.append("(");
-        sb.append(Stream.of(m.getGenericParameterTypes())
-            .map(t -> t.getClass().getSimpleName())
-            .collect(Collectors.joining(", ")));
-        sb.append(")");
-        return sb.toString();
     }
 }
