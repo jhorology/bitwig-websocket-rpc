@@ -186,7 +186,7 @@ abstract class RegistryNode {
             .filter(m -> !ReflectUtils.isModuleFactory(m))
             .filter(m -> {
                 if(LOG.isDebugEnabled() && m.isBridge()) {
-                    LOG.debug("method:[{}] is bridge method", MethodHolder.javaExpression(m));
+                    LOG.debug("method:[{}] is bridge method", ReflectUtils.javaExpression(m));
                 }
                 return !m.isBridge();
             });
@@ -231,8 +231,8 @@ abstract class RegistryNode {
             .filter(m -> !Color.class.equals(m.getReturnType()));
 
         // TODO since API10 uhmmmm..., but I need this.
-        // need to support that intermediate node of event has arguments other than bank indexes.
-        // BooleanValue applocation.getActions(id).isEnabled();
+        //   - need to support that intermediate node of event has arguments other than bank indexes.
+        //   - BooleanValue applocation.getActions(id).isEnabled();
         if (Action.class.isAssignableFrom(nodeType)) {
             methodStream = methodStream
                 .filter(m -> !"isEnabled".equals(m.getName()));

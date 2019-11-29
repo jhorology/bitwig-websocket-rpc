@@ -600,10 +600,10 @@ public class ReflectionRegistry implements RpcRegistry {
             // e.g) MasterTrack or EffctTrack has sendBank().getItemAt(int), but it can't be used.
             // TODO is need track.clipLauncherSlotBank or sendBank for Clip#getTrack ?
             if (LOG.isDebugEnabled()) {
-                LOG.debug("method:[{}.{}] bankItemCount is not registered !\n  {}",
+                LOG.debug("method[{}.{}] bankItemCount is not registered !\n  {}",
                           parentNode.getAbsoluteName(),
                           method.getName(),
-                          MethodHolder.javaExpression(method));
+                          ReflectUtils.javaExpression(method));
             }
             return;
         }
@@ -624,7 +624,7 @@ public class ReflectionRegistry implements RpcRegistry {
                 // maybe returnType is ObjectProxy
                 if (!bankItemType.isAssignableFrom(returnType)) {
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("method:[{}.{}] return-type isn't inherited bank item type.\n  expect:{}\n  occurs:{}",
+                        LOG.debug("method[{}.{}] return-type isn't inherited bank item type.\n  expect:{}\n  occurs:{}",
                                   parentNode.getAbsoluteName(),
                                   method.getName(),
                                   bankItemType.getSimpleName(),
@@ -663,7 +663,7 @@ public class ReflectionRegistry implements RpcRegistry {
             if (LOG.isWarnEnabled()) {
                 MethodHolder duplicatedMethod = methods.get(mh.getIdentifier());
                 if (duplicatedMethod != null) {
-                    LOG.warn("method:[{}} confilict with duplicated key !\n  old:{}\n  new:{}",
+                    LOG.warn("method[{}} confilict with duplicated key !\n  old:{}\n  new:{}",
                              mh.getAbsoluteName(),
                              duplicatedMethod.getJavaExpression(),
                              mh.getJavaExpression());
@@ -676,7 +676,7 @@ public class ReflectionRegistry implements RpcRegistry {
             if (LOG.isWarnEnabled()) {
                 EventHolder duplicatedEvent = events.get(mh.getAbsoluteName());
                 if (duplicatedEvent != null) {
-                    LOG.warn("event:[{}] confilict with duplicated key !\n  old:{}\n  new:{}",
+                    LOG.warn("event[{}] confilict with duplicated key !\n  old:{}\n  new:{}",
                              mh.getAbsoluteName(),
                              duplicatedEvent.getJavaExpression(),
                              mh.getJavaExpression());

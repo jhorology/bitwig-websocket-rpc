@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-BITWIG_VERSION="3.1 Beta 1"
+BITWIG_VERSION="3.1 Beta 2"
 
 wslenv() {
   cmd.exe /C "echo %$1%"  2> /dev/null | sed -e "s/[\r\n]\+//g"

@@ -337,7 +337,7 @@ function _isWSL() {
 }
 
 function _wslWinHomeDir() {
-  return execSync('wslpath $(cmd.exe /C "echo %USERPROFILE%") 2> /dev/null', {
+  return execSync('wslpath $(/mnt/c/Windiws/system32/cmd.exe /C "echo %USERPROFILE%") 2> /dev/null', {
     stdio: ['pipe', 'pipe', 'ignore']
   }).toString().replace(/[\r\n]+$/g, '')
 }

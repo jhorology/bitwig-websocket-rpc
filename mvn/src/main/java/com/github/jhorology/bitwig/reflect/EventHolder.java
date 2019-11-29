@@ -74,7 +74,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
     private class PrimitiveEvent {
         private boolean hostTriggered;
         // the last reported value from host
-        private Object lastReportedParams;
+        private Object[] lastReportedParams;
         private final Object[] bankIndexes;
         private Value<?> value;
         private boolean collectionValue;
@@ -104,7 +104,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          * post event to all subscribe[rs.
          * @param params
          */
-        private void onValueChanged(Object params) {
+        private void onValueChanged(Object[] params) {
             hostTriggered = true;
             lastReportedParams = params;
             if (!clients.isEmpty() && pushModel != null) {
@@ -177,7 +177,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             if (collectionValue) {
                 ((CollectionValue<?>)value).values().stream().forEach(v -> {
                         RequestContext.getContext()
-                            .addNotification(newNotification(v));
+                            .addNotification(newNotification(new Object[]{v}));
                     });
             } else if (lastReportedParams != null) {
                 RequestContext.getContext()
@@ -188,7 +188,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         /**
          * post event to specified client.
          */
-        private void post(Object params, WebSocket client) {
+        private void post(Object[] params, WebSocket client) {
             if (clients.contains(client) && pushModel!= null) {
                 pushModel.push(newNotification(params), client);
             }
@@ -203,7 +203,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
          * Create a new notification message.
          * @param params
          */
-        private Notification newNotification(Object... params) {
+        private Notification newNotification(Object[] params) {
             if (bankIndexes.length > 0) {
                 // to Object array
                 params = ArrayUtils.addAll((Object[])bankIndexes, params);

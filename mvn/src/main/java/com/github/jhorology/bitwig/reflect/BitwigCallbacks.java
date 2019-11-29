@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 // bitwig api
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
@@ -78,7 +77,7 @@ public class BitwigCallbacks {
     private static final Logger LOG = LoggerFactory.getLogger(BitwigCallbacks.class);
     
     // All knwown Subinterfaces of ValueChangedCallback
-    private static final List<ImmutablePair<Class<? extends ValueChangedCallback>, Function<Consumer<Object>, ? extends ValueChangedCallback>>> GENERAL_CALLBACKS = new ArrayList<>();
+    private static final List<ImmutablePair<Class<? extends ValueChangedCallback>, Function<Consumer<Object[]>, ? extends ValueChangedCallback>>> GENERAL_CALLBACKS = new ArrayList<>();
     static {
         GENERAL_CALLBACKS.add(new ImmutablePair<>(BooleanValueChangedCallback.class,     BitwigCallbacks::newBooleanValueChangedCallback));
         GENERAL_CALLBACKS.add(new ImmutablePair<>(ColorValueChangedCallback.class,       BitwigCallbacks::newColorValueChangedCallback));
@@ -95,7 +94,7 @@ public class BitwigCallbacks {
      * @param value the instance of Value interface.
      * @param observer the consumer to observe the callback parameter(s).
      */
-    public static <T extends ValueChangedCallback> void registerObserver(Value<T> value, Consumer<Object> observer) {
+    public static <T extends ValueChangedCallback> void registerObserver(Value<T> value, Consumer<Object[]> observer) {
         T callback = newValueChangedCallback(value, observer);
         value.addValueObserver(callback);
     }
@@ -108,7 +107,7 @@ public class BitwigCallbacks {
      * @return new callback instance
      */
     @SuppressWarnings("unchecked")
-    public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object> observer) {
+    public static <T extends ValueChangedCallback> T newValueChangedCallback(Value<T> value, Consumer<Object[]> observer) {
         // special callbacks
         if (value instanceof BeatTimeValue) {
             return (T)newBeatTimeValueChangedCallback((BeatTimeValue)value, observer);
@@ -136,8 +135,8 @@ public class BitwigCallbacks {
      * @return new callback instance
      */
     @SuppressWarnings({"unchecked"})
-    public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(Value<T> value, Consumer<Object> observer) {
-        Function<Consumer<Object>, ? extends ValueChangedCallback> factory = GENERAL_CALLBACKS
+    public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(Value<T> value, Consumer<Object[]> observer) {
+        Function<Consumer<Object[]>, ? extends ValueChangedCallback> factory = GENERAL_CALLBACKS
             .stream()
             .filter(p -> {
                     try {
@@ -162,10 +161,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DoubleValueChangedCallback newBeatTimeValueChangedCallback(final BeatTimeValue beatTimeValue, final Consumer<Object> lambda) {
+    public static DoubleValueChangedCallback newBeatTimeValueChangedCallback(final BeatTimeValue beatTimeValue, final Consumer<Object[]> lambda) {
         return (double value) -> {
-            lambda.accept(createParams(new String[] {"tposition"},
-                                       new Object[] { new BeatTime(value, beatTimeValue)}));
+            lambda.accept(new Object[] { new BeatTime(value, beatTimeValue)});
         };
     }
 
@@ -174,10 +172,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static BooleanValueChangedCallback newBooleanValueChangedCallback(Consumer<Object> lambda) {
+    public static BooleanValueChangedCallback newBooleanValueChangedCallback(Consumer<Object[]> lambda) {
         return (boolean value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -186,10 +183,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ClipLauncherSlotBankPlaybackStateChangedCallback newClipLauncherSlotBankPlaybackStateChangedCallback(Consumer<Object> lambda) {
+    public static ClipLauncherSlotBankPlaybackStateChangedCallback newClipLauncherSlotBankPlaybackStateChangedCallback(Consumer<Object[]> lambda) {
         return (int slotIndex, int playbackState, boolean isQueued) -> {
-            lambda.accept(createParams(new String[] {"slotIndex", "playbackState", "isQueued"},
-                                       new Object[] { slotIndex,   playbackState,   isQueued}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("slotIndex",     slotIndex);
+            obj.put("playbackState", playbackState);
+            obj.put("queued",        isQueued);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -198,10 +198,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ColorValueChangedCallback newColorValueChangedCallback(Consumer<Object> lambda) {
+    public static ColorValueChangedCallback newColorValueChangedCallback(Consumer<Object[]> lambda) {
         return (float red, float green, float blue) -> {
-            lambda.accept(createParams(new String[] {"red", "green", "blue"},
-                                       new Object[] {red,    green,   blue}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("red",   red);
+            obj.put("green", green);
+            obj.put("blue",  blue);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -210,9 +213,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ConnectionEstablishedCallback newConnectionEstablishedCallback(Consumer<Object> lambda) {
+    public static ConnectionEstablishedCallback newConnectionEstablishedCallback(Consumer<Object[]> lambda) {
         return (RemoteConnection rc) -> {
-            lambda.accept(rc);
+            lambda.accept(new Object[] {rc});
         };
     }
 
@@ -221,9 +224,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DataReceivedCallback newDataReceivedCallback(Consumer<Object> lambda) {
+    public static DataReceivedCallback newDataReceivedCallback(Consumer<Object[]> lambda) {
         return (byte[] bytes) -> {
-            lambda.accept(bytes);
+            lambda.accept(new Object[] {bytes});
         };
     }
 
@@ -232,10 +235,12 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterDisplayedValueChangedCallback newDirectParameterDisplayedValueChangedCallback(Consumer<Object> lambda) {
+    public static DirectParameterDisplayedValueChangedCallback newDirectParameterDisplayedValueChangedCallback(Consumer<Object[]> lambda) {
         return (String id, String value) -> {
-            lambda.accept(createParams(new String[] {"id", "value"},
-                                       new Object[] { id,   value}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("id",    id);
+            obj.put("value", value);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -244,10 +249,12 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterNameChangedCallback newDirectParameterNameChangedCallback(Consumer<Object> lambda) {
+    public static DirectParameterNameChangedCallback newDirectParameterNameChangedCallback(Consumer<Object[]> lambda) {
         return (String id, String name) -> {
-            lambda.accept(createParams(new String[] {"id", "name"},
-                                       new Object[] { id,   name}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("id",   id);
+            obj.put("name", name);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -256,10 +263,12 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DirectParameterNormalizedValueChangedCallback newDirectParameterNormalizedValueChangedCallback(Consumer<Object> lambda) {
+    public static DirectParameterNormalizedValueChangedCallback newDirectParameterNormalizedValueChangedCallback(Consumer<Object[]> lambda) {
         return (String id, double normalizedValue) -> {
-            lambda.accept(createParams(new String[] {"id", "normalizedValue"},
-                                       new Object[] { id,   normalizedValue}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("id", id);
+            obj.put("normalizedValue", normalizedValue);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -268,10 +277,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static DoubleValueChangedCallback newDoubleValueChangedCallback(Consumer<Object> lambda) {
+    public static DoubleValueChangedCallback newDoubleValueChangedCallback(Consumer<Object[]> lambda) {
         return (double value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -280,10 +288,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static EnumValueChangedCallback newEnumValueChangedCallback(Consumer<Object> lambda) {
+    public static EnumValueChangedCallback newEnumValueChangedCallback(Consumer<Object[]> lambda) {
         return (String value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -292,10 +299,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static FloatValueChangedCallback newFLoatValueChangedCallback(Consumer<Object> lambda) {
+    public static FloatValueChangedCallback newFLoatValueChangedCallback(Consumer<Object[]> lambda) {
         return (float value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -304,10 +310,12 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedBooleanValueChangedCallback newIndexedBooleanValueChangedCallback(Consumer<Object> lambda) {
+    public static IndexedBooleanValueChangedCallback newIndexedBooleanValueChangedCallback(Consumer<Object[]> lambda) {
         return (int index, boolean value) -> {
-            lambda.accept(createParams(new String[] {"index", "value"},
-                                       new Object[] { index,   value}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("index", index);
+            obj.put("value", value);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -316,10 +324,14 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedColorValueChangedCallback newIndexedColorValueChangedCallback(Consumer<Object> lambda) {
+    public static IndexedColorValueChangedCallback newIndexedColorValueChangedCallback(Consumer<Object[]> lambda) {
         return (int index, float red, float green, float blue) -> {
-            lambda.accept(createParams(new String[] {"index", "red", "green", "blue"},
-                                       new Object[] { index,   red,   green,   blue}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("index", index);
+            obj.put("red",   red);
+            obj.put("green", green);
+            obj.put("blue",  blue);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -328,10 +340,12 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IndexedStringValueChangedCallback newIndexedStringValueChangedCallback(Consumer<Object> lambda) {
+    public static IndexedStringValueChangedCallback newIndexedStringValueChangedCallback(Consumer<Object[]> lambda) {
         return (int index, String value) -> {
-            lambda.accept(createParams(new String[] {"index", "value"},
-                                       new Object[] { index,   value}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("index", index);
+            obj.put("value", value);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -340,10 +354,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static IntegerValueChangedCallback newIntegerValueChangedCallback(Consumer<Object> lambda) {
+    public static IntegerValueChangedCallback newIntegerValueChangedCallback(Consumer<Object[]> lambda) {
         return (int value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -352,7 +365,7 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static NoArgsCallback newNoArgsCallback(Consumer<Object> lambda) {
+    public static NoArgsCallback newNoArgsCallback(Consumer<Object[]> lambda) {
         return () -> {
             lambda.accept(null);
         };
@@ -363,10 +376,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static NotePlaybackCallback newNotePlaybackCallback(Consumer<Object> lambda) {
+    public static NotePlaybackCallback newNotePlaybackCallback(Consumer<Object[]> lambda) {
         return (boolean isNoteOn, int key, float velocity) -> {
-            lambda.accept(createParams(new String[] {"isNoteOn", "key", "velocity"},
-                                       new Object[] { isNoteOn,   key,   velocity}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("noteOn", isNoteOn);
+            obj.put("key", key);
+            obj.put("velocity", velocity);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -375,7 +391,7 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ObjectValueChangedCallback<?> newObjectValueChangedCallback(Consumer<Object> lambda) {
+    public static ObjectValueChangedCallback<?> newObjectValueChangedCallback(Consumer<Object[]> lambda) {
         return (Object value) -> {
             // for debug
             if (LOG.isDebugEnabled() &&
@@ -384,7 +400,7 @@ public class BitwigCallbacks {
                 !BitwigAdapters.isAdapted(value)) {
                 LOG.debug("maybe need seiralization adapter valueType:{}", value.getClass());
             }
-            lambda.accept(value);
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -393,10 +409,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ShortMidiDataReceivedCallback newShortMidiDataReceivedCallback(Consumer<Object> lambda) {
+    public static ShortMidiDataReceivedCallback newShortMidiDataReceivedCallback(Consumer<Object[]> lambda) {
         return (int statusByte, int data1, int data2) -> {
-            lambda.accept(createParams(new String[] {"statusByte", "data1", "data2"},
-                                       new Object[] { statusByte,   data1,   data2}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("status", statusByte);
+            obj.put("data1", data1);
+            obj.put("data2", data2);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -405,9 +424,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static ShortMidiMessageReceivedCallback newShortMidiMessageReceivedCallback(Consumer<Object> lambda) {
+    public static ShortMidiMessageReceivedCallback newShortMidiMessageReceivedCallback(Consumer<Object[]> lambda) {
         return (ShortMidiMessage value) -> {
-            lambda.accept(value);
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -416,10 +435,13 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StepDataChangedCallback newStepDataChangedCallback(Consumer<Object> lambda) {
+    public static StepDataChangedCallback newStepDataChangedCallback(Consumer<Object[]> lambda) {
         return (int x, int y, int state) -> {
-            lambda.accept(createParams(new String[] {"x", "y", "state"},
-                                       new Object[] { x,   y,   state}));
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("x", x);
+            obj.put("y", y);
+            obj.put("state", state);
+            lambda.accept(new Object[] {obj});
         };
     }
 
@@ -428,9 +450,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StringArrayValueChangedCallback newStringArrayValueChangedCallback(Consumer<Object> lambda) {
+    public static StringArrayValueChangedCallback newStringArrayValueChangedCallback(Consumer<Object[]> lambda) {
         return (String[] value) -> {
-            lambda.accept(value);
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -439,10 +461,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static StringValueChangedCallback newStringValueChangedCallback(Consumer<Object> lambda) {
+    public static StringValueChangedCallback newStringValueChangedCallback(Consumer<Object[]> lambda) {
         return (String value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
     }
 
@@ -451,24 +472,9 @@ public class BitwigCallbacks {
      * @param lambda the lambda consumer to observe the callback parameter(s).
      * @return return the instance of callback.
      */
-    public static SysexMidiDataReceivedCallback newSysexMidiDataReceivedCallback(Consumer<Object> lambda) {
+    public static SysexMidiDataReceivedCallback newSysexMidiDataReceivedCallback(Consumer<Object[]> lambda) {
         return (String value) -> {
-            lambda.accept(createParams(new String[] {"value"},
-                                       new Object[] { value}));
+            lambda.accept(new Object[] {value});
         };
-    }
-
-    /**
-     * create params for Notification message.
-     * @param names
-     * @param values
-     */
-    private static Object[] createParams(final String[] names, final Object[] values) {
-        if (values.length > 1) {
-            Map<String, Object> namedParams = IntStream.range(0, values.length)
-                .collect(HashMap::new,(m,i) -> m.put(names[i], values[i]), Map::putAll);
-            return new Object[] {namedParams};
-        }
-        return values;
     }
 }

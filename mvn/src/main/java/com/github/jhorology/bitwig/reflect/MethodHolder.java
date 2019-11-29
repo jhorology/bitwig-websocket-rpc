@@ -75,6 +75,11 @@ class MethodHolder extends RegistryNode implements RpcMethod {
             : methodParamTypes;
         this.staticMethod = Modifier.isStatic(method.getModifiers());
         this.varargs = ReflectUtils.isVarargs(method);
+        // TODO this is not correct
+        //  - maybe cacheable = nodeType.isAssignableFrom(ObjectProxy.class) ||
+        //                      nodeType.isAssignableFrom(Bank.class) ?
+        //  - need to support methods of middle of chain has arguments other than bankIndex 
+        //  - Bank#setSizeOfBank(int)
         this.cacheable = (paramTypes.length == bankDimension.length)
             && (ReflectUtils.isBitwigAPI(nodeType)
                 || ReflectUtils.isExtAPI(nodeType));
@@ -157,7 +162,7 @@ class MethodHolder extends RegistryNode implements RpcMethod {
                 Throwable cause = ex.getCause();
                 if (cause != null && cause instanceof Exception) {
                     err = (Exception)cause;
-                    msg.append(" cause:");
+                    msg.append(" caused by:");
                     msg.append(cause.getMessage());
                 }
             }
@@ -226,7 +231,7 @@ class MethodHolder extends RegistryNode implements RpcMethod {
                    .map(t -> t.getExpression())
                    .collect(Collectors.toList()));
         report.put("result", rpcNodeType.getExpression());
-        report.put("expression", getJavaExpression());
+        report.put("expression", getExpression(true));
         return report;
     }
 
@@ -285,37 +290,7 @@ class MethodHolder extends RegistryNode implements RpcMethod {
     }
     
     String getJavaExpression(boolean returnType, boolean declaringClass) {
-        return javaExpression(this.method, returnType, declaringClass);
+        return ReflectUtils.javaExpression(this.method, returnType, declaringClass);
     }
     
-    /**
-     * Returns a java API expression of specified method.
-     * @return 
-     */
-    static String javaExpression(Method m) {
-        return javaExpression(m, true, true);
-    }
-    
-    /**
-     * Returns a java API expression of specified method.
-     * @return 
-     */
-    private static String javaExpression(Method m, boolean returnType, boolean declaringClass) {
-        StringBuilder sb = new StringBuilder();
-        if (returnType) {
-            sb.append(m.getReturnType().getSimpleName());
-            sb.append(" ");
-        }
-        if (declaringClass) {
-            sb.append(m.getDeclaringClass().getSimpleName());
-            sb.append("#");
-        }
-        sb.append(m.getName());
-        sb.append("(");
-        sb.append(Stream.of(m.getGenericParameterTypes())
-            .map(t -> t.getTypeName())
-            .collect(Collectors.joining(", ")));
-        sb.append(")");
-        return sb.toString();
-    }
 }

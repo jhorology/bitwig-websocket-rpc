@@ -34,7 +34,7 @@ public class ModuleHolder extends RegistryNode {
     /**
      * the instance of this module.
      */
-    protected Object moduleInstance;
+    private final Object moduleInstance;
 
     protected final Map<Class<?>, Integer> bankItemCounts;
 

@@ -31,6 +31,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 // bitwig api
 import com.bitwig.extension.callback.Callback;
@@ -309,7 +310,7 @@ public class ReflectUtils {
             && !isBitwigValue(method.getReturnType())
             && isBitwigAPI(method.getReturnType());
         if (result && LOG.isTraceEnabled()) {
-            LOG.trace("Method[{}#{}] has been ignored as factory method for core module.",
+            LOG.trace("method[{}#{}] has been ignored as factory method for core module.",
                       method.getDeclaringClass().getSimpleName(), method.getName());
         }
         return result;
@@ -366,4 +367,41 @@ public class ReflectUtils {
             .findFirst().orElse(null);
         return bankItemType;
     }
+    
+    /**
+     * Returns a java API expression of specified method.
+     * @param method
+     * @return 
+     */
+    public static String javaExpression(Method method) {
+        return javaExpression(method, true, true);
+    }
+    
+    /**
+     * Returns a java API expression of specified method.
+     * @param method
+     * @param includeReturnType
+     * @param includeDeclaringClass
+     * @return 
+     */
+    public static String javaExpression(Method method,
+            boolean includeReturnType, boolean includeDeclaringClass) {
+        StringBuilder sb = new StringBuilder();
+        if (includeReturnType) {
+            sb.append(method.getReturnType().getSimpleName());
+            sb.append(" ");
+        }
+        if (includeDeclaringClass) {
+            sb.append(method.getDeclaringClass().getSimpleName());
+            sb.append("#");
+        }
+        sb.append(method.getName());
+        sb.append("(");
+        sb.append(Stream.of(method.getGenericParameterTypes())
+            .map(t -> t.getTypeName())
+            .collect(Collectors.joining(", ")));
+        sb.append(")");
+        return sb.toString();
+    }
+
 }
