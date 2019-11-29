@@ -66,114 +66,97 @@ npx bws-rpc <cmd> [options]
 ## Module Use
 ### Usage
 ```js
-const bitwig = require('bitwig-websocket-rpc'),
-      WebSocket = require('rpc-websockets').Client
+const { BitwigClient } = require('bitwig-websocket-rpc')
 
 const wait = millis => {
   return new Promise(resolve => setTimeout(resolve, millis))
 }
 
-(async () => {
+async function main() {
+  const ws = new BitwigClient('ws://localhost:8887', {
+    traceLog: undefined
+  })
+
+  // connect to server
+  await ws.connect()
+
   // configure interest modules.
-  // this function trigger restart of extension.
-  // so all client connections will be closed by server.
-  await bitwig('ws://localhost:8887', {
-    useTransport: true,
-    useMainTrackBank: true
-  })
+  // this function may trigger restart of extension.
+  // so all client connections will maybe closed by server.
 
-  // recommended client library.
-  // https://github.com/elpheria/rpc-websockets
-  const ws = new WebSocket('ws://localhost:8887', {
-    autoconnect: true,
-    reconnect: true
-  })
+  // ws.config(settings, merge, reconnect)
+  const config = await ws.config({
+    useTransport: true
+  }, true, true)
+  console.log('config:', config)
 
-  ws.on('open', async () => {
-    // host module is accessible without configuration.
-    ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!'])
+  // host module is accessible without configuration.
+  ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!'])
 
-    try {
-      // SettableBooleanValue Transport#isPlaying()
-      // this calling will causes error. this is a limitation of Bitwig API.
-      const isPlaying0 = await ws.call('transport.isPlaying')
-      console.log('isPlaying0:', isPlaying0)
-    } catch (err) {
-      // { code: -32603,
-      //   message: 'Internal error',
-      //   data: 'Trying to get a value while not being subscribed.' }
-      console.log(err)
-    }
-
-    // subscribe interest events
-    ws.subscribe([
-      'transport.getPosition',
-      'transport.isPlaying'
-    ])
-
-    // now you can read Transport#isPlaying()
-    // Value#subscribe() is invoked internally because of subscribing event.
-
+  try {
     // SettableBooleanValue Transport#isPlaying()
-    const isPlaying1 = await ws.call('transport.isPlaying')
-    // boolean Transport#isPlaying().get()
-    const isPlaying2 = await ws.call('transport.isPlaying.get')
-    // Both values are same boolean value.
-    // API's value objects (inherited Value class) are serialized via custom serializer.
-    // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
-    console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2)
+    // this calling will causes error. this is a limitation of Bitwig API.
+    const isPlaying0 = await ws.call('transport.isPlaying')
+    console.log('isPlaying0:', isPlaying0)
+  } catch (err) {
+    // { code: -32603,
+    //   message: 'Internal error',
+    //   data: 'Trying to get a value while not being subscribed.' }
+    console.log(err)
+  }
 
-    // handling events
-    ws.on('transport.getPosition', position => {
-      console.log('position:', position)
-    })
-    ws.on('transport.isPlaying', playing => {
-      console.log('playing:', playing ? 'start' : 'stop')
-    })
+  // handling & subscribe interest events
 
-    ws.notify('transport.play')
-    await wait(6000)
-    ws.notify('transport.stop')
-    await wait(1000)
-
-    // unsubscribe events
-    ws.unsubscribe([
-      'transport.getPosition',
-      'transport.isPlaying'
-    ])
-    // close a connection
-    ws.close()
+  // if initial value is needed, event listeners should be registered before subscribe.
+  ws.on('transport.getPosition', params => {
+    console.log('position:', params)
   })
-})()
-```
-### API
-```js
-const bitwig = require('bitwig-websocket-rpc');
-bitwig(url, config).then(c => {
-    // configuration is done
-});
-// or inside async function
-(async () => {
-    const config = await bitwig(url, config);
-})();
+  ws.on('transport.isPlaying', params => {
+    console.log('playing:', params[0] ? 'play' : 'stop')
+  })
+  const subscribeResult = await ws.subscribe([
+    'transport.getPosition',
+    'transport.isPlaying'
+  ])
+  console.log('subscribe result:', subscribeResult)
+
+  // now you can read Transport#isPlaying()
+  // Value#subscribe() is invoked internally because of subscribing event.
+
+  // batch request can reduce communication costs and thread dispatching costs of server-side.
+  const batchResult = await ws.batchRequest(context => {
+    // SettableBooleanValue Transport#isPlaying()
+    context.call('transport.isPlaying')
+    // boolean Transport#isPlaying().get()
+    context.call('transport.isPlaying.get')
+  })
+  // Both values are same boolean value.
+  // API's value objects (inherited Value class) are serialized via custom serializer.
+  // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
+  console.log('isPlaying1:', batchResult[0], ', isPlaying2:', batchResult[1])
+
+  ws.notify('transport.play')
+  await wait(6000)
+  ws.notify('transport.stop')
+  await wait(1000)
+
+  // unsubscribe events
+  await ws.unsubscribe([
+    'transport.getPosition',
+    'transport.isPlaying'
+  ])
+  // close a connection
+  await ws.close()
+}
+
+main()
+  .then(() => console.log('done!'))
+  .catch((err) => console.log('done with error!', err))
 
 ```
-### bitwig(url, config[, merge])
+## API
+　Work in progress.
 
-Configure RPC modules. 
-
-Return:
-* {`Promise`}: resolve the present configuration after applying this function.
-
-Parameters:
-* `url` {`String`}: The URL of the WebSocket server.
-* `config` {`Object`}: The configuration of RPC modules. see section below for details.
-* `merge` {`boolean`}: merge config object into current configuration, or not. default:false
-
-This configuration is not session scoped. It's stored as JSON file in your home diretory.
-```sh
-${HOME}/.bitwig.extension.WebSocket\ RPC-x.x.x
-```
 ### Configuration Defaults
 ```JSON
 {

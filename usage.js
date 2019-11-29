@@ -1,13 +1,18 @@
 // const bitwig = require('bitwig-websocket-rpc')
-const { BitwigClient } = require('./lib/bitwig-client')
+const { BitwigClient } = require('.')
 
 const wait = millis => {
   return new Promise(resolve => setTimeout(resolve, millis))
 }
 
 async function main() {
-  const ws = new BitwigClient('ws://localhost:8887')
+  const ws = new BitwigClient('ws://localhost:8887', {
+    traceLog: undefined
+  })
+
+  // connect to server
   await ws.connect()
+
   // configure interest modules.
   // this function may trigger restart of extension.
   // so all client connections will maybe closed by server.
@@ -16,12 +21,10 @@ async function main() {
   const config = await ws.config({
     useTransport: true
   }, true, true)
+  console.log('config:', config)
 
   // host module is accessible without configuration.
   ws.notify('host.showPopupNotification', ['Hello Bitwig Studio!'])
-  await wait(1000)
-  ws.msg('こんにちわ Bitwig Studio!')
-  await wait(1000)
 
   try {
     // SettableBooleanValue Transport#isPlaying()
@@ -35,32 +38,35 @@ async function main() {
     console.log(err)
   }
 
-  // subscribe interest events
-  const result = await ws.subscribe([
+  // handling & subscribe interest events
+
+  // if initial value is needed, event listeners should be registered before subscribe.
+  ws.on('transport.getPosition', params => {
+    console.log('position:', params)
+  })
+  ws.on('transport.isPlaying', params => {
+    console.log('playing:', params[0] ? 'play' : 'stop')
+  })
+  const subscribeResult = await ws.subscribe([
     'transport.getPosition',
     'transport.isPlaying'
   ])
-  console.log('subscribe result:', result)
+  console.log('subscribe result:', subscribeResult)
 
   // now you can read Transport#isPlaying()
   // Value#subscribe() is invoked internally because of subscribing event.
 
-  // SettableBooleanValue Transport#isPlaying()
-  const isPlaying1 = await ws.call('transport.isPlaying')
-  // boolean Transport#isPlaying().get()
-  const isPlaying2 = await ws.call('transport.isPlaying.get')
+  // batch request can reduce communication and server side thread dispatching cost.
+  const batchResult = await ws.batchRequest(context => {
+    // SettableBooleanValue Transport#isPlaying()
+    context.call('transport.isPlaying')
+    // boolean Transport#isPlaying().get()
+    context.call('transport.isPlaying.get')
+  })
   // Both values are same boolean value.
   // API's value objects (inherited Value class) are serialized via custom serializer.
   // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
-  console.log('isPlaying1:', isPlaying1, ', isPlaying2:', isPlaying2)
-
-  // handling events
-  ws.on('transport.getPosition', position => {
-    console.log('position:', position)
-  })
-  ws.on('transport.isPlaying', playing => {
-    console.log('playing:', playing ? 'start' : 'stop')
-  })
+  console.log('isPlaying1:', batchResult[0], ', isPlaying2:', batchResult[1])
 
   ws.notify('transport.play')
   await wait(6000)
@@ -68,18 +74,14 @@ async function main() {
   await wait(1000)
 
   // unsubscribe events
-  ws.unsubscribe([
+  await ws.unsubscribe([
     'transport.getPosition',
     'transport.isPlaying'
   ])
   // close a connection
-  ws.close()
+  await ws.close()
 }
 
 main()
-  .then(() => {
-    console.log('done!')
-  })
-  .catch((err) => {
-    console.log('error:', err)
-  })
+  .then(() => console.log('done!'))
+  .catch((err) => console.log('done with error!', err))
