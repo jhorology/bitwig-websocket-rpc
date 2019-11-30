@@ -18,7 +18,7 @@
     "prod:install": "bin/bws-rpc install --api 10",
     "prod:debug": "mvn/debug.sh",
     "start": "run-s prod:build:api-10 prod:install prod:debug",
-    "test:build:browser-test": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
+    "test:build:browser": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
     "test:cli": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
     "test:nyan": "mocha --require coffeescript/register test/*.spec.coffee -R nyan",
     "test:browser": "open test/test.html",

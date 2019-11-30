@@ -5,7 +5,8 @@ const path = require('path'),
       beta = process.env.BITWIG_VERSION && process.env.BITWIG_VERSION.includes('Beta')
 
 function winenv(name) {
-  return execSync(`cmd.exe /C echo %${name}% 2> /dev/null`, {
+  // Full path cmd.exe for /etc/wsl.conf [interop] appendWindowsPath = false
+  return execSync(`/mnt/c/Windows/system32/cmd.exe /C echo %${name}% 2> /dev/null`, {
     stdio: ['pipe', 'pipe', 'ignore']
   }).toString().replace(/[\r\n]+$/g, '')
 }

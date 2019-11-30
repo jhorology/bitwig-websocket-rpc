@@ -11,11 +11,7 @@ const path = require('path'),
       { installExtension, defaultExtensionDir } = require('../lib/extension-installer'),
       pkg = require('../package.json'),
       beautify = require('js-beautify'),
-      DEFAULT_URL = 'ws://localhost:8887',
-      CLIENT_OPTIONS = {
-        traceLog: undefined,
-        debugLog: undefined
-      }
+      DEFAULT_URL = 'ws://localhost:8887'
 
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({ pkg })
@@ -111,7 +107,7 @@ function installCommand(options) {
  */
 async function configCommand(options) {
   let config, dirty
-  const ws = new BitwigClient(options.url, CLIENT_OPTIONS)
+  const ws = new BitwigClient(options.url)
   await ws.connect()
   if (options.reset) {
     config = {}
@@ -150,7 +146,7 @@ async function configCommand(options) {
  * report methods & events
  */
 async function reportCommand(options) {
-  const ws = new BitwigClient(options.url, CLIENT_OPTIONS)
+  const ws = new BitwigClient(options.url)
   await ws.connect()
   const report = await ws.call('rpc.report')
   _print(report)
@@ -161,7 +157,7 @@ async function reportCommand(options) {
  * report actions
  */
 async function actionsCommand(options) {
-  const ws = new BitwigClient(options.url, CLIENT_OPTIONS)
+  const ws = new BitwigClient(options.url)
   await ws.connect()
   let config = ws.call('rpc.config')
   if (!config.useApplication) {
@@ -198,19 +194,20 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = new BitwigClient(options.url, CLIENT_OPTIONS)
+  const ws = new BitwigClient(options.url)
   let first = true
   while (options.reconnect || first) {
     first = false
     try {
       await ws.connect()
+      const startTime = Date.now()
       const report = await ws.call('rpc.report'),
             events = report.events
               .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
               .map((e) => e.event)
       events.forEach((e) => {
-        ws.on(e, function() {
-          console.log(`${Date.now()} - [${e}]`, arguments)
+        ws.on(e, function(params) {
+          console.log(`${Date.now() - startTime} - event: '${e}' params:`, params)
         })
       })
       await ws.subscribe(events)
@@ -230,7 +227,7 @@ async function eventsCommand(options) {
  * trace controller script logs
  */
 async function logsCommand(options) {
-  const ws = new BitwigClient(options.url, CLIENT_OPTIONS)
+  const ws = new BitwigClient(options.url)
   let first = true
   while (options.reconnect || first) {
     first = false

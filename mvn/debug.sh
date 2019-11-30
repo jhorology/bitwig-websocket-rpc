@@ -4,7 +4,8 @@ CWD=$(cd $(dirname $0); pwd)
 BITWIG_VERSION="3.1 Beta 2"
 
 wslenv() {
-  cmd.exe /C "echo %$1%"  2> /dev/null | sed -e "s/[\r\n]\+//g"
+  # Full path cmd.exe for /etc/wsl.conf [interop] appendWindowsPath = false
+  /mnt/c/Windows/system32/cmd.exe /C "echo %$1%"  2> /dev/null | sed -e "s/[\r\n]\+//g"
 }
 
 # path conversion win -> wsl
@@ -27,10 +28,15 @@ case "`uname`" in
             PLATFORM="WSL"
             BITWIG_STUDIO="${CWD}/wsl-bitwig-studio"
             USER_HOME="$(wslpath "$(wslenv "USERPROFILE")")"
+            LOCALAPPDATA="$(wslpath "$(wslenv "LOCALAPPDATA")")"
+            BITWIG_STUDIO_PREFS="${LOCALAPPDATA}/Bitwig Studio/prefs/${BITWIG_VERSION}.prefs"
         else
+            # TODO not tested yet
             PLATFORM="Linux"
+            # /opt ?
             BITWIG_STUDIO="/usr/bin/bitwig-studio"
             USER_HOME="$HOME"
+            # BITWIG_STUDIO_PREFS="${HOME}/hogehoge/${BITWIG_VERSION}.prefs"
         fi
         ;;
     Darwin*)
