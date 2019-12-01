@@ -123,11 +123,10 @@ public class RpcParamType implements Comparable<RpcParamType> {
             return false;
         }
         RpcParamType o = (RpcParamType) other;
-        return  (this == o) ||
-            (this == ANY && !o.isArray()) ||
-            (o == ANY && !this.isArray()) ||
-            (this == ANY_ARRAY && o.isArray()) ||
-            (o == ANY_ARRAY && this.isArray());
+        return this == o ||
+            (this.isArray() == o.isArray() &&
+            (this == ANY || o == ANY ||
+             this == ANY_ARRAY || o == ANY_ARRAY));
     }
         
     @Override
