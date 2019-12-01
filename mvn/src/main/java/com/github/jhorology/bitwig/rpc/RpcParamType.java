@@ -34,57 +34,57 @@ public class RpcParamType implements Comparable<RpcParamType> {
     /**
      * void type.
      */
-    public static RpcParamType VOID = newType(0x0000, "void");
+    public static final RpcParamType VOID = newType(0x0000, "void");
     
     /**
      * bool type.
      */
-    public static RpcParamType BOOLEAN = newType(0x0001, "boolean");
+    public static final RpcParamType BOOLEAN = newType(0x0001, "boolean");
     
     /**
      * number type.
      */
-    public static RpcParamType NUMBER = newType(0x0002, "number");
+    public static final RpcParamType NUMBER = newType(0x0002, "number");
     
     /**
      * string type.
      */
-    public static RpcParamType STRING = newType(0x0003, "string");
+    public static final RpcParamType STRING = newType(0x0003, "string");
     
     /**
      * object type.
      */
-    public static RpcParamType OBJECT = newType(0x0004, "object");
+    public static final RpcParamType OBJECT = newType(0x0004, "object");
     
     /**
      * any type.
      */
-    public static RpcParamType ANY = newType(0x0005, "any");
+    public static final RpcParamType ANY = newType(0x0005, "any");
     
     /**
      * array of BOOLEANs type.
      */
-    public static RpcParamType BOOLEAN_ARRAY = newArrayType(0x0010, "boolean[]", BOOLEAN);
+    public static final RpcParamType BOOLEAN_ARRAY = newArrayType(0x0010, "boolean[]", BOOLEAN);
     
     /**
      * array of NUMBERs type.
      */
-    public static RpcParamType NUMBER_ARRAY = newArrayType(0x0011, "number[]", NUMBER);
+    public static final RpcParamType NUMBER_ARRAY = newArrayType(0x0011, "number[]", NUMBER);
     
     /**
      *  array of STRINGs type.
      */
-    public static RpcParamType STRING_ARRAY = newArrayType(0x0012, "string[]", STRING);
+    public static final RpcParamType STRING_ARRAY = newArrayType(0x0012, "string[]", STRING);
     
     /**
      * array of OBJECTs type.
      */
-    public static RpcParamType OBJECT_ARRAY = newArrayType(0x0013, "object[]", OBJECT);
+    public static final RpcParamType OBJECT_ARRAY = newArrayType(0x0013, "object[]", OBJECT);
 
     /**
      * array of ANYs type.
      */
-    public static RpcParamType ANY_ARRAY = newArrayType(0x0014, "any[]", ANY);
+    public static final RpcParamType ANY_ARRAY = newArrayType(0x0014, "any[]", ANY);
 
     private final int hashCode;
     private final String expression;
@@ -223,9 +223,9 @@ public class RpcParamType implements Comparable<RpcParamType> {
             if (c.isArray()) {
                 return of(c.getComponentType(), allowAny).getArrayType();
             } else if (c.isPrimitive()) {
-                if (c.equals(boolean.class)) {
+                if (c == boolean.class) {
                     return BOOLEAN;
-                } else if (Void.TYPE.equals(c)) {
+                } else if (Void.TYPE == c) {
                     return VOID;
                 } else {
                     return NUMBER;
