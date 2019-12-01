@@ -31,7 +31,6 @@ import org.java_websocket.WebSocket;
 
 // source
 import com.github.jhorology.bitwig.extension.ExecutionContext;
-import com.github.jhorology.bitwig.rpc.RpcRegistry;
 
 /**
  * A context holder for RPC request state. <br>
@@ -39,7 +38,6 @@ import com.github.jhorology.bitwig.rpc.RpcRegistry;
  */
 public class RequestContext {
     private WebSocket connection;
-    private RpcRegistry registry;
     private PushModel pushModel;
     private List<Notification> notifications;
 
@@ -48,9 +46,8 @@ public class RequestContext {
     }
     
     // private constructor to prevent instantiation of this class
-    private RequestContext(WebSocket connection, RpcRegistry registry, PushModel pushModel) {
+    private RequestContext(WebSocket connection, PushModel pushModel) {
         this.connection = connection;
-        this.registry = registry;
         this.pushModel= pushModel;
     }
     
@@ -59,8 +56,8 @@ public class RequestContext {
      * @param connection
      * @param registry
      */
-    static void init(WebSocket connection, RpcRegistry registry, PushModel pushModel) {
-        RequestContext context = new RequestContext(connection, registry, pushModel);
+    static void init(WebSocket connection, PushModel pushModel) {
+        RequestContext context = new RequestContext(connection, pushModel);
         ExecutionContext.getContext().set(RequestContext.class, context);
     }
 
@@ -80,14 +77,6 @@ public class RequestContext {
         return connection;
     }
 
-    /**
-     * Get a instance of ReflectionRegistry.
-     * @return An interface for RPC registry.
-     */
-    public RpcRegistry getRpcRegistry() {
-        return registry;
-    }
-    
     /**
      * Get a instance of PushModel.
      * @return An interface for RPC registry.

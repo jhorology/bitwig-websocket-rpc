@@ -155,11 +155,19 @@ public abstract class AbstractConfiguration {
     }
 
     /**
-     * Returns configuration has bean requested to reset, or not.
+     * Indicates whether the configuration is requested to reset.
      * @return
      */
     boolean isRequestReset() {
         return requestReset;
+    }
+    
+    /**
+     * Sets whether to reset this configuration.
+     * @param requestRest
+     */
+    void setRequestReset(boolean requestReset) {
+        this.requestReset = requestReset;
     }
 
     /**

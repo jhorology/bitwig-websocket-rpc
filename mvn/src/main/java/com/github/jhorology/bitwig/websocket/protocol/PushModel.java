@@ -30,7 +30,7 @@ import org.java_websocket.WebSocket;
 
 /**
  * An interface of Server-Sent push model.<br>
- * It's neccesary to implement this inteface if the protocol supports push model.
+ * It's necessary to implement this interface if the protocol supports push model.
  */
 public interface PushModel {
     /**

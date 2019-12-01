@@ -29,6 +29,7 @@ import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.CursorDevice;
 import com.bitwig.extension.controller.api.CursorTrack;
 import com.bitwig.extension.controller.api.Device;
+import com.bitwig.extension.controller.api.Track;
 import com.github.jhorology.bitwig.Config;
 
 //#if bitwig.extension.api.version >= 10
@@ -91,7 +92,7 @@ public class ExtApiFactory implements ExtApi {
                 }
                 break;
             case TRACK:
-                if (CursorTrack.class.isAssignableFrom(bitwigApi)) {
+                if (Track.class.isAssignableFrom(bitwigApi)) {
                     return ChannelExt.class;
                 }
                 break;

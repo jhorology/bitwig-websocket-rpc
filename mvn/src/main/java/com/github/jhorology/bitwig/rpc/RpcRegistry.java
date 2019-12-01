@@ -45,13 +45,13 @@ public interface RpcRegistry {
     RpcEvent getRpcEvent(String name);
     
     /**
-     * clean up a client that has been disconnected.
-     * @param client remote connextion.
+     * Clean up a client that has been disconnected.
+     * @param client remote connection.
      */
     void disconnect(WebSocket client);
     
     /**
-     * report all registered methods and evnnts.
+     * Reports all registered methods and evnets.
      * @return
      */
     Object report();

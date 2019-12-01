@@ -57,8 +57,7 @@ s     */
         // returns subscriber modules of extension event.
         return new Object[] {
             new WebSocketRpcServer(config.getWebSocketPort(),
-                                   protocol,
-                                   registry),
+                                   protocol),
             registry
         };
     }

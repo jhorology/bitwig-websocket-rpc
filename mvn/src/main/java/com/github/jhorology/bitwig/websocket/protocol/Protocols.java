@@ -46,7 +46,7 @@ public enum Protocols {
     }
     
     /**
-     * Create new specidied protocol handler.
+     * Create new specified protocol handler.
      * @param protocol
      * @return
      */

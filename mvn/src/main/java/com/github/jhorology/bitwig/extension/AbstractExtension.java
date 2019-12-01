@@ -187,8 +187,12 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
      * @param config
      */
     public void setConfig(T config) {
-        this.config = config;
-        this.config.setValueChanged(true);
+        if (config != null) {
+            this.config = config;
+            this.config.setValueChanged(true);
+        } else {
+            this.config.setRequestReset(true);
+        }
         getHost().restart();
     }
     

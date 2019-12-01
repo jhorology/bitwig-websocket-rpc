@@ -34,6 +34,7 @@ import com.google.gson.JsonSerializer;
 
 /**
  * A GSON type adapter for {@link Response}.
+ * @see https://www.jsonrpc.org/specification#response_object
  */
 public class ResponseAdapter implements JsonSerializer<Response> {
     /**
@@ -44,6 +45,10 @@ public class ResponseAdapter implements JsonSerializer<Response> {
         JsonObject json = new JsonObject();
         json.addProperty("jsonrpc", src.getJsonrpc());
         JsonElement result;
+        // result
+        //  This member is REQUIRED on success.
+        //  This member MUST NOT exist if there was an error invoking the method.
+        //  The value of this member is determined by the method invoked on the Server.
         if (src.getResult() == null && src.getError() == null) {
             json.add("result", JsonNull.INSTANCE);
         } else if (src.getResult() != null) {
@@ -56,9 +61,17 @@ public class ResponseAdapter implements JsonSerializer<Response> {
                 src.setError( new Error(ErrorEnum.INTERNAL_ERROR, ex.getMessage()));
             }
         }
+        // error
+        //   This member is REQUIRED on error.
+        //   This member MUST NOT exist if there was no error triggered during invocation.
+        //   The value for this member MUST be an Object as defined in section 5.1.
         if (src.getError() != null) {
             json.add("error", context.serialize(src.getError(), Error.class));
         }
+        // id
+        //   This member is REQUIRED.
+        //   It MUST be the same as the value of the id member in the Request Object.
+        //   If there was an error in detecting the id in the Request object (e.g. Parse error/Invalid Request), it MUST be Null.
         if (src.getId() != null) {
             json.add("id", context.serialize(src.getId()));
         } else {

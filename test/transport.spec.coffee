@@ -14,38 +14,27 @@ describe 'Transport Module', ->
     await ws.config
       useTransport: on
     , false, true
-    # wait for restart extension
+    await ws.call 'transport.stop'
+    await ws.call 'transport.getPosition.set', [0]
+    await ws.subscribe ['transport.isPlaying']
+    
   after ->
+    await ws.unsubscribe ['transport.isPlaying']
     await ws.close()
     
-  it 'subscribe()', ->
-    ws.subscribe ['transport.getPlaying']
-      .should.become
-        'transport.getPlaying': 'ok'
+  it 'isPlaying.get() stop', ->
+    ws.call('transport.isPlaying.get')
+      .should.become false
 
-  # it 'stop()', ->
-  #   ws.promise 'transport.getPlaying', false, 1000, (params) -> !params[0]
-  #     .should.become [false]
-  #   ws.notify 'transporttp.stop'
-      
-  # it 'getPlaying.get()', ->
-  #   ws.call('transport.getPlaying.get')
-  #     .should.become false
-
-  # it 'getPlaying() convert BooleanValue to primitive.', ->
-  #   ws.call('transport.getPlaying')
-  #     .should.become false
+  it 'isPlaying() convert BooleanValue to primitive.', ->
+    ws.call('transport.isPlaying')
+      .should.become false
 
   # it 'play()', ->
-  #   ws.promise 'transport.getPlaying', false, 1000, (params) -> params[0]
+  #   ws.promise 'transport.isPlaying', false, 1000, (params) -> params[0]
   #     .should.become [true]
   #   ws.notify 'transport.play'
       
-  # it 'playing.get()', ->
-  #   ws.call('transport.getPlaying.get')
+  # it 'isPlaying.get() start', ->
+  #   ws.call('transport.isPlaying.get')
   #     .should.become true
-
-  # it 'unsubscribe()', ->
-  #   ws.unsubscribe ['transport.getPlaying']
-  #     .should.become
-  #       'transport.getPlaying': 'ok'

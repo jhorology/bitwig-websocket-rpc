@@ -52,7 +52,12 @@ import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
  */
 public class RpcImpl implements Rpc {
     private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);
-
+    private final RpcRegistry registry;
+    
+    public RpcImpl(RpcRegistry registry) {
+        this.registry = registry;
+    }
+    
     /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
@@ -61,7 +66,9 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Map<String, String> on(String... eventNames) {
-        return acceptEvents(eventNames, (e, c) -> e.subscribe(c));
+        long start = System.currentTimeMillis();
+        Map<String, String> result = acceptEvents(eventNames, (e, c) -> e.subscribe(c));
+        return result;
     }
 
     /**
@@ -115,8 +122,6 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Object report() {
-        RequestContext context = RequestContext.getContext();
-        RpcRegistry registry = context.getRpcRegistry();
         return registry.report();
     }
 
@@ -149,7 +154,6 @@ public class RpcImpl implements Rpc {
 
     private String[] acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
         RequestContext context = RequestContext.getContext();
-        RpcRegistry registry = context.getRpcRegistry();
         WebSocket client = context.getConnection();
         RpcEvent event = registry.getRpcEvent(eventName);
         if (event == null) {

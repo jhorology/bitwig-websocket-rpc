@@ -25,6 +25,8 @@ package com.github.jhorology.bitwig.reflect;
 // jdk
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 // provided dependencies
 import com.google.common.base.Objects;
@@ -32,8 +34,6 @@ import com.google.common.base.Objects;
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import java.lang.reflect.Type;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * A identifier class that is used as hash key for RegistryNode.
@@ -50,7 +50,7 @@ class MethodIdentifier implements Comparable<MethodIdentifier> {
     MethodIdentifier(String name, Type[] paramTypes) {
         this.name = name;
         this.rpcParamTypes = Stream.of(paramTypes)
-            .map(RpcParamType::of)
+            .map(t -> RpcParamType.of(t, true)) // true = allowAny
             .collect(Collectors.toList());
     }
 
@@ -84,5 +84,15 @@ class MethodIdentifier implements Comparable<MethodIdentifier> {
             }
         }
         return ret;
+    }
+    
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder(name); 
+      sb.append('(');
+      sb.append(rpcParamTypes.stream()
+        .map(p -> p.getExpression()).collect(Collectors.joining(", ")));
+      sb.append(')');
+      return sb.toString();
     }
 }

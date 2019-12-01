@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.websocket.protocol;
 
 // jdk
+import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -37,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
-import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.BinaryMessageEvent;
 import com.github.jhorology.bitwig.websocket.CloseEvent;
 import com.github.jhorology.bitwig.websocket.ErrorEvent;
@@ -58,20 +58,25 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
      * an instance of WebSocketServer
      */
     protected WebSocketServer server;
-    
-    /**
-     * an instance of ReflectionRegistry
-     */
     protected RpcRegistry registry;
-
-    // this instance is implement PushModel interface or not.
-    private boolean pushModel;
     
+    // this instance is implement PushModel interface or not.
+    private final boolean pushModel = this instanceof PushModel;
+    
+    @Override
+    public void setRpcRegistry(RpcRegistry registry) {
+        this.registry = registry;
+    }
+    
+    @Override
+    public boolean isReady() {
+        return registry != null;
+    }
+
+
     @Subscribe
     public final void onStart(StartEvent e) {
         server = e.getWebSocketServer();
-        registry = e.getRpcRegistry();
-        pushModel = (this instanceof PushModel);
         onStart();
     }
 
@@ -99,7 +104,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
                       e.getReason(),
                       e.isRemote());
         }
-        if (this instanceof PushModel) {
+        if (this instanceof PushModel && registry != null) {
             registry.disconnect(e.getConnection());
         }
         onClose(e.getConnection(), e.getCode(), e.getReason(), e.isRemote());
@@ -112,7 +117,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
                       remoteAddress(e.getConnection()),
                       e.getMessage());
         }
-        RequestContext.init(e.getConnection(), registry,
+        RequestContext.init(e.getConnection(),
                             pushModel ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
         afterRequest(e.getConnection());
@@ -125,7 +130,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
                       remoteAddress(e.getConnection()),
                       e.getMessage());
         }
-        RequestContext.init(e.getConnection(), registry,
+        RequestContext.init(e.getConnection(),
                             pushModel ? (PushModel)this : null);
         onMessage(e.getConnection(), e.getMessage());
         afterRequest(e.getConnection());
@@ -146,7 +151,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     }
     
     /**
-     * Sends the messages to specidied client.
+     * Sends the messages to specified client.
      * @param message
      * @param conn 
      */
@@ -159,7 +164,7 @@ public abstract class AbstractProtocolHandler implements ProtocolHandler {
     }
     
     /**
-     * Push the messages to specidied cliens.
+     * Push the messages to specified clients.
      * @param message
      * @param clients 
      */

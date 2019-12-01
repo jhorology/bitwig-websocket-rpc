@@ -49,11 +49,13 @@ public class RequestAdapter implements JsonDeserializer<Request> {
 
     /**
      * Constructs this instance with RPC registry.
-     * @param registry 
+     * @param registry
      */
     public RequestAdapter(RpcRegistry registry) {
         this.registry = registry;
     }
+    
+    // TODO  messy as hell
     
     @Override
     public Request deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
@@ -154,7 +156,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
         if (json == null || json.isJsonNull()) {
             return new RpcParamType[0];
         }
-        // array paramters "params":[1,2,3]
+        // array parameters "params":[1,2,3]
         if (json.isJsonArray()) {
             if (json.getAsJsonArray().size() == 0) {
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty array.");
@@ -163,7 +165,7 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 .map(e -> paramItemTypeOf(e))
                 .toArray(size -> new RpcParamType[size]);
         }
-        // named paramters "params":{"left":1, "right":2}
+        // named parameters "params":{"left":1, "right":2}
         if(json.isJsonObject()) {
             if (json.getAsJsonObject().entrySet().isEmpty()) {
                 throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "'params' property is empty object.");
@@ -183,6 +185,8 @@ public class RequestAdapter implements JsonDeserializer<Request> {
                 return RpcParamType.OBJECT_ARRAY;
             }
             // exclude doble nested array
+            // func(int, int, int[]) -> params: [1, 2, [3,4,5]] ok
+            // params: [1, 2, [[3,4],5]] unsupported
             StreamSupport.stream(ja.spliterator(), false).forEach(e -> {
                     if (e.isJsonArray()) {
                         throw new JsonRpcException(ErrorEnum.INVALID_PARAMS, "unsupported double nested array type of 'params' property.");

@@ -13,10 +13,10 @@ async function main() {
   // this function may trigger restart of extension.
   // so all client connections will maybe closed by server.
 
-  // ws.config(settings, merge, reconnect)
+  // ws.config(settings, merge)
   const config = await ws.config({
     useTransport: true
-  }, true, true)
+  }, true)
   console.log('config:', config)
 
   // host module is accessible without configuration.

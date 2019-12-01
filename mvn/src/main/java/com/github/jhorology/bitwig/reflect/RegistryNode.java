@@ -125,7 +125,7 @@ abstract class RegistryNode {
         this.absoluteName = parentNode != null
             ? parentNode.absoluteName + ReflectionRegistry.NODE_DELIMITER + this.nodeName
             : this.nodeName;
-        this.rpcNodeType = RpcParamType.of(nodeType);
+        this.rpcNodeType = RpcParamType.of(nodeType, true);
         int[] dim = parentNode != null
             ? parentNode.bankDimension
             : EMPTY_DIMENNSION;
@@ -186,7 +186,7 @@ abstract class RegistryNode {
             .filter(m -> !ReflectUtils.isModuleFactory(m))
             .filter(m -> {
                 if(LOG.isDebugEnabled() && m.isBridge()) {
-                    LOG.debug("method:[{}] is bridge method", ReflectUtils.javaExpression(m));
+                    LOG.debug("node[{}] member method[{}] is bridge method", absoluteName, ReflectUtils.javaExpression(m));
                 }
                 return !m.isBridge();
             });

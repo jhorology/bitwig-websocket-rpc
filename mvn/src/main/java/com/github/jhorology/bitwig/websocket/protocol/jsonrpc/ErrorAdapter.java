@@ -33,6 +33,7 @@ import com.google.gson.JsonSerializer;
 
 /**
  * A GSON type adapter for {@link Error}.
+ * @see https://www.jsonrpc.org/specification#error_object
  */
 public class ErrorAdapter implements JsonSerializer<Error> {
     /**
@@ -40,6 +41,16 @@ public class ErrorAdapter implements JsonSerializer<Error> {
      */
     @Override
     public JsonElement serialize(Error src, Type typeOfSrc, JsonSerializationContext context) {
+        // code
+        //   A Number that indicates the error type that occurred.
+        //   This MUST be an integer.
+        // message
+        //   A String providing a short description of the error.
+        //   The message SHOULD be limited to a concise single sentence.
+        // data
+        //   A Primitive or Structured value that contains additional information about the error.
+        //   This may be omitted.
+        //   The value of this member is defined by the Server (e.g. detailed error information, nested errors etc.).
         JsonObject json = new JsonObject();
         json.addProperty("code", src.getCode());
         json.addProperty("message", src.getMessage());

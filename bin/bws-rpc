@@ -51,6 +51,7 @@ program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-s, --summary',   'total count of methods and events.', DEFAULT_URL)
   .action(_execCommand(reportCommand))
 
 program
@@ -64,7 +65,9 @@ program
   .command('events')
   .description('Monitor events.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-m, --module <modules>', 'comma separated module names.')
   .option('-r, --reconnect', 'keep attempting to reconnect.')
+  .option('-n, --unpack-params', 'use client library with options.unpackEventParams = true.')
   .action(_execCommand(eventsCommand))
 
 program
@@ -98,6 +101,9 @@ function installCommand(options) {
     console.info('Installation completed successfully.')
   } catch (err) {
     console.error(err.message)
+    if (err.code === 'EACCES') {
+      console.error('Please close the Bitwig Studio.')
+    }
     process.exit(1)
   }
 }
@@ -110,7 +116,7 @@ async function configCommand(options) {
   const ws = new BitwigClient(options.url)
   await ws.connect()
   if (options.reset) {
-    config = {}
+    config = null
     dirty = true
   } else if (options.file) {
     _checkFile(options.file)
@@ -149,8 +155,73 @@ async function reportCommand(options) {
   const ws = new BitwigClient(options.url)
   await ws.connect()
   const report = await ws.call('rpc.report')
-  _print(report)
   await ws.close()
+  if (!options.summary) {
+    _print(report)
+    return
+  }
+  const summary = new Map()
+  report.methods.forEach(m => {
+    const moduleName = m.method.split('.')[0]
+    let result = summary.get(moduleName)
+    if (!result) {
+      result = {
+        module: moduleName,
+        numMethods: 0,
+        numEvents: 0,
+        numBankedEvents: 0
+      }
+      summary.set(moduleName, result)
+    }
+    result.numMethods++
+  })
+  report.events.forEach(e => {
+    const moduleName = e.event.split('.')[0]
+    let result = summary.get(moduleName)
+    if (!result) {
+      result = {
+        module: moduleName,
+        numMethods: 0,
+        numEvents: 0,
+        numBankedEvents: 0
+      }
+      summary.set(moduleName, result)
+    }
+    result.numEvents++
+    if (e.bankDimension) {
+      result.numBankedEvents += e.bankDimension.reduce((a, v) => a * v, 1)
+    } else {
+      result.numBankedEvents++
+    }
+  })
+  const total = {
+    module: 'total',
+    numMethods: 0,
+    numEvents: 0,
+    numBankedEvents: 0
+  }
+  console.log(
+    'module'.padEnd(32),
+    'method'.padEnd(8),
+    'event'.padEnd(8),
+    'event * bankDimension')
+  console.log(''.padEnd(80, '-'))
+  summary.forEach(o => {
+    console.log(
+      o.module.padEnd(28),
+      ('' + o.numMethods).padStart(8),
+      ('' + o.numEvents).padStart(8),
+      ('' + o.numBankedEvents).padStart(8))
+    total.numMethods += o.numMethods
+    total.numEvents += o.numEvents
+    total.numBankedEvents += o.numBankedEvents
+  })
+  console.log(''.padEnd(80, '-'))
+  console.log(
+    'Total'.padEnd(28),
+    ('' + total.numMethods).padStart(8),
+    ('' + total.numEvents).padStart(8),
+    ('' + total.numBankedEvents).padStart(8))
 }
 
 /**
@@ -162,9 +233,9 @@ async function actionsCommand(options) {
   let config = ws.call('rpc.config')
   if (!config.useApplication) {
     // ws.config(settings, merge, reconnect)
-    config = ws.config({
+    config = await ws.config({
       useApplication: true
-    }, true, true)
+    }, true)
   }
   const method = config.useAbbreviatedMethodNames
     ? 'app.actions'
@@ -194,26 +265,37 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = new BitwigClient(options.url)
+  const ws = new BitwigClient(options.url, {
+    unpackEventParams: options.unpackParams
+  }), modules = options.module ? options.module.split(',') : undefined
   let first = true
   while (options.reconnect || first) {
     first = false
     try {
       await ws.connect()
       const startTime = Date.now()
-      const report = await ws.call('rpc.report'),
-            events = report.events
-              .filter((e) => (!e.event.startsWith('test.') && !e.event.startsWith('rpc.')))
-              .map((e) => e.event)
+      const report = await ws.call('rpc.report')
+      const events = report.events
+        .filter(e => {
+          const s = e.event
+          if (s.startsWith('test.') || s.startsWith('rpc.')) {
+            return false
+          }
+          if (!modules) {
+            return true
+          }
+          return modules.some(m => s.startsWith(`${m}.`))
+        }).map(e => e.event)
       events.forEach((e) => {
-        ws.on(e, function(params) {
-          console.log(`${Date.now() - startTime} - event: '${e}' params:`, params)
+        ws.on(e, function() {
+          console.log(Date.now() - startTime, '|', e, '|', arguments)
         })
       })
-      await ws.subscribe(events)
+      await ws.subscribe(events, 50000)
       // infinite wait until close
       await ws.promise('close', true, 0)
     } catch (err) {
+      console.log(err)
       try { await ws.close() } catch {
       }
       if (options.reconnect) {

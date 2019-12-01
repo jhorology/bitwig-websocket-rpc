@@ -22,72 +22,126 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
+// jdk
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
 /**
- * RPC paramater type enum that is used for loose matching parameters.
+ * RPC parameter type enum that is used for loose matching java parameters.
  */
-public enum RpcParamType {
+public class RpcParamType implements Comparable<RpcParamType> {
     /**
      * void type.
      */
-    VOID("void", false, null),
+    public static RpcParamType VOID = newType(0x0000, "void");
     
     /**
      * bool type.
      */
-    BOOLEAN("boolean", false, null),
+    public static RpcParamType BOOLEAN = newType(0x0001, "boolean");
     
     /**
      * number type.
      */
-    NUMBER("Number", false, null),
+    public static RpcParamType NUMBER = newType(0x0002, "number");
     
     /**
      * string type.
      */
-    STRING("String", false, null),
+    public static RpcParamType STRING = newType(0x0003, "string");
     
     /**
      * object type.
      */
-    OBJECT("Object", false, null),
+    public static RpcParamType OBJECT = newType(0x0004, "object");
+    
+    /**
+     * any type.
+     */
+    public static RpcParamType ANY = newType(0x0005, "any");
     
     /**
      * array of BOOLEANs type.
      */
-    BOOLEAN_ARRAY("boolean[]", true, BOOLEAN),
+    public static RpcParamType BOOLEAN_ARRAY = newArrayType(0x0010, "boolean[]", BOOLEAN);
     
     /**
      * array of NUMBERs type.
      */
-    NUMBER_ARRAY("Number[]", true, NUMBER),
+    public static RpcParamType NUMBER_ARRAY = newArrayType(0x0011, "number[]", NUMBER);
     
     /**
      *  array of STRINGs type.
      */
-    STRING_ARRAY("String[]", true, STRING),
+    public static RpcParamType STRING_ARRAY = newArrayType(0x0012, "string[]", STRING);
     
     /**
      * array of OBJECTs type.
      */
-    OBJECT_ARRAY("Object[]", true, OBJECT);
-
-    private final String expression;
-    private final boolean array;
-    private final RpcParamType componentType;
-    private RpcParamType arrayType;
-    
-    private RpcParamType(String expression, boolean array, RpcParamType componentType) {
-        this.expression = expression;
-        this.array = array;
-        this.componentType = componentType;
-    }
+    public static RpcParamType OBJECT_ARRAY = newArrayType(0x0013, "object[]", OBJECT);
 
     /**
-     * return a expression of thie enamu value.
+     * array of ANYs type.
+     */
+    public static RpcParamType ANY_ARRAY = newArrayType(0x0014, "any[]", ANY);
+
+    private final int hashCode;
+    private final String expression;
+    private final RpcParamType componentType;
+
+    private RpcParamType(int hashCode, String expression, RpcParamType componentType) {
+        this.hashCode = hashCode;
+        this.expression = expression;
+        this.componentType = componentType;
+    }
+        
+    private static RpcParamType newType(int hashCode, String expression) {
+        return new RpcParamType(hashCode, expression, null);
+    }
+    
+    private static RpcParamType newArrayType(int hashCode, String expression, RpcParamType componentType) {
+        return new RpcParamType(hashCode, expression, componentType);
+    }
+        
+    @Override
+    public int hashCode() {
+        // 0 to  matching ANY,ANY_ARRAY
+        //
+        // jdk HashMap
+        //
+        // if (e.hash == hash &&
+        //         ((k = e.key) == key || (key != null && key.equals(k))))
+        //
+        //return hashCode;
+        return 0;
+    }
+        
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof RpcParamType)) {
+            return false;
+        }
+        RpcParamType o = (RpcParamType) other;
+        return  (this == o) ||
+            (this == ANY && !o.isArray()) ||
+            (o == ANY && !this.isArray()) ||
+            (this == ANY_ARRAY && o.isArray()) ||
+            (o == ANY_ARRAY && this.isArray());
+    }
+        
+    @Override
+    public String toString() {
+        return expression;
+    }
+        
+    @Override
+    public int compareTo(RpcParamType other) {
+        return ((Integer)hashCode).compareTo(other.hashCode);
+    }
+    
+    /**
+     * return a expression of the enamu value.
      * @return
      */
     public String getExpression() {
@@ -98,33 +152,34 @@ public enum RpcParamType {
      * return a component type of this enum value if this enum is array type, 
      * @return
      */
+    public RpcParamType getArrayType() {
+        RpcParamType[] types = {
+            null,
+            BOOLEAN_ARRAY,
+            NUMBER_ARRAY,
+            STRING_ARRAY,
+            OBJECT_ARRAY,
+            ANY_ARRAY
+        };
+        return hashCode < 6 ? types[hashCode] : null;
+    }
+    
+    /**
+     * return a component type of this enum value if this enum is array type, 
+     * @return
+     */
     public RpcParamType getComponentType() {
         return componentType;
     }
-
-    /**
-     * return a array type of this enum value if this enum is component type, 
-     * @return
-     */
-    public RpcParamType getArrayType() {
-        if (array || this == VOID) {
-            return null;
-        }
-        if (arrayType != null) {
-            return arrayType;
-        }
-        arrayType = RpcParamType.valueOf(this.name() + "_ARRAY");
-        return arrayType;
-    }
-
+        
     /**
      * return this type is array or not.
      * @return
      */
     public boolean isArray() {
-        return array;
+        return componentType != null;
     }
-    
+        
     /**
      * Return a array of RpcParamType types that represents the specified array of types.
      * @param types array of strict java type
@@ -132,7 +187,19 @@ public enum RpcParamType {
      */
     public static RpcParamType[] of(Type[] types) {
         return Stream.of(types)
-            .map(RpcParamType::of)
+            .map(t -> of(t, false))
+            .toArray(size -> new RpcParamType[size]);
+    }
+    
+    /**
+     * Return a array of RpcParamType types that represents the specified array of types.
+     * @param types array of strict java type
+     * @param allowAny
+     * @return the aarray of enum value of RpcParamType
+     */
+    public static RpcParamType[] of(Type[] types, boolean allowAny) {
+        return Stream.of(types)
+            .map(t -> of(t, allowAny))
             .toArray(size -> new RpcParamType[size]);
     }
     
@@ -142,47 +209,43 @@ public enum RpcParamType {
      * @return the enum value of RpcParamType
      */
     public static RpcParamType of(Type type) {
+        return of(type, false);
+    }
+    
+    /**
+     * Return a RpcParamType type that represents the specified type.
+     * @param type strict java type
+     * @param allowAny
+     * @return the enum value of RpcParamType
+     */
+    public static RpcParamType of(Type type, boolean allowAny) {
         if (type instanceof Class) {
             Class<?> c = (Class<?>)type;
-            if (c.isPrimitive()) {
+            if (c.isArray()) {
+                return of(c.getComponentType(), allowAny).getArrayType();
+            } else if (c.isPrimitive()) {
                 if (c.equals(boolean.class)) {
-                    return RpcParamType.BOOLEAN;
+                    return BOOLEAN;
                 } else if (Void.TYPE.equals(c)) {
-                    return RpcParamType.VOID;
+                    return VOID;
                 } else {
-                    return RpcParamType.NUMBER;
+                    return NUMBER;
                 }
+            } else if (allowAny && Object.class == c) {
+                return ANY;
             } else if (c.isEnum()) {
-                return RpcParamType.STRING;
-            } else if (c.isArray()) {
-                Class<?> cc = c.getComponentType();
-                if (cc.isPrimitive()) {
-                    if (cc.equals(boolean.class)) {
-                        return RpcParamType.BOOLEAN_ARRAY;
-                    } else {
-                        return RpcParamType.NUMBER_ARRAY;
-                    }
-                } else if (c.isEnum()) {
-                    return RpcParamType.STRING_ARRAY;
-                } else if (Boolean.class.isAssignableFrom(cc)) {
-                    return RpcParamType.BOOLEAN_ARRAY;
-                } else if (Number.class.isAssignableFrom(cc)) {
-                    return RpcParamType.NUMBER_ARRAY;
-                } else if (String.class.isAssignableFrom(cc)) {
-                    return RpcParamType.STRING_ARRAY;
-                } else {
-                    return RpcParamType.OBJECT_ARRAY;
-                }
+                return STRING;
             } else if (Boolean.class.isAssignableFrom(c)) {
-                return RpcParamType.BOOLEAN;
+                return BOOLEAN;
             } else if (Number.class.isAssignableFrom(c)) {
-                return RpcParamType.NUMBER;
+                return NUMBER;
             } else if (String.class.isAssignableFrom(c)) {
-                return RpcParamType.STRING;
+                return STRING;
             }
         } else if (type instanceof GenericArrayType) {
-            return RpcParamType.OBJECT_ARRAY;
+            return OBJECT_ARRAY;
         }
-        return RpcParamType.OBJECT;
+        return OBJECT;
     }
+
 };

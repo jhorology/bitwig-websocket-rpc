@@ -129,7 +129,7 @@ public class ReflectionRegistry implements RpcRegistry {
 
         String id = definition.getId().toString();
 
-        register("rpc",  Rpc.class, new RpcImpl());
+        register("rpc",  Rpc.class, new RpcImpl(this));
         // for test
         register("test", Test.class, new TestImpl());
 
@@ -407,10 +407,12 @@ public class ReflectionRegistry implements RpcRegistry {
         }
         //
         modules.forEach(m -> registerMethods(m));
+        protocol.setRpcRegistry(this);
     }
 
     @Subscribe
     public void onExit(ExitEvent<?> e) {
+        protocol.setRpcRegistry(null);
         modules.forEach(ModuleHolder::clear);
         modules.clear();
         methods.values().forEach(MethodHolder::clear);

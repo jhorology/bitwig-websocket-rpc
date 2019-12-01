@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.websocket;
 
 // jdk
+import com.bitwig.extension.controller.api.ControllerHost;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
@@ -44,7 +45,6 @@ import org.slf4j.LoggerFactory;
 // source
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
-import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 
 /**
@@ -57,8 +57,7 @@ public class WebSocketRpcServer
     private static final Logger LOG = LoggerFactory.getLogger(WebSocketRpcServer.class);
 
     private AsyncEventBus eventBus;
-    private ProtocolHandler protocol;
-    private RpcRegistry registry;
+    private final ProtocolHandler protocol;
     private boolean running;
     private boolean fullDrained;
 
@@ -69,21 +68,19 @@ public class WebSocketRpcServer
      * @param registry
      * @throws java.net.UnknownHostException
      */
-    public WebSocketRpcServer(int port, ProtocolHandler protocol, RpcRegistry registry)
+    public WebSocketRpcServer(int port, ProtocolHandler protocol)
         throws UnknownHostException {
-        this(new InetSocketAddress(port), protocol, registry);
+        this(new InetSocketAddress(port), protocol);
     }
 
     /**
      * Construct a server.
      * @param address
      * @param protocol
-     * @param registry
      */
-    public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, RpcRegistry registry) {
+    public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol) {
         super(address, Math.min(Runtime.getRuntime().availableProcessors(), 4));
         this.protocol = protocol;
-        this.registry = registry;
 
         // ServerSocket#setReuseAddress()
         //
@@ -116,8 +113,22 @@ public class WebSocketRpcServer
         // event bus for dispatching events to 'Control Surface Session' thread.
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
-        start();
-        LOG.info("WebSocket RPC server started on port " + getPort() + ".");
+        if (protocol.isReady()) {
+            start();
+            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
+        } else {
+            stater(e.getHost());
+        }
+    }
+    
+    private void stater(ControllerHost host) {
+        if (protocol.isReady()) {
+            start();
+            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
+        } else {
+            LOG.debug("Protocol is not yet ready.");
+            host.scheduleTask(() -> stater(host), 200L);
+        }
     }
 
     /**
@@ -177,7 +188,7 @@ public class WebSocketRpcServer
     @Override
     public void onStart() {
         // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new StartEvent(this, registry));
+        eventBus.post(new StartEvent(this));
     }
 
     /**

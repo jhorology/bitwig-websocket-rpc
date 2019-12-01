@@ -25,25 +25,20 @@ package com.github.jhorology.bitwig.websocket;
 // dependencies
 import org.java_websocket.server.WebSocketServer;
 
-// source
-import com.github.jhorology.bitwig.rpc.RpcRegistry;
 
 /**
  * An event class for notification of websocket server's start-of-lifecycle.
  */
 public class StartEvent extends AbstractWebSocketEvent {
     private final WebSocketServer webSocketServer;
-    private final RpcRegistry registry;
 
     /**
      * Constructor.
      * @param webSocketServer the instance of {@link WebSocketServer}
-     * @param registry        the instance of {@link RpcRegistry}
-     */
-    StartEvent(WebSocketServer webSocketServer, RpcRegistry registry) {
+W     */
+    StartEvent(WebSocketServer webSocketServer) {
         super(null);
         this.webSocketServer = webSocketServer;
-        this.registry = registry;
     }
     
     /**
@@ -52,13 +47,5 @@ public class StartEvent extends AbstractWebSocketEvent {
      */
     public WebSocketServer getWebSocketServer() {
         return webSocketServer;
-    }
-
-    /**
-     * Get an instance of {@link RpcTregistry}.
-     * @return
-     */
-    public RpcRegistry getRpcRegistry() {
-        return registry;
     }
 }

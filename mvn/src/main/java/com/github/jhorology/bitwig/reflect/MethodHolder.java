@@ -83,7 +83,8 @@ class MethodHolder extends RegistryNode implements RpcMethod {
         this.cacheable = (paramTypes.length == bankDimension.length)
             && (ReflectUtils.isBitwigAPI(nodeType)
                 || ReflectUtils.isExtAPI(nodeType));
-        this.identifier = new MethodIdentifier(absoluteName, RpcParamType.of(paramTypes));
+        this.identifier = new MethodIdentifier(absoluteName,
+                RpcParamType.of(paramTypes, true)); // true = allow any type
     }
 
     /**
@@ -227,7 +228,7 @@ class MethodHolder extends RegistryNode implements RpcMethod {
         // TODO if nodeType or paramType are implemented Itreator, result type should be array "[]".
         // it's difficult to resolve generic type of Iterator.
         report.put("params", Stream.of(paramTypes)
-                   .map(t -> RpcParamType.of(t))
+                   .map(t -> RpcParamType.of(t, true))
                    .map(t -> t.getExpression())
                    .collect(Collectors.toList()));
         report.put("result", rpcNodeType.getExpression());
