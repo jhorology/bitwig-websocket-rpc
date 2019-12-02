@@ -32,7 +32,11 @@ import java.util.stream.Stream;
 // bitwig API
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.DeviceBank;
+//#if bitwig.extension.api.version >= 10
+import com.bitwig.extension.controller.api.HardwareBindable;
+//#endif
 import com.bitwig.extension.controller.api.MasterTrack;
+import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.Value;
 
@@ -220,8 +224,28 @@ abstract class RegistryNode {
             methodStream = methodStream
                 .filter(m -> !"getDevice".equals(m.getName()));
         }
+        // Parameter#setLabel(String) can only be called during driver initialization
+        if (Parameter.class.isAssignableFrom(nodeType)) {
+            methodStream = methodStream
+                .filter(m -> !"setLabel".equals(m.getName()));
+        }
         
         // since bitwig 3.1
+        
+        //#if bitwig.extension.api.version >= 10
+        methodStream = methodStream
+            .filter(m -> {
+                boolean ignore = HardwareBindable.class.isAssignableFrom(m.getReturnType()) &&
+                        !Value.class.isAssignableFrom(m.getReturnType());
+                if (LOG.isDebugEnabled() && ignore) {
+                    LOG.debug("node[{}] member method[{}] is returns HardwareBindable.",
+                        absoluteName, ReflectUtils.javaExpression(m));
+                }
+                return !ignore;
+         });
+        //#endif
+        
+        
 
         // TODO since bitwig 3.1, API methods are annotated with @OscMethod, @OscNode
         // Will OSC server be released soon ?

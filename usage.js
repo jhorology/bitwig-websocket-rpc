@@ -1,4 +1,4 @@
-// const bitwig = require('bitwig-websocket-rpc')
+// const { BitwigClient } = require('bitwig-websocket-rpc')
 const { BitwigClient } = require('.')
 
 async function main(bws) {
@@ -54,23 +54,25 @@ async function main(bws) {
   // see com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters
   console.log('isPlaying1:', batchResult[0], ', isPlaying2:', batchResult[1])
 
+  bws.notify('transport.stop')
+  bws.notify('transport.getPosition.set', [0])
+
+  // safety margin
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+
   // play 4 bars from 1.1
 
-  // rewind if play-hedad is not at 1.1
-  const position = await bws.call('transport.getPosition.get')
-  if (position.raw !== 0) {
-    bws.notify('transport.rewind')
-    await bws.next().event('transport.getPosition')
-      .match(params => params.raw === 0)
-      .within(1).sec() // timeout
-      .asPromised()
-  }
-  bws.notify('transport.play')
+  bws.event('transport.isPlaying')
+    .become([true])
+    .within(1000).millis() // timeout 1000 milliseconds
+    .asPromised() // promise resolve event params,
+    .then(params => console.log('start!', params))
 
+  bws.notify('transport.play')
   await bws.event('transport.getPosition')
     .match(params => params.bars > 4)
+    .within(20).sec() // timeout 20 seconds
     .asPromised()
-
   bws.notify('transport.stop')
 
   // unsubscribe events
@@ -80,9 +82,7 @@ async function main(bws) {
   ])
 }
 
-const bws = new BitwigClient('ws://localhost:8887', {
-  traceLog: undefined
-})
+const bws = new BitwigClient('ws://localhost:8887')
 
 main(bws)
   .then(() => console.log('done!'))
