@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "commander": "^4.0.1",
+    "fast-deep-equal": "^3.0.1",
     "glob": "^7.1.6",
     "isomorphic-ws": "^4.0.1",
     "js-beautify": "^1.10.2",
