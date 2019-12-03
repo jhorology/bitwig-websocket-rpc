@@ -60,6 +60,7 @@ import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.PopupBrowser;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.SendBank;
+import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Transport;
 
@@ -242,6 +243,21 @@ public class ReflectionRegistry implements RpcRegistry {
                     .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
                                            config.getCursorTrackNumScenes());
             }
+            // Since API 10
+            // CursorTrack#createParentTrack(int numSends, int numScenes)
+            //#if bitwig.extension.api.version >= 10
+            if (config.useParentTrack()) {
+                Track parentTrack = cursorTrack.createParentTrack(config.getCursorTrackNumSends(),
+                                                                  config.getCursorTrackNumScenes());
+                register("parentTrack",
+                        Track.class,
+                        cursorTrack)
+                    .registerBankItemCount(SendBank.class,
+                                           config.getCursorTrackNumSends())
+                    .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
+                                           config.getCursorTrackNumScenes());
+            }
+            //#endif
             if (config.useCursorDevice()) {
                 PinnableCursorDevice cursorDevice =
                     cursorTrack.createCursorDevice(id, definition.getName(),

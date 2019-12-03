@@ -189,6 +189,7 @@ main(bws)
   "useChildTrackBank": false,
   "childTrackBankNumTracks": 8,
   "childTrackBankHasFlatList": false,
+  "useParentTrack": false,
   "useCursorDevice": false,
   "cursorDeviceNumSends": 2,
   "cursorDeviceFollowMode": "FOLLOW_SELECTION",
@@ -255,6 +256,7 @@ bitwig-websocket-rpc
 │   │   ├── deviceLayerBank
 │   │   ├── drumPadBank
 │   │   └── siblingsDeviceBank
+│   ├── parentTrack  (since API 10)
 │   └── siblingsTrackBank
 ├── effectTrackBank
 ├── groove

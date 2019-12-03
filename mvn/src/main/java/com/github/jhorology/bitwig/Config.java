@@ -99,6 +99,10 @@ public class Config extends AbstractConfiguration {
     private int childTrackBankNumTracks = 8;
     @Expose
     private boolean childTrackBankHasFlatList;
+    //#if bitwig.extension.api.version >= 10
+    @Expose
+    private boolean useParentTrack;
+    //#endif
     @Expose
     private boolean useCursorDevice;
     @Expose
@@ -393,6 +397,16 @@ public class Config extends AbstractConfiguration {
         return childTrackBankHasFlatList;
     }
 
+    //#if bitwig.extension.api.version >= 10
+    /**
+     * Returns a configuration value of the use or not use ParentTrack of CursorTrack API.
+     * @return
+     */
+    public boolean useParentTrack() {
+        return useParentTrack;
+    }
+    //#endif
+    
     /**
      * Returns a configuration value of the use or not use CursorDevice API.
      * @return
@@ -857,6 +871,13 @@ public class Config extends AbstractConfiguration {
                         this::isChildTrackBankHasFlatList,
                         v -> {childTrackBankHasFlatList = v;});
 
+        // --> ParentTrack since API 10
+        //#if bitwig.extension.api.version >= 10
+        addBoolPrefItem("Use", "ParentTrack (needs CursorTrack)",
+                        this::useParentTrack,
+                        v -> {useParentTrack = v;});
+        //#endif
+        
         // --> CursorDevice
         addBoolPrefItem("Use", "CursorDevice (needs CursorTrack)",
                         this::useCursorDevice,
