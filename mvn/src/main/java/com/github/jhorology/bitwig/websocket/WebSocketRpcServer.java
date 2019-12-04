@@ -65,12 +65,11 @@ public class WebSocketRpcServer
      * Construct a server.
      * @param port
      * @param protocol
-     * @param registry
      * @throws java.net.UnknownHostException
      */
-    public WebSocketRpcServer(int port, ProtocolHandler protocol)
+    public WebSocketRpcServer(int port, ProtocolHandler protocol, int numWorkerThreads)
         throws UnknownHostException {
-        this(new InetSocketAddress(port), protocol);
+        this(new InetSocketAddress(port), protocol, numWorkerThreads);
     }
 
     /**
@@ -78,8 +77,8 @@ public class WebSocketRpcServer
      * @param address
      * @param protocol
      */
-    public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol) {
-        super(address, Math.min(Runtime.getRuntime().availableProcessors(), 4));
+    public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, int numWorkerThreads) {
+        super(address, numWorkerThreads);
         this.protocol = protocol;
 
         // ServerSocket#setReuseAddress()

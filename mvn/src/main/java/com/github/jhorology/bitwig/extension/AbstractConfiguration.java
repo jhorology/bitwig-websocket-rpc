@@ -54,6 +54,10 @@ public abstract class AbstractConfiguration {
     @Expose
     //#endif
     private boolean logOutputSystemConsole = false;
+    //#if build.development
+    @Expose
+    //#endif
+    private boolean doNotUseRequestFlush = false;
     // <--
 
     private ControllerHost host;
@@ -82,6 +86,15 @@ public abstract class AbstractConfiguration {
     public boolean isLogOutputSystemConsole() {
         return logOutputSystemConsole;
     }
+    
+    /**
+     * Return a flag to use Hos#requestFlush for thread dispatching, or not.
+     * for performance test.
+     * @return
+     */
+    public boolean isDoNotUseRequestFlush() {
+        return doNotUseRequestFlush;
+    }
 
     // TODO Guava 19 or above are able to register non-public @﻿Subscribe
     
@@ -106,6 +119,9 @@ public abstract class AbstractConfiguration {
         addBoolPrefItem("Output system console", "Logging",
                         this::isLogOutputSystemConsole,
                         v -> {logOutputSystemConsole = v;});
+        addBoolPrefItem("Do not use requestFlush()", "Executer",
+                        this::isDoNotUseRequestFlush,
+                        v -> {doNotUseRequestFlush = v;});
         //#endif
 
         addPrefItems();

@@ -114,7 +114,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         }
         LOG.trace("Start initialization.");
         eventBus = new EventBus(this);
-        asyncExecutor = new ControlSurfaceSessionExecutor();
+        asyncExecutor = new ControlSurfaceSessionExecutor(config.isDoNotUseRequestFlush());
         initEvent = new InitEvent<>(this);
         exitEvent = new ExitEvent<>(this);
         flushEvent = new FlushEvent<>(this);

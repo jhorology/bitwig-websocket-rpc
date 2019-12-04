@@ -54,10 +54,14 @@ s     */
         ProtocolHandler protocol =
             Protocols.newProtocolHandler(config.getRpcProtocol());
         ReflectionRegistry registry = new ReflectionRegistry(config, protocol);
+        int numWorkerThreads = config.getNumWorkerThreads();
+        //#if build.production
+        numWorkerThreads = Math.min(Runtime.getRuntime().availableProcessors(), numWorkerThreads);
+        //#endif
         // returns subscriber modules of extension event.
         return new Object[] {
             new WebSocketRpcServer(config.getWebSocketPort(),
-                                   protocol),
+                                   protocol, numWorkerThreads),
             registry
         };
     }

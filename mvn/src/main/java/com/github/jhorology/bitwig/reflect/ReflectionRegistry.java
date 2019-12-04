@@ -251,7 +251,7 @@ public class ReflectionRegistry implements RpcRegistry {
                                                                   config.getCursorTrackNumScenes());
                 register("parentTrack",
                         Track.class,
-                        cursorTrack)
+                        parentTrack)
                     .registerBankItemCount(SendBank.class,
                                            config.getCursorTrackNumSends())
                     .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,

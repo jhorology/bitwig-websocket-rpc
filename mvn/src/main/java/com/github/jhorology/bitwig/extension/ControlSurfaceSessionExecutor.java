@@ -45,11 +45,13 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
     private final ConcurrentLinkedQueue<Runnable> tasks;
     private ExecutionContext<?> context;
     private Thread controlSurfaceSession;
+    private final boolean doNotUseRequestFlush;
     
     /**
      * Constructor.
      */
-    public ControlSurfaceSessionExecutor() {
+    public ControlSurfaceSessionExecutor(boolean doNotUseRequestFlush) {
+        this.doNotUseRequestFlush = doNotUseRequestFlush;
         this.tasks = new ConcurrentLinkedQueue<>();
     }
     
@@ -81,7 +83,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
         tasks.offer(command);
         if (Thread.currentThread() == controlSurfaceSession) {
             runAllQueuedTasks();
-        } else if (context != null){
+        } else if (context != null && !doNotUseRequestFlush){
             context.getHost().requestFlush();
         }
         if (LOG.isWarnEnabled()) {

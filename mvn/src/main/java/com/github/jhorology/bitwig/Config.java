@@ -53,6 +53,10 @@ public class Config extends AbstractConfiguration {
     private Protocols rpcProtocol = Protocols.JSONRPC20;
     @Expose
     private boolean useAbbreviatedMethodNames;
+    //#if build.development
+    @Expose
+    //#endif
+    private int numWorkerThreads = 4;
     @Expose
     private boolean useApplication;
     @Expose
@@ -213,6 +217,15 @@ public class Config extends AbstractConfiguration {
         return useAbbreviatedMethodNames;
     }
 
+    /**
+     * Return a number of worker threads
+     * for performance test.
+     * @return
+     */
+    public int getNumWorkerThreads() {
+        return numWorkerThreads;
+    }
+    
     /**
      * Returns a configuration value of the use or not use Application API.
      * @return
@@ -406,7 +419,7 @@ public class Config extends AbstractConfiguration {
         return useParentTrack;
     }
     //#endif
-    
+
     /**
      * Returns a configuration value of the use or not use CursorDevice API.
      * @return
@@ -777,10 +790,13 @@ public class Config extends AbstractConfiguration {
                         v -> {rpcProtocol = v;});
 
         //#if build.development
+        addIntPrefItem("Worker threads", WEBSOCKET_PREF_CATEGORY, INT_OPTIONS_4TO32,
+                       this::getNumWorkerThreads,
+                       v -> {numWorkerThreads = v;});
+        
         addBoolPrefItem("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY,
                         this::useAbbreviatedMethodNames,
                         v -> {useAbbreviatedMethodNames = v;});
-
 
         // --> Application
         addBoolPrefItem("Use", "Application",
@@ -877,7 +893,7 @@ public class Config extends AbstractConfiguration {
                         this::useParentTrack,
                         v -> {useParentTrack = v;});
         //#endif
-        
+
         // --> CursorDevice
         addBoolPrefItem("Use", "CursorDevice (needs CursorTrack)",
                         this::useCursorDevice,
