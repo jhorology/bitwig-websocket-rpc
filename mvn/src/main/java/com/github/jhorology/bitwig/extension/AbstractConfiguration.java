@@ -26,6 +26,7 @@ package com.github.jhorology.bitwig.extension;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -108,10 +109,15 @@ public abstract class AbstractConfiguration {
         host = e.getHost();
         requestReset = false;
         valueChanged = false;
-        
+        Predicate<LogSeverity> logLevelEnumFilter = level -> true;
+        //#if build.production
+        logLevelEnumFilter = level -> level.ordinal() >= LogSeverity.INFO.ordinal();
+        //#endif
         ignoreHostPrefValue();
-
+        
         addEnumPrefItem("Log Level", "Logging",
+                        logLevelEnumFilter,
+                        t -> t.name(),
                         this::getLogLevel,
                         v -> {logLevel = v;});
 
@@ -119,7 +125,7 @@ public abstract class AbstractConfiguration {
         addBoolPrefItem("Output system console", "Logging",
                         this::isLogOutputSystemConsole,
                         v -> {logOutputSystemConsole = v;});
-        addBoolPrefItem("Do not use requestFlush()", "Executer",
+        addBoolPrefItem("Do not use requestFlush()", "Executor",
                         this::isDoNotUseRequestFlush,
                         v -> {doNotUseRequestFlush = v;});
         //#endif
@@ -198,15 +204,32 @@ public abstract class AbstractConfiguration {
                                                        String category,
                                                        Supplier<T> getter,
                                                        Consumer<T> setter) {
-        addEnumPrefItem(label, category, null, getter, setter);
+        addEnumPrefItem(label, category, (T) -> true, (T) -> T.name(), getter, setter);
     }
 
+    /**
+     * Add a input item to preferences panel.
+     * @param <T>           the enum type
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
+     * @param getter
+     * @param setter
+     */
+    protected <T extends Enum<T>> void addEnumPrefItem(String label,
+                                                       String category,
+                                                       Function<T, String> mapper,
+                                                       Supplier<T> getter,
+                                                       Consumer<T> setter) {
+        addEnumPrefItem(label, category, (T) -> true, mapper, getter, setter);
+    }
 
     /**
      * Add a input item to preferences panel.
      * @param <T>           the enum type.
      * @param label         the name of the setting, must not be null
      * @param category      the name of the category, may not be null
+     * @param filter        the filter of enum elements.
      * @param mapper        the mapper function to convert enum value to string value to be displayed on preference panel.
      *                      return value should be unique.
      * @param getter
@@ -214,6 +237,7 @@ public abstract class AbstractConfiguration {
      */
     protected <T extends Enum<T>> void addEnumPrefItem(String label,
                                                        String category,
+                                                       Predicate<T> filter,
                                                        Function<T, String> mapper,
                                                        Supplier<T> getter,
                                                        Consumer<T> setter) {
@@ -225,25 +249,22 @@ public abstract class AbstractConfiguration {
             return;
         }
 
-        // enum -> display string
-        Function<T, String> toStr = mapper != null ? mapper : (e -> e.name());
-
         // display string -> enum
-        Function<String, T> valueOf = mapper == null
-            ? (s -> T.valueOf(enumClass, s))
-            : (s -> Stream.of(values)
-               .filter(e -> mapper.apply(e).equals(s))
-               .findFirst().orElse(getter.get()));
+        Function<String, T> valueOf = (s -> Stream.of(values)
+            .filter(e -> mapper.apply(e).equals(s))
+            .findFirst().orElse(getter.get()));
 
         SettableEnumValue value = host.getPreferences().getEnumSetting
             (label, category,
-             Stream.of(values).map(toStr).toArray(String[]::new),
-             toStr.apply(getter.get()));
+             Stream.of(values).filter(filter)
+                .map(mapper)
+                .toArray(String[]::new),
+             mapper.apply(getter.get()));
 
-        value.set(toStr.apply(getter.get()));
+        value.set(mapper.apply(getter.get()));
         value.addValueObserver((String s) -> {
                 if (ignoreHostPrefValue) {
-                    value.set(toStr.apply(getter.get()));
+                    value.set(mapper.apply(getter.get()));
                 } else {
                     T v = valueOf.apply(s);
                     if (getter.get() != v) {

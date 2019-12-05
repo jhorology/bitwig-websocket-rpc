@@ -55,6 +55,9 @@ import com.bitwig.extension.controller.api.DeviceLayer;
 import com.bitwig.extension.controller.api.DeviceLayerBank;
 import com.bitwig.extension.controller.api.DrumPad;
 import com.bitwig.extension.controller.api.DrumPadBank;
+//#if bitwig.extension.api.version >= 10
+import com.bitwig.extension.controller.api.HardwareBindable;
+//#endif
 // import com.bitwig.extension.controller.api.GenericBrowsingSession;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.ParameterBank;
@@ -367,6 +370,25 @@ public class ReflectUtils {
             .findFirst().orElse(null);
         return bankItemType;
     }
+    
+    //#if bitwig.extension.api.version >= 10
+    /**
+     * Returns specified type is pure HardwareBindable class.or not
+     * @param type
+     * @return 
+     */
+    public static boolean isPureHardwareBindable(Class<?> type) {
+        if (HardwareBindable.class.isAssignableFrom(type) && !(
+            isBitwigValue(type) || isBank(type))) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("class[{}] is Pure HardwareBindable.", type);
+            }
+            return true;
+        }
+        return false;
+    }
+    //#endif
+    
     
     /**
      * Returns a java API expression of specified method.

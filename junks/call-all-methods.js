@@ -1,6 +1,6 @@
 const { BitwigClient, ClientError } = require('..'),
       config = require('./use-all-config.json'),
-      { methods, events } = require('./methods-and-events-bws3.1beta2.json'),
+      { methods, events } = require('./methods-and-events.json'),
       eventMap = events.reduce((map, e) => map.set(e.event, e), new Map()),
       blackList = [
       ],

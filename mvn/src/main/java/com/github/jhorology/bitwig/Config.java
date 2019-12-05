@@ -898,7 +898,7 @@ public class Config extends AbstractConfiguration {
         addBoolPrefItem("Use", "CursorDevice (needs CursorTrack)",
                         this::useCursorDevice,
                         v -> {useCursorDevice = v;});
-        addIntPrefItem("sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8,
+        addIntPrefItem("Sends", "CursorDevice (needs CursorTrack)", INT_OPTIONS_1TO8,
                        this::getCursorDeviceNumSends,
                        v -> {cursorDeviceNumSends = v;});
         addEnumPrefItem("Follow mode", "CursorDevice (needs CursorTrack)",

@@ -87,13 +87,13 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         private PrimitiveEvent(int[] bankIndexes) {
             // TODO need to support that intermediate node has arguments other than bank indexes.
             // e.g) BooleanValue applocation.getActions(id).isEnabled();
-             this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
+            this.bankIndexes = ArrayUtils.addAll(new Object[] {}, (Object [])ArrayUtils.toObject(bankIndexes));
             try {
                 value = (Value<?>)invoke(this.bankIndexes);
                 this.collectionValue = value instanceof CollectionValue;
-                value.unsubscribe();
                 BitwigCallbacks.registerObserver(value, this::onValueChanged);
-                value.unsubscribe();
+                // since API 10 counter based. unsubscribe called more times than subscribe
+                // value.unsubscribe();
             } catch (Exception ex) {
                 setError(ex, "Failed registering observer.");
                 LOG.error(event() + " event: Failed registering observer.", ex);
@@ -196,7 +196,9 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         
         
         private void clear() {
-            value.unsubscribe();
+            if (clients.size() >=0 && value.isSubscribed()) {
+                value.unsubscribe();
+            }
         }
         
         /**
@@ -316,7 +318,6 @@ public class EventHolder extends MethodHolder implements RpcEvent {
      */
     @Override
     void clear() {
-        clients.clear();
         if (primitiveEvent != null) {
             primitiveEvent.clear();
         } else {
@@ -326,6 +327,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (bankIndexCombinations != null) {
             bankIndexCombinations.clear();
         }
+        clients.clear();
     }
 
     /**

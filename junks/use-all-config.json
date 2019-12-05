@@ -1,6 +1,7 @@
 {
   "webSocketPort": 8887,
   "useAbbreviatedMethodNames": false,
+  "numWorkerThreads": 4,
   "useApplication": true,
   "useTransport": true,
   "useArranger": true,
@@ -67,6 +68,7 @@
   "vuMeterRange": 32,
   "vuMeterChannelMode": "MONO",
   "vuMeterPeakMode": "RMS",
-  "logLevel": "WARN",
-  "logOutputSystemConsole": false
+  "logLevel": "DEBUG",
+  "logOutputSystemConsole": true,
+  "doNotUseRequestFlush": false
 }

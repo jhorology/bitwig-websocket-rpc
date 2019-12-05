@@ -51,7 +51,7 @@ program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-s, --summary',   'total count of methods and events.', DEFAULT_URL)
+  .option('-s, --summary',   'total count of methods and events.')
   .action(_execCommand(reportCommand))
 
 program

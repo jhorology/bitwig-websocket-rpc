@@ -4,7 +4,7 @@ const { BitwigClient } = require('..')
 async function test(time, method) {
   let start, end, count = 0, run = true
   const bws = new BitwigClient('ws://localhost:8887', {
-    // traceLog: (objs) => console.log.apply(undefined, objs),
+    traceLog: (objs) => console.log.apply(undefined, objs),
     chkArgs: false, // strict check tx method, params
     chkMessage: false // strict check rx message
   })
@@ -67,7 +67,7 @@ async function testSet(threads, requestFlush, time, method) {
 
   result = await multiConnectionTest(32, name, time, method)
   console.log(name, sum(result))
-  
+
   result = await multiConnectionTest(64, name, time, method)
   console.log(name, sum(result))
 }

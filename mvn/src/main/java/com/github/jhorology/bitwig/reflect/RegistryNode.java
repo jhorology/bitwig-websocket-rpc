@@ -23,18 +23,15 @@
 package com.github.jhorology.bitwig.reflect;
 
 // jdk
-import com.bitwig.extension.api.Color;
-import com.bitwig.extension.controller.api.Action;
 import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 // bitwig API
+import com.bitwig.extension.api.Color;
+import com.bitwig.extension.controller.api.Action;
 import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.DeviceBank;
-//#if bitwig.extension.api.version >= 10
-import com.bitwig.extension.controller.api.HardwareBindable;
-//#endif
 import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.Parameter;
 import com.bitwig.extension.controller.api.SceneBank;
@@ -234,15 +231,7 @@ abstract class RegistryNode {
         
         //#if bitwig.extension.api.version >= 10
         methodStream = methodStream
-            .filter(m -> {
-                boolean ignore = HardwareBindable.class.isAssignableFrom(m.getReturnType()) &&
-                        !Value.class.isAssignableFrom(m.getReturnType());
-                if (LOG.isDebugEnabled() && ignore) {
-                    LOG.debug("node[{}] member method[{}] is returns HardwareBindable.",
-                        absoluteName, ReflectUtils.javaExpression(m));
-                }
-                return !ignore;
-         });
+            .filter(m -> !ReflectUtils.isPureHardwareBindable(m.getReturnType()));
         //#endif
         
         
