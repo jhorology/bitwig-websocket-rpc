@@ -3,6 +3,16 @@ const { BitwigClient } = require('..')
 const wait = (millis) => new Promise(resolve => setTimeout(resolve, millis))
 
 async function main(bws) {
+  const resetValues = async () => {
+    await bws.batch(context => {
+      context.notify('mainTrackBank.getItemAt.solo.set', [0, false])
+      context.notify('mainTrackBank.getItemAt.solo.set', [1, false])
+      context.notify('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [0, 0, 0])
+      context.notify('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [0, 1, 0])
+      context.notify('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [1, 0, 0])
+      context.notify('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [1, 1, 0])
+    })
+  }
   await bws.connect()
   await bws.config({
     useMainTrackBank: true,
@@ -21,13 +31,16 @@ async function main(bws) {
     'mainTrackBank.getItemAt.solo',
     'mainTrackBank.getItemAt.sendBank.getItemAt.value'
   ])
+  await resetValues()
   await wait(1000)
+
   bws.msg('push any solo button.', true)
   await bws.next().event('mainTrackBank.getItemAt.solo')
     .occur()
     .asPromised()
   bws.msg('OK')
   await wait(2000)
+
   bws.msg('push Track 1 solo button.', true)
   await bws.next().event('mainTrackBank.getItemAt.solo')
     .atSlot(0)
@@ -47,19 +60,15 @@ async function main(bws) {
         .asPromised()
       ok = true
     } catch (e) {
-      bws.msg('timeout! again, push Track 2 solo button within 2 seconds.', true)
+      bws.msg('timeout!')
+      await wait(1000)
+      bws.msg('again, push Track 2 solo button within 2 seconds.', true)
     }
   }
   bws.msg('OK')
-
-  await wait(500)
-  await bws.call('mainTrackBank.getItemAt.solo.set', [0, false])
-  await bws.call('mainTrackBank.getItemAt.solo.set', [1, false])
-  await bws.call('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [0, 0, 0])
-  await bws.call('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [0, 1, 0])
-  await bws.call('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [1, 0, 0])
-  await bws.call('mainTrackBank.getItemAt.sendBank.getItemAt.value.setImmediately', [1, 1, 0])
+  await resetValues()
   await wait(2000)
+
   bws.msg('increase Track 2, Send 1 to 50%.', true)
   await bws.event('mainTrackBank.getItemAt.sendBank.getItemAt.value')
     .atSlot(1, 0)
@@ -67,6 +76,7 @@ async function main(bws) {
     .asPromised()
   bws.msg('OK')
   await wait(2000)
+
   bws.msg('increase Track 2, Send 2 to 100%.', true)
   await bws.event('mainTrackBank.getItemAt.sendBank.getItemAt.value')
     .atSlot(1, 1)
