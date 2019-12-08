@@ -115,7 +115,7 @@ public class DirectParameterIdArrayValueImpl implements StringArrayValue {
     void valueChanged(String[] ids) {
         this.ids = ids != null ? ids : new String[0];
         if (isSubscribed()) {
-            callbacks.stream().forEach(cb -> cb.valueChanged(ids));
+            callbacks.forEach(cb -> cb.valueChanged(ids));
         }
         this.ids = ids;
     }

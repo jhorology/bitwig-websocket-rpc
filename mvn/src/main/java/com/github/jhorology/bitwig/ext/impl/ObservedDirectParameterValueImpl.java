@@ -150,7 +150,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      * Notify observed values to observers.
      */
     void notifyValues() {
-        values().stream().forEach(this::valueChanged);
+        values().forEach(this::valueChanged);
     }
 
     /**
@@ -172,6 +172,6 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
     }
 
     private void valueChanged(IdValuePair<String, T> v) {
-        callbacks.stream().forEach(cb -> cb.valueChanged(v));
+        callbacks.forEach(cb -> cb.valueChanged(v));
     }
 }

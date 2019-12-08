@@ -175,7 +175,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             // do not post message directly in here.
             // 'cause message should be sent at after Request/Reponse sequence.
             if (collectionValue) {
-                ((CollectionValue<?>)value).values().stream().forEach(v -> {
+                ((CollectionValue<?>)value).values().forEach(v -> {
                         RequestContext.getContext()
                             .addNotification(newNotification(new Object[]{v}));
                     });
@@ -275,7 +275,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
             if (primitiveEvent != null) {
                 primitiveEvent.internalSubscribe(client);
             } else {
-                primitiveEvents.stream().forEach(e -> e.internalSubscribe(client));
+                primitiveEvents.forEach(e -> e.internalSubscribe(client));
             }
             if (LOG.isTraceEnabled())  {
                 LOG.trace("[{}] event has been subscribed by {}.",
@@ -355,7 +355,7 @@ public class EventHolder extends MethodHolder implements RpcEvent {
         if (primitiveEvent != null) {
             primitiveEvent.syncSubscribedState();
         } else {
-            primitiveEvents.stream().forEach(e -> e.syncSubscribedState());
+            primitiveEvents.forEach(e -> e.syncSubscribedState());
         }
     }
 

@@ -145,13 +145,13 @@ public class VuMeterValueImpl implements VuMeterValue {
      */
     void notifyValues() {
         if (isSubscribed()) {
-            values().stream().forEach(this::notifyValue);
+            values().forEach(this::notifyValue);
         }
     }
     
     private void notifyValue(VuMeterLevel v) {
         if (isSubscribed()) {
-            callbacks.stream().forEach(cb -> cb.valueChanged(v));
+            callbacks.forEach(cb -> cb.valueChanged(v));
         }
     }
 }

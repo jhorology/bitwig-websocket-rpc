@@ -472,7 +472,7 @@ public class ReflectionRegistry implements RpcRegistry {
      */
     @Override
     public void disconnect(WebSocket client) {
-        events.values().stream()
+        events.values()
             .forEach(e -> e.disconnect(client));
     }
 
