@@ -47,7 +47,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
     private final Map<String, IdValuePair<String, T>> paramsCache;
     private List<String> observedIds;
     private final List<ObjectValueChangedCallback<IdValuePair<String, T>>> callbacks;
-    private boolean subscribed;
+    private int subscribeCount;
     private final boolean notifyValuesOnSetIds;
 
     /**
@@ -67,7 +67,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
     @Override
     public void setObservedIds(String[] ids) {
         this.observedIds = ids != null ? Arrays.asList(ids) : Collections.emptyList();
-        if (subscribed && notifyValuesOnSetIds) {
+        if (isSubscribed() && notifyValuesOnSetIds) {
             notifyValues();
         }
     }
@@ -102,15 +102,15 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
     }
 
     /**
@@ -118,7 +118,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      */
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
     }
 
     /**
@@ -126,7 +126,9 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
      */
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+        }
     }
 
     /**
@@ -164,7 +166,7 @@ public class ObservedDirectParameterValueImpl<T> implements ObservedDirectParame
             v = new IdValuePair<>(id, value);
             paramsCache.put(id, v);
         }
-        if (subscribed && observedIds.contains(id)) {
+        if (isSubscribed() && observedIds.contains(id)) {
             valueChanged(v);
         }
     }

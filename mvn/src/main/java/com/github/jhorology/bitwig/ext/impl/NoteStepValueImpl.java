@@ -38,15 +38,16 @@ import com.github.jhorology.bitwig.ext.api.CollectionValue;
 import com.google.common.base.Objects;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 
 
 /**
  * an implementation of extended Clip API.
  */
 class NoteStepValueImpl implements CollectionValue<NoteStep> {
-    private final Map<Integer, NoteStep> values;
+    private final Map<ImmutableTriple<Integer, Integer, Integer>, NoteStep> values;
     private final List<ObjectValueChangedCallback<NoteStep>> callbacks;
-    private boolean subscribed;
+    private int subscribeCount;
 
     /**
      * Constructor.
@@ -75,28 +76,30 @@ class NoteStepValueImpl implements CollectionValue<NoteStep> {
 
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
     }
 
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
     }
 
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount++;
+        }
     }
     
     private void notifyNoteStep(NoteStep noteStep) {
-        int hashCode = Objects.hashCode(noteStep.x(), noteStep.y(), noteStep.channel());
-        values.put(hashCode, noteStep);
-        if (subscribed) {
+        ImmutableTriple key = ImmutableTriple.of(noteStep.x(), noteStep.y(), noteStep.channel());
+        values.put(key, noteStep);
+        if (isSubscribed()) {
             callbacks.forEach(c -> c.valueChanged(noteStep));
         }
     }

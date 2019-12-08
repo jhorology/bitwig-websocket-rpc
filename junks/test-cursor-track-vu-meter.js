@@ -62,7 +62,7 @@ function updateTrackName(name) {
 }
 
 function updateMeter(meter, value) {
-  const level = METER_LENGTH * value / METER_RANGE
+  const level = ((METER_LENGTH * value / (METER_RANGE - 1)) + 0.5) << 0
   if (level > meter.level) {
     readline.cursorTo(process.stdout, X_ORIGIN + meter.level, meter.line)
     process.stdout.write(createBar(meter.level, level))

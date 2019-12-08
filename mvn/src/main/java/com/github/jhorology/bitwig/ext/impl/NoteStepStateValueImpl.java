@@ -26,12 +26,15 @@ package com.github.jhorology.bitwig.ext.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 
 // bitwig api
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.controller.api.Clip;
+
+// provided dependencies
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 // source
 import com.github.jhorology.bitwig.ext.NoteStepState;
@@ -43,8 +46,8 @@ import com.github.jhorology.bitwig.ext.api.CollectionValue;
  */
 class NoteStepStateValueImpl implements CollectionValue<NoteStepState> {
     private final List<ObjectValueChangedCallback<NoteStepState>> callbacks;
-    private final Set<NoteStepState> values;
-    private boolean subscribed;
+    private final Map<ImmutablePair<Integer, Integer>, NoteStepState> values;
+    private int subscribeCount;
 
     /**
      * Constructor.
@@ -52,51 +55,76 @@ class NoteStepStateValueImpl implements CollectionValue<NoteStepState> {
      */
     NoteStepStateValueImpl(Clip clip, int gridWidth, int gridHeight) {
         callbacks = new ArrayList<>();
-        values = new HashSet<>();
+        values = new HashMap<>();
         clip.addStepDataObserver(this::notifyNoteStepState);
     }
     
     @Override
     public Collection<NoteStepState> values() {
-        return values;
+        return values.values();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void markInterested() {
         subscribe();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addValueObserver(ObjectValueChangedCallback<NoteStepState> callback) {
         callbacks.add(callback);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+        }
     }
     
     private void notifyNoteStepState(int x, int y, int state) {
-        NoteStepState noteStepState =  new NoteStepState(x, y);
-        noteStepState.setState(state);
-        values.add(noteStepState);
-        if (subscribed) {
-            callbacks.forEach(c -> c.valueChanged(noteStepState));
+        ImmutablePair<Integer, Integer> key = ImmutablePair.of(x, y);
+        NoteStepState v = values.get(key);
+        if (v == null) {
+            v = new NoteStepState(x, y);
+            values.put(key, v);
+        }
+        v.setState(state);
+        if (isSubscribed()) {
+            final NoteStepState value = v;
+            callbacks.forEach(c -> c.valueChanged(value));
         }
     }
 }

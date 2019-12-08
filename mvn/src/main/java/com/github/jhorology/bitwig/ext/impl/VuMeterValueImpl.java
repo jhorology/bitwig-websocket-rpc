@@ -41,7 +41,7 @@ public class VuMeterValueImpl implements VuMeterValue {
     private final Channel channel;
     private final List<VuMeterLevel> values;
     private final List<ObjectValueChangedCallback<VuMeterLevel>> callbacks;
-    private boolean subscribed;
+    private int subscribeCount = 0;
     
     VuMeterValueImpl(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
         this.channel = channel;
@@ -97,15 +97,15 @@ public class VuMeterValueImpl implements VuMeterValue {
      */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
     }
 
     /**
@@ -113,7 +113,7 @@ public class VuMeterValueImpl implements VuMeterValue {
      */
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
     }
 
     /**
@@ -121,7 +121,9 @@ public class VuMeterValueImpl implements VuMeterValue {
      */
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+        }
     }
 
     @Override
@@ -138,15 +140,18 @@ public class VuMeterValueImpl implements VuMeterValue {
         });
     }
     
-    
     /**
      * Notify observed values to observers.
      */
     void notifyValues() {
-        values().stream().forEach(this::notifyValue);
+        if (isSubscribed()) {
+            values().stream().forEach(this::notifyValue);
+        }
     }
     
     private void notifyValue(VuMeterLevel v) {
-        callbacks.stream().forEach(cb -> cb.valueChanged(v));
+        if (isSubscribed()) {
+            callbacks.stream().forEach(cb -> cb.valueChanged(v));
+        }
     }
 }

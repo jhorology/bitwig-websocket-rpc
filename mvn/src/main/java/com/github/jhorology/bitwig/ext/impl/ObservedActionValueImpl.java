@@ -33,43 +33,44 @@ import java.util.stream.Stream;
 
 // bitwig API
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
+import com.bitwig.extension.controller.api.Action;
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.BooleanValue;
 
 // source
 import com.github.jhorology.bitwig.ext.IdValuePair;
 import com.github.jhorology.bitwig.ext.api.ObservedActionValue;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 
 /**
  * An implementation of Value that reports observed direct parameter.
  */
 public class ObservedActionValueImpl implements ObservedActionValue {
-    private final Map<String, BooleanValue> enabledBooleanValues;
-    private Map<String, IdValuePair<String, Boolean>> observedValues;
+    private final Application application;
+    private final Map<String, IdValuePair<String, Boolean>> observedValues;
     private final List<ObjectValueChangedCallback<IdValuePair<String, Boolean>>> callbacks;
-    private boolean subscribed;
+    private int subscribeCount = 0;
 
     /**
      * Constructor.
      * @param name
      */
     ObservedActionValueImpl(Application application) {
+        this.application = application;
         this.callbacks = new ArrayList<>();
-        this.observedValues = Collections.emptyMap();
-        this.enabledBooleanValues = Stream.of(application.getActions())
-             .collect(Collectors.toMap(a -> a.getId(), a -> {
-                 BooleanValue isEnabled = a.isEnabled();
-                 isEnabled.addValueObserver((boolean b) -> {
-                     IdValuePair<String, Boolean> v = observedValues.get(a.getId());
-                     if (v != null) {
-                         v.setValue(b);
-                         notifyValue(v);
-                     }
-                 });
-                 return isEnabled;
-             }));
+        this.observedValues = new HashMap<>();
+        Stream.of(application.getActions()).forEach(action -> {
+            action.isEnabled().addValueObserver((boolean b) -> {
+                IdValuePair<String, Boolean> v = observedValues.get(action.getId());
+                if (v != null) {
+                    v.setValue(b);
+                    notifyValue(v);
+                }
+             });
+        });
     }
 
     /**
@@ -77,23 +78,42 @@ public class ObservedActionValueImpl implements ObservedActionValue {
      */
     @Override
     public void setObservedIds(String[] ids) {
-        observedValues.values().forEach(o -> {
-            BooleanValue v = enabledBooleanValues.get(o.getId());
-            if (v != null) {
-                v.unsubscribe();
+        if (ids == null) {
+            observedValues.values().forEach(v -> {
+                Action action = application.getAction(v.getId());
+                if (action != null && action.isEnabled().isSubscribed()) {
+                    action.isEnabled().unsubscribe();
+                }
+            });
+            observedValues.clear();
+            return;
+        }
+        List<IdValuePair<String, Boolean>> dells = new ArrayList<>();
+        List<String> observerdIds = Arrays.asList(ids);
+        observedValues.values().forEach(v -> {
+            if (!observerdIds.contains(v.getId())) {
+               dells.add(v);
             }
         });
-        if (ids != null) {
-            observedValues = Stream.of(ids)
-                .collect(Collectors.toMap(id -> id, id -> {
-                    BooleanValue v = enabledBooleanValues.get(id);
-                    if (v != null) {
-                        v.subscribe();
-                    }
-                    return new IdValuePair<>(id, v !=  null ? v.get() : false);
-                }));
-        }
-        if (subscribed) {
+        dells.forEach(v -> {
+           Action action = application.getAction(v.getId());
+           if (action != null && action.isEnabled().isSubscribed()) {
+               action.isEnabled().unsubscribe();
+            }
+            observedValues.remove(v.getId());
+        });
+
+        observerdIds.forEach(id -> {
+            if (!observedValues.keySet().contains(id)) {
+                Action action = application.getAction(id);
+                if (action != null) {
+                    action.isEnabled().subscribe();
+                    observedValues.put(id, new IdValuePair<>(id, action.isEnabled().get()));
+                }
+            }
+        });
+        
+        if (isSubscribed()) {
             notifyValues();
         }
     }
@@ -103,7 +123,11 @@ public class ObservedActionValueImpl implements ObservedActionValue {
      */
     @Override
     public boolean isEnabled(String id) {
-        return enabledBooleanValues.get(id).get();
+        Action action = application.getAction(id);
+        if (action != null) {
+            return action.isEnabled().get();
+        }
+        return false;
     }
 
     /**
@@ -127,16 +151,15 @@ public class ObservedActionValueImpl implements ObservedActionValue {
      */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        this.subscribed = subscribed;
-        setObservedIds(null);
     }
 
     /**
@@ -144,7 +167,7 @@ public class ObservedActionValueImpl implements ObservedActionValue {
      */
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
     }
 
     /**
@@ -152,7 +175,12 @@ public class ObservedActionValueImpl implements ObservedActionValue {
      */
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+            if (subscribeCount == 0) {
+                setObservedIds(null);
+            }
+        }
     }
 
     /**
@@ -171,7 +199,7 @@ public class ObservedActionValueImpl implements ObservedActionValue {
     }
 
     private void notifyValue(IdValuePair<String, Boolean> v) {
-        if (subscribed) {
+        if (isSubscribed()) {
             callbacks.stream().forEach(cb -> cb.valueChanged(v));
         }
     }

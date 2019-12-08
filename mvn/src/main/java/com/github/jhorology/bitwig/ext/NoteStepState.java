@@ -22,8 +22,10 @@
  */
 package com.github.jhorology.bitwig.ext;
 
-// dependencies
+// provided dependencies
 import com.google.common.base.Objects;
+
+// dependencies
 import com.google.gson.annotations.Expose;
 
 /**
@@ -79,29 +81,5 @@ public class NoteStepState {
      */
     public void setState(int state) {
         this.state = state;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(x, y);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean equals(Object other) {
-        return Objects.equal(this, other);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return null;
     }
 }

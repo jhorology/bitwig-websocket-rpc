@@ -34,7 +34,7 @@ import com.bitwig.extension.controller.api.StringArrayValue;
  * An implementation of Value that reports all of device parameter id. 
  */
 public class DirectParameterIdArrayValueImpl implements StringArrayValue {
-    private boolean subscribed;
+    private int subscribeCount;
     private String[] ids;
     private final List<ObjectValueChangedCallback<String[]>> callbacks;
     
@@ -43,6 +43,7 @@ public class DirectParameterIdArrayValueImpl implements StringArrayValue {
      * @param device 
      */
     DirectParameterIdArrayValueImpl() {
+        ids = new String[0];
         this.callbacks = new ArrayList<>();
     }
 
@@ -67,17 +68,24 @@ public class DirectParameterIdArrayValueImpl implements StringArrayValue {
      */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        boolean on = subscribed && !this.subscribed;
-        this.subscribed = subscribed;
-        if (on && ids != null) {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void subscribe() {
+        subscribeCount++;
+        if (subscribeCount == 1 && ids != null) {
             valueChanged(ids);
         }
     }
@@ -86,16 +94,10 @@ public class DirectParameterIdArrayValueImpl implements StringArrayValue {
      * {@inheritDoc}
      */
     @Override
-    public void subscribe() {
-        setIsSubscribed(true);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+        }
     }
 
     /**
@@ -111,11 +113,10 @@ public class DirectParameterIdArrayValueImpl implements StringArrayValue {
      * @param ids 
      */
     void valueChanged(String[] ids) {
-        if (subscribed) {
+        this.ids = ids != null ? ids : new String[0];
+        if (isSubscribed()) {
             callbacks.stream().forEach(cb -> cb.valueChanged(ids));
-            this.ids = null;
-        } else {
-            this.ids = ids;
         }
+        this.ids = ids;
     }
 }
