@@ -7,11 +7,11 @@ import Transport from './Transport'
 @observer
 class Page extends React.Component {
   componentDidMount() {
-    this.props.store.start()
+    this.props.store.connect()
   }
 
   componentWillUnmount() {
-    this.props.store.stop()
+    this.props.store.disconnect()
   }
 
   render() {
@@ -19,11 +19,9 @@ class Page extends React.Component {
       <div>
         <h1>{this.props.title}</h1>
         <Transport
-          bars={this.props.store.bars}
-          beats={this.props.store.beats}
-          ticks={this.props.store.ticks}
-          remainder={this.props.store.remainder}
-        />
+          onClickPlay={this.props.store.togglePlay}
+          onClickStop={this.props.store.stop}
+          {...this.props.store.transport}/>
         <nav>
           <Link href={this.props.linkTo}>
             <a>Navigate</a>

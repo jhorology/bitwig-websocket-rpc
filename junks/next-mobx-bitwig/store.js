@@ -6,37 +6,69 @@ const isServer = typeof window === 'undefined'
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useStaticRendering(isServer)
 
+const events = [
+  'transport.getPosition',
+  'transport.isPlaying'
+]
 export class Store {
-  @observable bars = 0
-  @observable beats = 0
-  @observable ticks = 0
-  @observable remainder = 0
-
-  hydrate(serializedStore) {
+  @observable transport = {
+    bars: '',
+    beats: '',
+    ticks: '',
+    remainder: '',
+    playing: false
   }
 
-  @action start = () => {
+  hydrate(serializedStore) {
+    const {transport} = this
+    transport.bars = '---'
+    transport.beats = '-'
+    transport.ticks = '-'
+    transport.remainder = '--'
+    transport.playing = false
+  }
+
+  @action
+  connect = () => {
     const bws = new BitwigClient('ws://localhost:8887', {
-      traceLog: (objs) => console.log.apply(undefined, objs),
+      // traceLog: (objs) => console.log.apply(undefined, objs),
     })
-    bws.connect(1000)
+    bws.connect(-1)
       .then(() => {
-        bws.subscribe(['transport.getPosition'])
+        bws.subscribe(events)
         bws.on('transport.getPosition', params => {
-          this.bars = params.bars
-          this.beats = params.beats
-          this.ticks = params.ticks
-          this.remainder = params.remainder
+          const {transport} = this
+          transport.bars = params.bars
+          transport.beats = params.beats
+          transport.ticks = params.ticks
+          transport.remainder = params.remainder
+        })
+        bws.on('transport.isPlaying', params => {
+          this.transport.playing = params[0]
         })
         this.bws = bws
       })
   }
 
+  togglePlay = () => {
+    if (this.bws && this.bws.isOpen) {
+      this.bws.notify(this.playing ? 'transport.pause' : 'transport.play')
+    }
+  }
+  
   stop = () => {
+    if (this.bws && this.bws.isOpen) {
+      this.bws.notify(this.playing ? 'transport.pause' : 'transport.stop')
+    }
+  }
+
+  disconnect = () => {
     const bws = this.bws
     if (bws !== undefined) {
-      bws.unsubscribe(['transport.getPosition'])
-        .then(() => bws.close())
+      this.bws = undefined
+      if (bws.isOpen || bws.isConnecting) {
+        bws.close()
+      }
     }
   }
 }
