@@ -7,6 +7,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "bitwig-websocket-rpc": "file:../..",
     "mobx": "^5.15.0",
     "mobx-react": "^6.1.4",
     "next": "latest",

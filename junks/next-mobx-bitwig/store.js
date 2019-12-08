@@ -1,33 +1,46 @@
 import { action, observable } from 'mobx'
 import { useStaticRendering } from 'mobx-react'
+import { BitwigClient } from 'bitwig-websocket-rpc'
 
 const isServer = typeof window === 'undefined'
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useStaticRendering(isServer)
 
 export class Store {
-  @observable lastUpdate = 0
-  @observable light = false
+  @observable bars = 0
+  @observable beats = 0
+  @observable ticks = 0
+  @observable remainder = 0
 
   hydrate(serializedStore) {
-    this.lastUpdate =
-      serializedStore.lastUpdate != null
-        ? serializedStore.lastUpdate
-        : Date.now()
-    this.light = !!serializedStore.light
   }
 
   @action start = () => {
-    this.timer = setInterval(() => {
-      this.lastUpdate = Date.now()
-      this.light = true
-    }, 1000)
+    const bws = new BitwigClient('ws://localhost:8887', {
+      traceLog: (objs) => console.log.apply(undefined, objs),
+    })
+    bws.connect(1000)
+      .then(() => {
+        bws.subscribe(['transport.getPosition'])
+        bws.on('transport.getPosition', params => {
+          this.bars = params.bars
+          this.beats = params.beats
+          this.ticks = params.ticks
+          this.remainder = params.remainder
+        })
+        this.bws = bws
+      })
   }
 
-  stop = () => clearInterval(this.timer)
+  stop = () => {
+    const bws = this.bws
+    if (bws !== undefined) {
+      bws.unsubscribe(['transport.getPosition'])
+        .then(() => bws.close())
+    }
+  }
 }
 
 export async function fetchInitialStoreState() {
-  // You can do anything to fetch initial store state
   return {}
 }

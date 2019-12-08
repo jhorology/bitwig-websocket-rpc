@@ -8,7 +8,6 @@ target/
 build/
 dist/
 temp/
-components/
 node_modules/
 .classpath
 .project
@@ -17,9 +16,9 @@ nbaction.xml
 nb-configuration.xml
 rpc-implementation-spec.json
 try-and-error.coffee
-/.idea/
-/node_modules/
-/.next/
+.idea/
+node_modules/
+.next/
 .eslintcache
 coverage
 .vscode
