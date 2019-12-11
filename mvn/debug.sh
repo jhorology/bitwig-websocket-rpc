@@ -33,10 +33,9 @@ case "`uname`" in
         else
             # TODO not tested yet
             PLATFORM="Linux"
-            # /opt ?
             BITWIG_STUDIO="/usr/bin/bitwig-studio"
             USER_HOME="$HOME"
-            # BITWIG_STUDIO_PREFS="${HOME}/hogehoge/${BITWIG_VERSION}.prefs"
+            BITWIG_STUDIO_PREFS="${HOME}/.BitwigStudio/prefs/${BITWIG_VERSION}.prefs"
         fi
         ;;
     Darwin*)

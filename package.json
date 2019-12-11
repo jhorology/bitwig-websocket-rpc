@@ -16,7 +16,7 @@
     "prod:build:api-10": "cd mvn && mvn -P production,extension-api-10 clean package",
     "prod:build": "run-s prod:build:**",
     "prod:install": "bin/bws-rpc install --api 10",
-    "prod:debug": "mvn/debug.sh",
+    "prod:debug": "mvn/debug.sh -clean",
     "start": "run-s prod:build:api-10 prod:install prod:debug",
     "test:build:browser": "mkdir -p test/build && browserify -t coffeeify --extension=\".coffee\" test/test-suite.coffee > test/build/test-suite.js",
     "test:cli": "mocha --require coffeescript/register test/*.spec.coffee -s 0",
