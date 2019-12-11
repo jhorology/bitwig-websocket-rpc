@@ -1,4 +1,5 @@
-//#excludeif bitwig.extension.api.version < 10
+// TODO Action#isEnabled() is dead in 3.1 Beta 4.
+//#excludeif bitwig.extension.api.version < 99
 /*
  * Copyright (c) 2019 Masafumi Fujimaru
  *

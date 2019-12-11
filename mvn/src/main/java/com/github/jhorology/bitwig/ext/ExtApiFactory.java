@@ -32,7 +32,8 @@ import com.bitwig.extension.controller.api.Device;
 import com.bitwig.extension.controller.api.Track;
 import com.github.jhorology.bitwig.Config;
 
-//#if bitwig.extension.api.version >= 10
+// TODO Action#isEnabled() is dead at 3.1 Beta 4
+//#if bitwig.extension.api.version >= 99
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 //#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
@@ -72,7 +73,8 @@ public class ExtApiFactory implements ExtApi {
      * @return a extended api class
      */
     public static Class<?> getExtApiInterface(Config config, Class<?> bitwigApi) {
-        //#if bitwig.extension.api.version >= 10
+        // TODO Action#isEnabled() is dead at 3.1 Beta 4
+        //#if bitwig.extension.api.version >= 99
         if (Application.class.isAssignableFrom(bitwigApi)) {
             return ApplicationExt.class;
         }
@@ -135,7 +137,8 @@ public class ExtApiFactory implements ExtApi {
         this.factory = factory;
     }
 
-    //#if bitwig.extension.api.version >= 10
+    // TODO Action#isEnabled() is dead at 3.1 Beta 4
+    //#if bitwig.extension.api.version >= 99
     /**
      * {@inheritDoc}
      */
@@ -173,17 +176,21 @@ public class ExtApiFactory implements ExtApi {
     }
 
     protected static Object newExtApiInstance(Config config, Class<?> bitwigApiInterface, Object bitwigApiInstance) {
-        //#if bitwig.extension.api.version >= 10
+        // TODO Acation#isEnabled() is dead at 3.1 Beta 4
+        //#if bitwig.extension.api.version > 99
         if (Application.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createApplicationExt((Application)bitwigApiInstance);
         }
         //#endif
 
-        // TODO how to find Clip is Arranger or Launcher.
+        // TODO a little dirty way
+        boolean arranger = bitwigApiInstance.getClass().getSimpleName().contains("Arranger");
         if (Clip.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createClipExt((Clip)bitwigApiInstance,
-                                               config.getLauncherCursorClipGridWidth(),
-                                               config.getLauncherCursorClipGridHeight());
+                                               arranger ? config.getArrangerCursorClipGridWidth()
+                                                        : config.getLauncherCursorClipGridWidth(),
+                                               arranger ? config.getArrangerCursorClipGridHeight()
+                                                        : config.getLauncherCursorClipGridHeight());
         }
         if (Device.class.isAssignableFrom(bitwigApiInterface)) {
             return getInstance().createDeviceExt((Device)bitwigApiInstance);

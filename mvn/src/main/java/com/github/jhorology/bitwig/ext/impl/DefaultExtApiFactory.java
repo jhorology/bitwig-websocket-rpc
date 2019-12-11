@@ -29,7 +29,9 @@ import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.Device;
 
 // source
-//#if bitwig.extension.api.version >= 10
+
+// TODO Action#isEnabled() is dead at 3.1 Beta 4
+//#if bitwig.extension.api.version >= 99
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 //#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
@@ -44,7 +46,8 @@ import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
  * @author masafumi
  */
 public class DefaultExtApiFactory implements ExtApi {
-    //#if bitwig.extension.api.version >= 10
+    // TODO Action#isEnabled() is dead at 3.1 Beta 4
+    //#if bitwig.extension.api.version >= 99
     /**
      * {@inheritDoc}
      */

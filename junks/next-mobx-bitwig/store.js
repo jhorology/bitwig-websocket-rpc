@@ -6,53 +6,42 @@ const isServer = typeof window === 'undefined'
 // eslint-disable-next-line react-hooks/rules-of-hooks
 useStaticRendering(isServer)
 
-const events = [
-  'transport.getPosition',
-  'transport.isPlaying'
-]
 export class Store {
-  @observable transport = {
-    bars: '',
-    beats: '',
-    ticks: '',
-    remainder: '',
+  @observable.shallow transport = {
+    postion: undefined,
     playing: false
   }
-
+  @observable connected = false
+  
   hydrate(serializedStore) {
-    const {transport} = this
-    transport.bars = '---'
-    transport.beats = '-'
-    transport.ticks = '-'
-    transport.remainder = '--'
-    transport.playing = false
   }
 
-  @action
-  connect = () => {
+  connect = async () => {
     const bws = new BitwigClient('ws://localhost:8887', {
       // traceLog: (objs) => console.log.apply(undefined, objs),
     })
-    bws.connect(-1)
-      .then(() => {
-        bws.subscribe(events)
-        bws.on('transport.getPosition', params => {
-          const {transport} = this
-          transport.bars = params.bars
-          transport.beats = params.beats
-          transport.ticks = params.ticks
-          transport.remainder = params.remainder
-        })
-        bws.on('transport.isPlaying', params => {
-          this.transport.playing = params[0]
-        })
-        this.bws = bws
+    this.bws = bws
+    while(this.bws) {
+      await bws.connect(-1)
+      await bws.config({
+        useTransport: true
       })
+      this.connected = true
+      bws.subscribe([
+        'transport.getPosition',
+        'transport.isPlaying'
+      ])
+      bws.on('transport.getPosition', params => this.transport.position = params)
+      bws.on('transport.isPlaying', params => this.transport.playing = params[0])
+      await bws.event('close').occur().asPromised()
+      this.transport.position = undefined
+      this.connected = false
+    }
   }
 
   togglePlay = () => {
     if (this.bws && this.bws.isOpen) {
-      this.bws.notify(this.playing ? 'transport.pause' : 'transport.play')
+      this.bws.notify(this.playing ? 'transport.pause' : 'transport.continuePlayback')
     }
   }
   
@@ -66,9 +55,7 @@ export class Store {
     const bws = this.bws
     if (bws !== undefined) {
       this.bws = undefined
-      if (bws.isOpen || bws.isConnecting) {
-        bws.close()
-      }
+      bws.close()
     }
   }
 }

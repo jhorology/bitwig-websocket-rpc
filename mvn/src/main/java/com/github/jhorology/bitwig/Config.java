@@ -60,6 +60,8 @@ public class Config extends AbstractConfiguration {
     @Expose
     private boolean useApplication;
     @Expose
+    private boolean useProject;
+    @Expose
     private boolean useTransport;
     @Expose
     private boolean useArranger;
@@ -234,6 +236,14 @@ public class Config extends AbstractConfiguration {
         return useApplication;
     }
 
+    /**
+     * Returns a configuration value of the use or not use Application API.
+     * @return
+     */
+    public boolean useProject() {
+        return useProject;
+    }
+    
     /**
      * Returns a configuration value of the use or not use Transport API.
      * @return
@@ -803,6 +813,11 @@ public class Config extends AbstractConfiguration {
                         this::useApplication,
                         v -> {useApplication = v;});
 
+        // --> Project
+        addBoolPrefItem("Use", "Project",
+                        this::useProject,
+                        v -> {useProject = v;});
+        
         // --> Transport
         addBoolPrefItem("Use", "Transport",
                         this::useTransport,

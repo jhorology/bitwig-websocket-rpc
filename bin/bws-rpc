@@ -65,9 +65,8 @@ program
   .command('events')
   .description('Monitor events.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-m, --module <modules>', 'comma separated module names.')
+  .option('-m, --module <modules>', 'filter events with specified modules(comma separated module names).')
   .option('-r, --reconnect', 'keep attempting to reconnect.')
-  .option('-n, --unpack-params', 'use client library with options.unpackEventParams = true.')
   .action(_execCommand(eventsCommand))
 
 program
@@ -265,9 +264,8 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = new BitwigClient(options.url, {
-    unpackEventParams: options.unpackParams
-  }), modules = options.module ? options.module.split(',') : undefined
+  const ws = new BitwigClient(options.url),
+        modules = options.module ? options.module.split(',') : undefined
   let first = true
   while (options.reconnect || first) {
     first = false
@@ -287,9 +285,7 @@ async function eventsCommand(options) {
           return modules.some(m => s.startsWith(`${m}.`))
         }).map(e => e.event)
       events.forEach((e) => {
-        ws.on(e, function() {
-          console.log(Date.now() - startTime, '|', e, '|', arguments)
-        })
+        ws.on(e, (params) => console.log(Date.now() - startTime, '|', e, '|', params))
       })
       await ws.subscribe(events, 50000)
       // infinite wait until close

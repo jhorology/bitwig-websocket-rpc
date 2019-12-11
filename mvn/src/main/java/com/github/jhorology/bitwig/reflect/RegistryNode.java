@@ -243,9 +243,7 @@ abstract class RegistryNode {
         methodStream = methodStream
             .filter(m -> !Color.class.equals(m.getReturnType()));
 
-        // TODO since API10 uhmmmm..., but I need this.
-        //   - need to support that intermediate node of event has arguments other than bank indexes.
-        //   - BooleanValue applocation.getActions(id).isEnabled();
+        // move to ApplicationExt#observerdAction
         if (Action.class.isAssignableFrom(nodeType)) {
             methodStream = methodStream
                 .filter(m -> !"isEnabled".equals(m.getName()));

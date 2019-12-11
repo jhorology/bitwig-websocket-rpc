@@ -32,7 +32,8 @@ import com.bitwig.extension.controller.api.Device;
  * An abstract factory interface for extended API.
  */
 public interface ExtApi {
-    //#if bitwig.extension.api.version >= 10
+    // TODO Action#isEnabled() is dead at 3.1 Beta 4
+    //#if bitwig.extension.api.version >= 99
     /**
      * create an instance of extended Application API.
      * @param application the instance of base application

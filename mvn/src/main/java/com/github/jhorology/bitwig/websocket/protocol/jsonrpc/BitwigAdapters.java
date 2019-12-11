@@ -152,7 +152,8 @@ public class BitwigAdapters {
             JsonObject json = new JsonObject();
             json.addProperty("id", src.getId());
             json.addProperty("name", src.getName());
-            //#if bitwig.extension.api.version >= 10
+            // TODO Action#isEnabled() is dead at 3.1 Beta 4
+            //#if false
             json.addProperty("enabled", src.isEnabled().get());
             //#endif
             json.add("category", context.serialize(src.getCategory(), ActionCategory.class));
@@ -344,7 +345,7 @@ public class BitwigAdapters {
             json.addProperty("pan", src.pan());
             json.addProperty("timbre", src.timbre());
             json.addProperty("pressure", src.pressure());
-            json.addProperty("volume", src.volume());
+            json.addProperty("gain", src.gain());
             json.addProperty("transpose", src.transpose());
             json.addProperty("selected", src.isIsSelected());
             return json;

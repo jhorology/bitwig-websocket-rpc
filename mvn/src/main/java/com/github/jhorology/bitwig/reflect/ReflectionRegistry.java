@@ -58,6 +58,7 @@ import com.bitwig.extension.controller.api.MasterTrack;
 import com.bitwig.extension.controller.api.Mixer;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.PopupBrowser;
+import com.bitwig.extension.controller.api.Project;
 import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.SendBank;
 import com.bitwig.extension.controller.api.Track;
@@ -143,6 +144,12 @@ public class ReflectionRegistry implements RpcRegistry {
             register("application",
                      Application.class,
                      application);
+        }
+        if (config.useProject()) {
+            Project project = host.getProject();
+            register("project",
+                     Project.class,
+                     project);
         }
         if (config.useTransport()) {
             Transport transport = host.createTransport();
