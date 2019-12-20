@@ -54,17 +54,31 @@ import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import java.net.SocketException;
+import java.util.UUID;
 
 /**
  *
  */
 public class SsdpAdvertisement implements SsdpPacketListener {
     private static final Logger LOG = LoggerFactory.getLogger(SsdpAdvertisement.class);
+    // https://cloud.tencent.com/developer/article/1011721
+    private static byte[][] VIRTUAL_HARDWARE_ADDRESSES = {
+            {0x00, 0x05, 0x69},             // VMWare
+            {0x00, 0x1C, 0x14},             // VMWare
+            {0x00, 0x0C, 0x29},             // VMWare
+            {0x00, 0x50, 0x56},             // VMWare
+            {0x08, 0x00, 0x27},             // Virtualbox
+            {0x0A, 0x00, 0x27},             // Virtualbox
+            {0x00, 0x03, (byte)0xFF},       // Virtual-PC
+            {0x00, 0x15, 0x5D}              // Hyper-V
+    };
     private String serviceType;
     private SsdpService ssdpService;
     private Config config;
     private ControllerHost host;
     private AbstractExtensionDefinition<Config> definition;
+    private String usn;
     
     @Subscribe
     public void onInit(InitEvent<Config> e) {
@@ -72,8 +86,9 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         definition = e.getDefinition();
         host = e.getHost();
         serviceType = String.format("urn:bitwig-websocket-rpc:service:%s:%s",
-                config.getRpcProtocol(),
+                config.getRpcProtocol().getDisplayName().toLowerCase(),
                 definition.getVersion());
+        usn = "uuid:" + UUID.randomUUID().toString();
         final List<NetworkInterface> nics = new ArrayList<>();
         try {
             Enumeration<NetworkInterface> nicEnum = NetworkInterface.getNetworkInterfaces();
@@ -81,6 +96,8 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                 NetworkInterface nic = nicEnum.nextElement();
                 if (nic.isUp()
                     && nic.supportsMulticast()
+                    && !nic.isVirtual() 
+                    && !isVirtualNic(nic) // Hyper-V virtual adapter
                     && !nic.getName().startsWith("utun") // macos VPN interface
                     && nic.inetAddresses().anyMatch(a -> a instanceof Inet4Address && a.isSiteLocalAddress())) {
                     nics.add(nic);
@@ -162,7 +179,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         if (mType == SsdpMessageType.NOTIFY) {
             message.setHeader(SsdpCommonHeaders.NTS.name(), nType.getRepresentation());
         }
-        message.setHeader("USN", "uuid:" + definition.getId().toString());
+        message.setHeader("USN", usn);
         if (mType == SsdpMessageType.RESPONSE || nType == SsdpNotificationType.ALIVE) {
             message.setHeader("CACHE-CONTROL", "max-age = 7200");
             message.setHeader("EXTENSION", definition.getName());
@@ -179,7 +196,23 @@ public class SsdpAdvertisement implements SsdpPacketListener {
             .findFirst()
             .orElse(null);
         return addr != null 
-            ? String.format("ws://%s:%d", addr.getHostName(), config.getWebSocketPort())
+            ? String.format("ws://%s:%d", addr.getHostAddress(), config.getWebSocketPort())
             : null;
+    }
+    
+    // https://cloud.tencent.com/developer/article/1011721
+    private boolean isVirtualNic(NetworkInterface nic) throws SocketException {
+        byte[] macAddress = nic.getHardwareAddress();
+        if(null == macAddress || macAddress.length < 3) {
+            return true;
+        }
+        for (byte[] virtualMac: VIRTUAL_HARDWARE_ADDRESSES){
+            if (virtualMac[0] == macAddress[0]
+                && virtualMac[1] == macAddress[1]
+                && virtualMac[2] == macAddress[2]) {
+                return true;
+            }
+        }
+        return false;
     }
 }

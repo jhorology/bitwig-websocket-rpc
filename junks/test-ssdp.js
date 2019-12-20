@@ -1,8 +1,7 @@
 const {Server, Client} = require('node-ssdp'),
       server = new Server(),
-      client = new Client()
-      
-
+      client = new Client(),
+      SERVICE_TYPE = 'urn:bitwig-websocket-rpc:service:json-rpc 2.0:0.2.0-SNAPSHOT'
 
 server.addUSN('upnp:rootdevice')
 server.addUSN('urn:schemas-upnp-org:device:MediaServer:1')
@@ -46,6 +45,6 @@ client.search('ssdp:all')
 
 setInterval(() => {
   // search for WebSocketRpcServer API10
-  console.log('## searching:', 'urn:bitwig-websocket-rpc:service:JSONRPC20:0.2.0-SNAPSHOT')
-  client.search('urn:bitwig-websocket-rpc:service:JSONRPC20:0.2.0-SNAPSHOT')
+  console.log('## searching:', SERVICE_TYPE)
+  client.search(SERVICE_TYPE)
 }, 5000)
