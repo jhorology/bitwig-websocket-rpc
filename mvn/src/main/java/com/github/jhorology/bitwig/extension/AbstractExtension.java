@@ -129,8 +129,8 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
             }
             eventBus.post(initEvent);
             LOG.trace("Extension has been initialized.");
-        } catch (Exception ex) {
-            LOG.error("Error registering extension modules.", ex);
+        } catch (Throwable ex) {
+            LOG.error("init() error.", ex);
         }
     }
     
@@ -140,8 +140,11 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     @Override
     public void exit() {
         // trigger synchronous event
-        eventBus.post(exitEvent);
-        
+        try {
+            eventBus.post(exitEvent);
+        } catch (Throwable ex) {
+            LOG.error("exit() error.", ex);
+        }
         // unregister modules
         while(!extensionModules.empty()) {
             eventBus.unregister(extensionModules.pop());

@@ -66,12 +66,12 @@ public class ScriptConsoleLogger
     private static ControllerHost host;
     private static Thread controlSurfaceSession;
     private static List<StringValueChangedCallback> subscribers;
-    private static boolean subscribed;
     private static Queue<String> tailMessages;
     private static boolean reentrantLock;
     private static int indentColumnSize;
     private static LogSeverity globalLogLevel;
     private static boolean outputSystemConsole;
+    private int subscribeCount;
 
     static void lazyInit() {
         if (INITIALIZED) {
@@ -496,7 +496,7 @@ public class ScriptConsoleLogger
      */
     @Override
     public boolean isSubscribed() {
-        return subscribed;
+        return subscribeCount > 0;
     }
 
     /**
@@ -504,13 +504,8 @@ public class ScriptConsoleLogger
      * @param subscribed
      */
     @Override
+    @Deprecated
     public void setIsSubscribed(boolean subscribed) {
-        ScriptConsoleLogger.subscribed = subscribed;
-        // to knows tail messages
-        if (subscribed) {
-            // to let subscribers to know tail messages.
-            triggerValueChanged();
-        }
     }
 
     /**
@@ -518,7 +513,8 @@ public class ScriptConsoleLogger
      */
     @Override
     public void subscribe() {
-        setIsSubscribed(true);
+        subscribeCount++;
+        triggerValueChanged();
     }
 
     /**
@@ -526,7 +522,9 @@ public class ScriptConsoleLogger
      */
     @Override
     public void unsubscribe() {
-        setIsSubscribed(false);
+        if (subscribeCount > 0) {
+            subscribeCount--;
+        }
     }
 
     /**
@@ -767,7 +765,7 @@ public class ScriptConsoleLogger
             if (message != null) {
                 tailMessages.add(message);
             }
-            if (subscribed && !subscribers.isEmpty() && !tailMessages.isEmpty()) {
+            if (isSubscribed() && !subscribers.isEmpty() && !tailMessages.isEmpty()) {
                 String logMessage = tailMessages.poll();
                 while(logMessage != null) {
                     final String msg = logMessage;

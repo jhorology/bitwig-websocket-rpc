@@ -28,6 +28,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 // source
 import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.reflect.ReflectionRegistry;
+import com.github.jhorology.bitwig.ssdp.SsdpAdvertisement;
 import com.github.jhorology.bitwig.websocket.WebSocketRpcServer;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Protocols;
@@ -62,7 +63,8 @@ s     */
         return new Object[] {
             new WebSocketRpcServer(config.getWebSocketPort(),
                                    protocol, numWorkerThreads),
-            registry
+            registry,
+            new SsdpAdvertisement()
         };
     }
 }

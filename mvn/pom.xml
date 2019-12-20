@@ -223,6 +223,18 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.25</version>
     </dependency>
+	<dependency>
+	  <groupId>com.github.jhorology</groupId>
+	  <artifactId>nls-net-ssdp</artifactId>
+	  <version>0.1.3-mod-20191221</version>
+	</dependency>
+    <!--
+	<dependency>
+	  <groupId>com.9ls</groupId>
+	  <artifactId>nls-net-ssdp</artifactId>
+	  <version>0.1.3</version>
+	</dependency>
+    -->
   </dependencies>
 
   <build>
@@ -325,6 +337,10 @@
       <id>bitwig</id>
       <name>Bitwig Maven Repository</name>
       <url>https://maven.bitwig.com</url>
+    </repository>
+    <repository>
+	  <id>jitpack.io</id>
+	  <url>https://www.jitpack.io</url>
     </repository>
   </repositories>
 </project>
