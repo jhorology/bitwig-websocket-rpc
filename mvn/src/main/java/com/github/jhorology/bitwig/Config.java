@@ -52,6 +52,8 @@ public class Config extends AbstractConfiguration {
     @Expose(serialize = false)
     private Protocols rpcProtocol = Protocols.JSONRPC20;
     @Expose
+    private boolean ssdpEnabled = true;
+    @Expose
     private boolean useAbbreviatedMethodNames;
     //#if build.development
     @Expose
@@ -211,6 +213,14 @@ public class Config extends AbstractConfiguration {
         return rpcProtocol;
     }
 
+    /**
+     * Returns a whether the SSDP advertisement is enabled.
+     * @return
+     */
+    public boolean isSsdpEnabled() {
+        return ssdpEnabled;
+    }
+    
     /**
      * Returns a configuration value of the use or not use abbreviated method names.
      * @return
@@ -799,6 +809,10 @@ public class Config extends AbstractConfiguration {
                         this::getRpcProtocol,
                         v -> {rpcProtocol = v;});
 
+        addBoolPrefItem("SSDP Advertisement", WEBSOCKET_PREF_CATEGORY,
+                        this::isSsdpEnabled,
+                        v -> {ssdpEnabled = v;});
+        
         //#if build.development
         addIntPrefItem("Worker threads", WEBSOCKET_PREF_CATEGORY, INT_OPTIONS_4TO32,
                        this::getNumWorkerThreads,

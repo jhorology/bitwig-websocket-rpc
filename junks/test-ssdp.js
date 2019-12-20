@@ -9,21 +9,21 @@ server.addUSN('urn:schemas-upnp-org:service:ContentDirectory:1')
 server.addUSN('urn:schemas-upnp-org:service:ConnectionManager:1')
 
 server.on('advertise-alive', heads => {
-  if (heads.USN === 'uuid:11797f46-6987-4795-ba94-0a6a0c4e8ac5') {
+  if (heads.NT === SERVICE_TYPE) {
     console.log('## ssdp:alive '.padEnd(80, '='))
     console.log('heads:', heads)
   }
 })
 
 server.on('advertise-bye', heads => {
-  if (heads.USN === 'uuid:11797f46-6987-4795-ba94-0a6a0c4e8ac5') {
+  if (heads.NT === SERVICE_TYPE) {
     console.log('## ssdp:byebye '.padEnd(80, '='))
     console.log('heads:', heads)
   }
 })
 
 client.on('response', (heads, statusCode, rinfo) => {
-  if (heads.USN === 'uuid:11797f46-6987-4795-ba94-0a6a0c4e8ac5') {
+  if (heads.ST === SERVICE_TYPE) {
     console.log('## response '.padEnd(80, '='))
     console.log('heads:', heads, 'statusCode:', statusCode, 'rinfo:', rinfo)
   }

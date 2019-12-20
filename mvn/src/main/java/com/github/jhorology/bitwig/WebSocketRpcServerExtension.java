@@ -22,6 +22,10 @@
  */
 package com.github.jhorology.bitwig;
 
+// jdk
+import java.util.ArrayList;
+import java.util.List;
+
 // bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
 
@@ -51,6 +55,7 @@ s     */
      */
     @Override
     protected Object[] createModules() throws Exception {
+        List<Object> modules = new ArrayList<>();
         Config config = getConfig();
         ProtocolHandler protocol =
             Protocols.newProtocolHandler(config.getRpcProtocol());
@@ -59,12 +64,12 @@ s     */
         //#if build.production
         numWorkerThreads = Math.min(Runtime.getRuntime().availableProcessors(), numWorkerThreads);
         //#endif
-        // returns subscriber modules of extension event.
-        return new Object[] {
-            new WebSocketRpcServer(config.getWebSocketPort(),
-                                   protocol, numWorkerThreads),
-            registry,
-            new SsdpAdvertisement()
-        };
+        modules.add(new WebSocketRpcServer(config.getWebSocketPort(),
+                    protocol, numWorkerThreads));
+        modules.add(registry);
+        if (config.isSsdpEnabled()) {
+            modules.add(new SsdpAdvertisement());
+        }
+        return modules.toArray();
     }
 }
