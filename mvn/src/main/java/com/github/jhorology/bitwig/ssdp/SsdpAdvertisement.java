@@ -112,7 +112,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     
     @Subscribe
     public void onExit(ExitEvent<Config> e) {
-        SsdpMessage byebyeMessage = createMessage(SsdpMessageType.NOTIFY, SsdpNotificationType.ALIVE);
+        SsdpMessage byebyeMessage = createMessage(SsdpMessageType.NOTIFY, SsdpNotificationType.BYEBYE);
         ssdpService.getChannels().forEach(ch -> {
             try {
                 ch.send(byebyeMessage);
