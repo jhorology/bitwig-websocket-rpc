@@ -28,15 +28,18 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.UUID;
+import java.util.Map;
 
 // bitwig api
-import com.bitwig.extension.controller.api.ControllerHost;
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
+import java.util.HashMap;
 
 // dependenices
 import com.nls.net.ssdp.SsdpCommonHeaders;
@@ -51,11 +54,8 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.Config;
-import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
-import java.net.SocketException;
-import java.util.UUID;
 
 /**
  *
@@ -64,83 +64,94 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private static final Logger LOG = LoggerFactory.getLogger(SsdpAdvertisement.class);
     // https://cloud.tencent.com/developer/article/1011721
     private static byte[][] VIRTUAL_HARDWARE_ADDRESSES = {
-            {0x00, 0x05, 0x69},             // VMWare
-            {0x00, 0x1C, 0x14},             // VMWare
-            {0x00, 0x0C, 0x29},             // VMWare
-            {0x00, 0x50, 0x56},             // VMWare
-            {0x08, 0x00, 0x27},             // Virtualbox
-            {0x0A, 0x00, 0x27},             // Virtualbox
-            {0x00, 0x03, (byte)0xFF},       // Virtual-PC
-            {0x00, 0x15, 0x5D}              // Hyper-V
+        {0x00, 0x05, 0x69},             // VMWare
+        {0x00, 0x1C, 0x14},             // VMWare
+        {0x00, 0x0C, 0x29},             // VMWare
+        {0x00, 0x50, 0x56},             // VMWare
+        {0x08, 0x00, 0x27},             // Virtualbox
+        {0x0A, 0x00, 0x27},             // Virtualbox
+        {0x00, 0x03, (byte)0xFF},       // Virtual-PC
+        {0x00, 0x15, 0x5D}              // Hyper-V
     };
-    private String serviceType;
     private SsdpService ssdpService;
-    private Config config;
-    private ControllerHost host;
-    private AbstractExtensionDefinition<Config> definition;
+    private String serviceType;
     private String usn;
-    
+    private SsdpMessage byebyeMessage;
+    private Map<NetworkInterface, SsdpMessage> responses;
+
+    /**
+     * Handles the start of extension's liefe-cycle.
+     * @param e
+     */
     @Subscribe
     public void onInit(InitEvent<Config> e) {
-        config = e.getConfig();
-        definition = e.getDefinition();
-        host = e.getHost();
         serviceType = String.format("urn:bitwig-websocket-rpc:service:%s:%s",
-                config.getRpcProtocol().getDisplayName().toLowerCase(),
-                definition.getVersion());
+                                    e.getConfig().getRpcProtocol().getDisplayName().toLowerCase(),
+                                    e.getDefinition().getVersion());
         usn = "uuid:" + UUID.randomUUID().toString();
+
         final List<NetworkInterface> nics = new ArrayList<>();
+        responses = new HashMap<>();
         try {
             Enumeration<NetworkInterface> nicEnum = NetworkInterface.getNetworkInterfaces();
             while (nicEnum.hasMoreElements()) {
                 NetworkInterface nic = nicEnum.nextElement();
                 if (nic.isUp()
                     && nic.supportsMulticast()
-                    && !nic.isVirtual() 
-                    && !isVirtualNic(nic) // Hyper-V virtual adapter
-                    && !nic.getName().startsWith("utun") // macos VPN interface
-                    && nic.inetAddresses().anyMatch(a -> a instanceof Inet4Address && a.isSiteLocalAddress())) {
-                    nics.add(nic);
+                    && !isVirtualNic(nic)) {
+                    String location = createLocation(nic, e.getConfig().getWebSocketPort());
+                    if (location != null) {
+                        responses.put(nic, createResponse(e, location));
+                        nics.add(nic);
+                    }
                 }
             }
+            byebyeMessage = createNotification(e, SsdpNotificationType.BYEBYE);
+            
             ssdpService = new SsdpService(nics, this);
             ssdpService.listen();
-            
-            SsdpMessage aliveMessage = createMessage(SsdpMessageType.NOTIFY, SsdpNotificationType.ALIVE);
-            
+
+            // notify ssdp:alive
             ssdpService.getChannels().forEach(ch -> {
-                try {
-                    String location = createLocation(ch.getNetworkInterface());
-                    if (location != null) {
-                        aliveMessage.setHeader("LOCATION", location);
-                        ch.send(aliveMessage);
-                        if (LOG.isTraceEnabled()) {
-                            LOG.trace("multicascast notification[{}]", aliveMessage);
+                    try {
+                        String location = createLocation(ch.getNetworkInterface(), e.getConfig().getWebSocketPort());
+                        if (location != null) {
+                            SsdpMessage alive = createNotification(e, SsdpNotificationType.ALIVE, location);
+                            ch.send(alive);
+                            if (LOG.isTraceEnabled()) {
+                                LOG.trace("multicascast notification [{}]", alive);
+                            }
                         }
+                    } catch (IOException ex) {
+                        LOG.error("couldn't send message.", ex);
                     }
-                } catch (IOException ex) {
-                    LOG.error("couldn't send message.", ex);
-                }
-            });
+                });
         } catch (IOException ex) {
             LOG.error("SSDP initialize error.", ex);
         }
     }
-    
+
+    /**
+     * Handles the end of extension's liefe-cycle.
+     * @param e
+     */
     @Subscribe
     public void onExit(ExitEvent<Config> e) {
-        SsdpMessage byebyeMessage = createMessage(SsdpMessageType.NOTIFY, SsdpNotificationType.BYEBYE);
-        ssdpService.getChannels().forEach(ch -> {
-            try {
-                ch.send(byebyeMessage);
-                if (LOG.isTraceEnabled()) {
-                    LOG.trace("multicascast notification[{}]", byebyeMessage);
-                }
-            } catch (IOException ex) {
-                LOG.error("couldn't send message.", ex);
-            }
-        });
-        ssdpService.close();
+        // notify ssdp:byebye
+        try {
+            ssdpService.getChannels().forEach(ch -> {
+                    try {
+                        ch.send(byebyeMessage);
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("multicascast notification [{}]", byebyeMessage);
+                        }
+                    } catch (IOException ex) {
+                        LOG.error("couldn't send message.", ex);
+                    }
+                });
+        } finally {
+            ssdpService.close();
+        }
     }
 
     @Override
@@ -148,17 +159,15 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         SsdpMessage message = sp.getMessage();
         if (LOG.isTraceEnabled()) {
             LOG.trace("SSDP recieved message:[{}] socket address:[{}]",
-                       message.toString(),
-                       sp.getSocketAddress());
+                      message.toString(),
+                      sp.getSocketAddress());
         }
         if (message.getType() == SsdpMessageType.MSEARCH) {
             String st = message.getHeader("ST");
             if ("ssdp:all".equals(st) || serviceType.equals(st)) {
                 try {
-                    String location = createLocation(sp.getChannel().getNetworkInterface());
-                    if (location != null) {
-                        SsdpMessage response = createMessage(SsdpMessageType.RESPONSE, null);
-                        response.setHeader("LOCATION", location);
+                    SsdpMessage response = responses.get(sp.getChannel().getNetworkInterface());
+                    if (response != null) {
                         sp.getChannel().send(response, sp.getSocketAddress());
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("unicast response[{}] to [{}]", response, sp.getSocketAddress());
@@ -169,10 +178,22 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                 }
             }
         }
-        
+
+    }
+
+    private SsdpMessage createResponse(InitEvent<Config> e, String location) {
+        return createMessage(e, SsdpMessageType.RESPONSE, null, location);
     }
     
-    private SsdpMessage createMessage(SsdpMessageType mType, SsdpNotificationType nType) {
+    private SsdpMessage createNotification(InitEvent<Config> e, SsdpNotificationType nType) {
+        return createMessage(e, SsdpMessageType.NOTIFY, nType, null);
+    }
+
+    private SsdpMessage createNotification(InitEvent<Config> e, SsdpNotificationType nType, String location) {
+        return createMessage(e, SsdpMessageType.NOTIFY, nType, location);
+    }
+    
+    private SsdpMessage createMessage(InitEvent<Config> e, SsdpMessageType mType, SsdpNotificationType nType, String location) {
         SsdpMessage message = new SsdpMessage(mType);
         message.setHeader("HOST", "239.255.255.250:1900");
         message.setHeader(mType == SsdpMessageType.RESPONSE ? "ST" : "NT", serviceType);
@@ -182,26 +203,37 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         message.setHeader("USN", usn);
         if (mType == SsdpMessageType.RESPONSE || nType == SsdpNotificationType.ALIVE) {
             message.setHeader("CACHE-CONTROL", "max-age = 7200");
-            message.setHeader("EXTENSION", definition.getName());
-            message.setHeader("BITWIG-VERSION", host.getHostVersion());
-            message.setHeader("API-VERSION", String.valueOf(host.getHostApiVersion()));
-            message.setHeader("PLATFORM", host.getPlatformType().name());
+            message.setHeader("EXTENSION", e.getDefinition().getName());
+            message.setHeader("BITWIG-VERSION", e.getHost().getHostVersion());
+            message.setHeader("API-VERSION", String.valueOf(e.getHost().getHostApiVersion()));
+            message.setHeader("PLATFORM", e.getHost().getPlatformType().name());
+        }
+        if (location != null) {
+            message.setHeader("LOCATION", location);
         }
         return message;
     }
-    
-    private String createLocation(NetworkInterface nic) {
-        InetAddress addr = nic.inetAddresses()
-            .filter(a -> a instanceof Inet4Address && a.isSiteLocalAddress())
-            .findFirst()
-            .orElse(null);
-        return addr != null 
-            ? String.format("ws://%s:%d", addr.getHostAddress(), config.getWebSocketPort())
-            : null;
+
+    private String createLocation(NetworkInterface nic, int port) {
+        Enumeration<InetAddress> addrEnum = nic.getInetAddresses();
+       while(addrEnum.hasMoreElements()) {
+           InetAddress addr = addrEnum.nextElement();
+           if (addr instanceof Inet4Address && addr.isSiteLocalAddress()) {
+                return String.format("ws://%s:%d", addr.getHostAddress(), port);
+           }
+       }
+       return null;
     }
-    
+
     // https://cloud.tencent.com/developer/article/1011721
     private boolean isVirtualNic(NetworkInterface nic) throws SocketException {
+        if (nic.isVirtual()) {
+            return true;
+        }
+        if (nic.getName().startsWith("utun")) {
+            // macos VPN interfaces
+            return true;
+        }
         byte[] macAddress = nic.getHardwareAddress();
         if(null == macAddress || macAddress.length < 3) {
             return true;
