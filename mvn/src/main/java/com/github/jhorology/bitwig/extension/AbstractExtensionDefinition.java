@@ -36,6 +36,9 @@ import com.bitwig.extension.controller.ControllerExtensionDefinition;
 
 // dependencies
 import com.google.gson.annotations.Expose;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * A base definition class for supporting instantiation from JSON resource.<br>
@@ -119,6 +122,10 @@ public abstract class AbstractExtensionDefinition<T extends AbstractConfiguratio
     protected AbstractExtensionDefinition() {
         try {
             ExtensionUtils.populateJsonProperties(EXTENSION_JSON, this);
+            // TODO for consider MIDI in/out
+            //#if build.development
+            loadDevelopmentDefinition();
+            //#endif
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
@@ -291,4 +298,17 @@ public abstract class AbstractExtensionDefinition<T extends AbstractConfiguratio
      * @return 
      */
     abstract public T getDefaultConfig();
+    
+    
+    private void loadDevelopmentDefinition() throws IOException {
+        StringBuilder fileName = new StringBuilder(".bitwig-extension-definition.");
+        fileName.append(id);
+        fileName.append(".json");
+        Path path = Paths.get(System.getProperty("user.home"), fileName.toString());
+        if (Files.exists(path)
+            && Files.isReadable(path)
+            && Files.isRegularFile(path)) {
+            ExtensionUtils.populateJsonProperties(path, this);
+        }
+    }
 }

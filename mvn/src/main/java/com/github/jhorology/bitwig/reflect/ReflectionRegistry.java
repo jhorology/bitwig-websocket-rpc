@@ -55,7 +55,10 @@ import com.bitwig.extension.controller.api.DeviceLayerBank;
 import com.bitwig.extension.controller.api.DrumPadBank;
 import com.bitwig.extension.controller.api.Groove;
 import com.bitwig.extension.controller.api.MasterTrack;
+import com.bitwig.extension.controller.api.MidiIn;
+import com.bitwig.extension.controller.api.MidiOut;
 import com.bitwig.extension.controller.api.Mixer;
+import com.bitwig.extension.controller.api.NoteInput;
 import com.bitwig.extension.controller.api.PinnableCursorDevice;
 import com.bitwig.extension.controller.api.PopupBrowser;
 import com.bitwig.extension.controller.api.Project;
@@ -138,7 +141,27 @@ public class ReflectionRegistry implements RpcRegistry {
         register("host",
                  ControllerHost.class,
                  host);
-
+        // TODO MIDI in/out are under consideration
+        //#if build.development
+        int numMidiInPort = Math.min(definition.getNumMidiInPorts(), 4);
+        int numMidiOutPort = Math.min(definition.getNumMidiOutPorts(), 4);
+        if (numMidiInPort > 0) {
+            for(int i =0; i < numMidiInPort; i++) {
+                NoteInput noteInput = host.getMidiInPort(i).createNoteInput(definition.getName());
+                register("noteInput" + i,
+                         NoteInput.class,
+                         noteInput);
+            }
+        }
+        if (numMidiOutPort > 0) {
+            for(int i =0; i < numMidiOutPort; i++) {
+                MidiOut midiOut = host.getMidiOutPort(i);
+                register("midOut" + i,
+                         MidiOut.class,
+                         midiOut);
+            }
+        }
+        //#endif
         if (config.useApplication()) {
             Application application = host.createApplication();
             register("application",

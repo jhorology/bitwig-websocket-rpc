@@ -287,4 +287,4 @@ Bitwig Extension module contains following libraries:
 - [google/gson](https://github.com/google/gson)
 - [TooTallNate/Java-WebSocket](https://github.com/TooTallNate/Java-WebSocket)
 - [qos-ch/slf4j](https://github.com/qos-ch/slf4j)
-- [nine-lives/nls-net-ssdpj](https://github.com/nine-lives/nls-net-ssdp)
+- [nine-lives/nls-net-ssdp](https://github.com/nine-lives/nls-net-ssdp)

@@ -9,6 +9,8 @@
   "errorReportingEMail": "${extension.errorReportingEMail}",
   "hardwareVendor": "${extension.hardwareVendor}",
   "hardwareModel": "${extension.hardwareModel}",
+  "numMidiInPorts": 0,
+  "numMidiOutPorts": 0,
   "defaultConfig": {
     "logLevel": "${extension.config.logLevel}",
     "logOutputSystemConsole": ${extension.config.logOutputSystemConsole},

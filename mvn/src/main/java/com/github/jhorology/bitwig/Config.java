@@ -60,6 +60,10 @@ public class Config extends AbstractConfiguration {
     //#endif
     private int numWorkerThreads = 4;
     @Expose
+    private int midiInPortCount = 0;
+    @Expose
+    private int midiOutPortCount = 0;
+    @Expose
     private boolean useApplication;
     @Expose
     private boolean useProject;

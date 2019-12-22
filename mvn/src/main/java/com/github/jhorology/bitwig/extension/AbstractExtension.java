@@ -220,7 +220,9 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     private boolean readRcFile() {
         // read rc file
         Path rcFilePath = getRcFilePath();
-        if (Files.exists(rcFilePath)) {
+        if (Files.exists(rcFilePath)
+            && Files.isReadable(rcFilePath)
+            && Files.isRegularFile(rcFilePath)) {
             try {
                ExtensionUtils.populateJsonProperties(rcFilePath, config);
                return true;

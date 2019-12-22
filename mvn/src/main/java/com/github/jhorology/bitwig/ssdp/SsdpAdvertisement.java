@@ -56,14 +56,15 @@ import org.slf4j.LoggerFactory;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import java.util.logging.Level;
 
 /**
- *
+ * An extension module for SSDP service advertisement.
  */
 public class SsdpAdvertisement implements SsdpPacketListener {
     private static final Logger LOG = LoggerFactory.getLogger(SsdpAdvertisement.class);
     // https://cloud.tencent.com/developer/article/1011721
-    private static byte[][] VIRTUAL_HARDWARE_ADDRESSES = {
+    private static final byte[][] VIRTUAL_HARDWARE_ADDRESSES = {
         {0x00, 0x05, 0x69},             // VMWare
         {0x00, 0x1C, 0x14},             // VMWare
         {0x00, 0x0C, 0x29},             // VMWare
@@ -71,6 +72,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         {0x08, 0x00, 0x27},             // Virtualbox
         {0x0A, 0x00, 0x27},             // Virtualbox
         {0x00, 0x03, (byte)0xFF},       // Virtual-PC
+        {0x00, 0x1C, 0x42},             // Parallels
         {0x00, 0x15, 0x5D}              // Hyper-V
     };
     private SsdpService ssdpService;
@@ -80,7 +82,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private Map<NetworkInterface, SsdpMessage> responses;
 
     /**
-     * Handles the start of extension's liefe-cycle.
+     * Handles the start of extension's life-cycle.
      * @param e
      */
     @Subscribe
@@ -103,8 +105,16 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                     if (location != null) {
                         responses.put(nic, createResponse(e, location));
                         nics.add(nic);
+                        if (LOG.isTraceEnabled()) {
+                            LOG.trace("NIC [{{}] binding SSDP. Advertise service location [{}].", nic, location);
+                        }
                     }
                 }
+            }
+            if (LOG.isWarnEnabled() && nics.isEmpty()) {
+                LOG.warn("no suitable NIC found for SSDP.");
+                // TODO whether to use loopback inteface ?
+                // need to investigate other client implementation.
             }
             byebyeMessage = createNotification(e, SsdpNotificationType.BYEBYE);
             
@@ -114,15 +124,16 @@ public class SsdpAdvertisement implements SsdpPacketListener {
             // notify ssdp:alive
             ssdpService.getChannels().forEach(ch -> {
                     try {
-                        String location = createLocation(ch.getNetworkInterface(), e.getConfig().getWebSocketPort());
+                        NetworkInterface nic = ch.getNetworkInterface();
+                        String location = createLocation(nic, e.getConfig().getWebSocketPort());
                         if (location != null) {
                             SsdpMessage alive = createNotification(e, SsdpNotificationType.ALIVE, location);
                             ch.send(alive);
                             if (LOG.isTraceEnabled()) {
-                                LOG.trace("multicascast notification [{}]", alive);
+                                LOG.trace("multicascast notification [\n{}] to [{}]", alive, nic);
                             }
                         }
-                    } catch (IOException ex) {
+                    } catch (Exception ex) {
                         LOG.error("couldn't send message.", ex);
                     }
                 });
@@ -132,7 +143,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     }
 
     /**
-     * Handles the end of extension's liefe-cycle.
+     * Handles the end of extension's life-cycle.
      * @param e
      */
     @Subscribe
@@ -143,7 +154,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                     try {
                         ch.send(byebyeMessage);
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace("multicascast notification [{}]", byebyeMessage);
+                            LOG.trace("multicascast notification [\n{}] to [{}]", byebyeMessage, ch.getNetworkInterface());
                         }
                     } catch (IOException ex) {
                         LOG.error("couldn't send message.", ex);
@@ -158,9 +169,13 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     public void received(SsdpPacket sp) {
         SsdpMessage message = sp.getMessage();
         if (LOG.isTraceEnabled()) {
-            LOG.trace("SSDP recieved message:[{}] socket address:[{}]",
-                      message.toString(),
-                      sp.getSocketAddress());
+            try {
+                LOG.trace("SSDP ch[{}] recieved message:[\n{}] from:[{}]",
+                        sp.getChannel().getNetworkInterface(),
+                        message.toString(),
+                        sp.getSocketAddress());
+            } catch (IOException ex) {
+            }
         }
         if (message.getType() == SsdpMessageType.MSEARCH) {
             String st = message.getHeader("ST");
@@ -170,7 +185,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                     if (response != null) {
                         sp.getChannel().send(response, sp.getSocketAddress());
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace("unicast response[{}] to [{}]", response, sp.getSocketAddress());
+                            LOG.trace("unicast response[\n{}] to [{}]", response, sp.getSocketAddress());
                         }
                     }
                 } catch (IOException ex) {
@@ -214,9 +229,10 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         return message;
     }
 
+    // TODO multihome case, nic may have multiple addresses.
     private String createLocation(NetworkInterface nic, int port) {
         Enumeration<InetAddress> addrEnum = nic.getInetAddresses();
-       while(addrEnum.hasMoreElements()) {
+        while(addrEnum.hasMoreElements()) {
            InetAddress addr = addrEnum.nextElement();
            if (addr instanceof Inet4Address && addr.isSiteLocalAddress()) {
                 return String.format("ws://%s:%d", addr.getHostAddress(), port);
