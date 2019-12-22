@@ -55,7 +55,6 @@ import com.bitwig.extension.controller.api.DeviceLayerBank;
 import com.bitwig.extension.controller.api.DrumPadBank;
 import com.bitwig.extension.controller.api.Groove;
 import com.bitwig.extension.controller.api.MasterTrack;
-import com.bitwig.extension.controller.api.MidiIn;
 import com.bitwig.extension.controller.api.MidiOut;
 import com.bitwig.extension.controller.api.Mixer;
 import com.bitwig.extension.controller.api.NoteInput;
@@ -156,7 +155,7 @@ public class ReflectionRegistry implements RpcRegistry {
         if (numMidiOutPort > 0) {
             for(int i =0; i < numMidiOutPort; i++) {
                 MidiOut midiOut = host.getMidiOutPort(i);
-                register("midOut" + i,
+                register("midiOut" + i,
                          MidiOut.class,
                          midiOut);
             }

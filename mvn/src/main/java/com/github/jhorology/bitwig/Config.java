@@ -816,13 +816,17 @@ public class Config extends AbstractConfiguration {
         addBoolPrefItem("SSDP Advertisement", WEBSOCKET_PREF_CATEGORY,
                         this::isSsdpEnabled,
                         v -> {ssdpEnabled = v;});
+
+        addBoolPrefItem("Do not use requestFlush(safe but slower response)", WEBSOCKET_PREF_CATEGORY,
+                        this::isDoNotUseRequestFlush,
+                        v -> {doNotUseRequestFlush = v;});
         
         //#if build.development
         addIntPrefItem("Worker threads", WEBSOCKET_PREF_CATEGORY, INT_OPTIONS_4TO32,
                        this::getNumWorkerThreads,
                        v -> {numWorkerThreads = v;});
         
-        addBoolPrefItem("Use abbreviated method names", WEBSOCKET_PREF_CATEGORY,
+        addBoolPrefItem("Use abbreviated method and event name", WEBSOCKET_PREF_CATEGORY,
                         this::useAbbreviatedMethodNames,
                         v -> {useAbbreviatedMethodNames = v;});
 
@@ -845,7 +849,7 @@ public class Config extends AbstractConfiguration {
         addBoolPrefItem("Use", "Arranger",
                         this::useArranger,
                         v -> {useArranger = v;});
-        addIntPrefItem("cue markers", "Arranger", INT_OPTIONS_8TO64,
+        addIntPrefItem("Cue markers", "Arranger", INT_OPTIONS_8TO64,
                        this::getArrangerCueMakerSize,
                        v -> {arrangerCueMarkerSize = v;});
 

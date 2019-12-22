@@ -56,7 +56,6 @@ import org.slf4j.LoggerFactory;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
-import java.util.logging.Level;
 
 /**
  * An extension module for SSDP service advertisement.
@@ -106,7 +105,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                         responses.put(nic, createResponse(e, location));
                         nics.add(nic);
                         if (LOG.isTraceEnabled()) {
-                            LOG.trace("NIC [{{}] binding SSDP. Advertise service location [{}].", nic, location);
+                            LOG.trace("NIC [{}] binding SSDP. Advertise service location [{}].", nic, location);
                         }
                     }
                 }
@@ -161,6 +160,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                     }
                 });
         } finally {
+            responses.clear();
             ssdpService.close();
         }
     }
@@ -193,7 +193,6 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                 }
             }
         }
-
     }
 
     private SsdpMessage createResponse(InitEvent<Config> e, String location) {

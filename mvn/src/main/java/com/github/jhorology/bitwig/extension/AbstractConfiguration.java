@@ -55,10 +55,9 @@ public abstract class AbstractConfiguration {
     @Expose
     //#endif
     private boolean logOutputSystemConsole = false;
-    //#if build.development
+    
     @Expose
-    //#endif
-    private boolean doNotUseRequestFlush = false;
+    protected boolean doNotUseRequestFlush = false;
     // <--
 
     private ControllerHost host;
@@ -125,19 +124,16 @@ public abstract class AbstractConfiguration {
         addBoolPrefItem("Output system console", "Logging",
                         this::isLogOutputSystemConsole,
                         v -> {logOutputSystemConsole = v;});
-        addBoolPrefItem("Do not use requestFlush()", "Executor",
-                        this::isDoNotUseRequestFlush,
-                        v -> {doNotUseRequestFlush = v;});
         //#endif
 
         addPrefItems();
         
         host.getPreferences()
-            .getSignalSetting("Apply new settings", "Restart (new settings need restart)", "Restart")
+            .getSignalSetting("Apply new settings", "Restart this extension", "Restart")
             .addSignalObserver(host::restart);
 
         host.getPreferences()
-            .getSignalSetting("Reset to defaults", "Restart (new settings need restart)", "Restart")
+            .getSignalSetting("Reset to defaults", "Restart this extension", "Restart")
             .addSignalObserver(() -> {
                     requestReset = true;
                     host.restart();

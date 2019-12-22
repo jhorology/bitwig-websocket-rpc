@@ -100,7 +100,7 @@ public class ControlSurfaceSessionExecutor implements Executor, Runnable {
             try {
                 task.run();
             } catch (Exception ex) {
-                LOG.error("Executer task execution error.", ex);
+                LOG.error("task execution error.", ex);
             } finally {
                 task = tasks.poll();
                 context.destroy();
