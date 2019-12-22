@@ -18,6 +18,7 @@ wslpath() {
 for arg in "$@"; do
   case $arg in
     -clean) clean=true ;;
+    -midi) midi=true ;;
     *) ;;
   esac
 done
@@ -64,6 +65,12 @@ if [[ -n $clean ]]; then
     
     # clean RC file
     rm -f "${USER_HOME}"/.bitwig.extension.*
+fi
+if [[ -n $midi ]]; then
+    cp "${CWD}"/.bitwig-extension-definition.* "${USER_HOME}"
+fi
+if [[ -z $midi ]]; then
+    rm -f "${USER_HOME}"/.bitwig-extension-definition.*
 fi
 
 BITWIG_DEBUG_PORT=8989 BITWIG_VERSION=${BITWIG_VERSION} "${BITWIG_STUDIO}"

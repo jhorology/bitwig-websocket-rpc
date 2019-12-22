@@ -1,0 +1,6 @@
+{
+  "numMidiInPorts": 1,
+  "numMidiOutPorts": 1,
+  "macMidiInPortNames": ["KOMPLETE KONTROL M32"],
+  "macMidiOutPortNames": ["KOMPLETE KONTROL M32"]
+}

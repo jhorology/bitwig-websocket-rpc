@@ -44,8 +44,6 @@ program
   .option('-f, --file <path>',    'config file(.js|.json) path. this option is ignored by -r option.')
   .option('-a, --all',            'enable all RPC methods and events. this option is ignored by -r or -f option.')
   .option('-b, --abbrev',         'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.')
-  .option('-i, --midi-in <num>',  'number of MIDI-in port.')
-  .option('-o, --midi-out <num>', 'number of MIDI-out port.')
   .option('-p, --print',          'print present configurationn.')
   .action(_execCommand(configCommand))
 
@@ -137,20 +135,6 @@ async function configCommand(options) {
         config.useAbbreviatedMethodNames = true
         dirty = true
       }
-    }
-  }
-  if (options.midiIn) {
-    try {
-      config.midiInPortCount = parseInt(options.midiIn)
-      dirty = true
-    } catch (err) {
-    }
-  }
-  if (options.midiOut) {
-    try {
-      config.midiOutPortCount = parseInt(options.midiOut)
-      dirty = true
-    } catch (err) {
     }
   }
   if (dirty) {

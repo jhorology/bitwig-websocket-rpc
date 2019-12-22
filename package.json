@@ -10,6 +10,8 @@
     "dev:build": "run-s dev:build:**",
     "dev:install": "bin/bws-rpc install --api 10",
     "dev:debug": "mvn/debug.sh",
+    "dev:debug:midi": "mvn/debug.sh -midi",
+    "dev:midi": "run-s dev:build:api-10 dev:install dev:debug:midi",
     "dev": "run-s dev:build:api-10 dev:install dev:debug",
     "prod:build:api-8": "cd mvn && mvn -P production,extension-api-8 clean package",
     "prod:build:api-9": "cd mvn && mvn -P production,extension-api-9 clean package",
