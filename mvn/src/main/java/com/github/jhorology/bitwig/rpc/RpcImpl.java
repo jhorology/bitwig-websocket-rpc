@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.Config;
-import com.github.jhorology.bitwig.WebSocketRpcServerExtension;
+import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
@@ -59,6 +59,25 @@ public class RpcImpl implements Rpc {
     }
     
     /**
+     * Get a challenge value for authentication.
+     * @return
+     */
+    @Override
+    public Object authChallenge() {
+        // TODO not implemented yet
+        return null;
+    }
+    
+    /**
+     * Receive a response value for authentication.
+     * @param response
+     */
+    @Override
+    public void authResponse(Object response) {
+        // TODO not implemented yet
+    }
+    
+    /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
      * @return the mapped results of each event. "ok" or error message.
@@ -66,9 +85,7 @@ public class RpcImpl implements Rpc {
      */
     @Override
     public Map<String, String> on(String... eventNames) {
-        long start = System.currentTimeMillis();
-        Map<String, String> result = acceptEvents(eventNames, (e, c) -> e.subscribe(c));
-        return result;
+        return acceptEvents(eventNames, (e, c) -> e.subscribe(c));
     }
 
     /**
@@ -130,11 +147,12 @@ public class RpcImpl implements Rpc {
      * @param config
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void config(Config config) {
-        ((WebSocketRpcServerExtension)ExecutionContext
-         .getContext()
-         .getExtension())
-            .setConfig(config);
+        ((AbstractExtension<Config>)ExecutionContext
+            .getContext()
+            .getExtension())
+            .restart(config);
     }
 
     /**

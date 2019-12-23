@@ -46,6 +46,8 @@ public class Config extends AbstractConfiguration {
     private static final int[] INT_OPTIONS_4TO32 = {4, 8,16,32};
     private static final int[] INT_OPTIONS_8TO64 = {8,16,32,64};
     private static final int[] INT_OPTIONS_16TO128 = {16,32,64,128};
+    private boolean authRequired = false;
+    private String authPassword = "bitwig";
     // populate from json -->
     @Expose
     private int webSocketPort = DEFAULT_WEBSOCKET_PORT;
@@ -59,10 +61,6 @@ public class Config extends AbstractConfiguration {
     @Expose
     //#endif
     private int numWorkerThreads = 4;
-    @Expose
-    private int midiInPortCount = 0;
-    @Expose
-    private int midiOutPortCount = 0;
     @Expose
     private boolean useApplication;
     @Expose
@@ -201,6 +199,24 @@ public class Config extends AbstractConfiguration {
     private VuMeterPeakMode vuMeterPeakMode = VuMeterPeakMode.RMS;
     // <--
 
+    // prevent instantiate from other package
+    Config() {
+    }
+    
+    /**
+     * @return 
+     */
+    public boolean isAuthRequired() {
+        return authRequired;
+    }
+    
+    /**
+     * @return 
+     */
+    public String getAuthPassword() {
+        return authPassword;
+    }
+    
     /**
      * Returns a configuration value of the WebSocket port number.
      * @return
@@ -812,6 +828,17 @@ public class Config extends AbstractConfiguration {
                         v -> v.getDisplayName(),
                         this::getRpcProtocol,
                         v -> {rpcProtocol = v;});
+        
+        addBoolPrefItem("Authentication", WEBSOCKET_PREF_CATEGORY,
+                        this::isAuthRequired,
+                        v -> {authRequired = v;},
+                        false); // don't use RC file. use bitwig preferences
+
+        addStringPrefItem("Password", WEBSOCKET_PREF_CATEGORY, 16,
+                        this::getAuthPassword,
+                        v -> {authPassword = v;},
+                        false); // don't use RC file use bitwig preferences
+        
 
         addBoolPrefItem("SSDP Advertisement", WEBSOCKET_PREF_CATEGORY,
                         this::isSsdpEnabled,

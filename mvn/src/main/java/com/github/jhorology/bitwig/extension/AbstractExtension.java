@@ -70,11 +70,10 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
      * Inherited class should call this as super().
      * @param definition
      * @param host
-     * @param config
      */
-    protected AbstractExtension(AbstractExtensionDefinition<T> definition, ControllerHost host, T config) {
+    protected AbstractExtension(AbstractExtensionDefinition<T> definition, ControllerHost host) {
         super(definition, host);
-        this.config = config;
+        this.config = definition.newDefaultConfig();
     }
 
     /**
@@ -98,9 +97,7 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     @Override
     public void init() {
         // read rc file. if exists
-        if (!readRcFile()) {
-            ExtensionUtils.deepCopy(getDefinition().getDefaultConfig(), this.config);
-        }
+        readRcFile();
         // setup logger
         ScriptConsoleLogger.setGlobalLogLevel(config.getLogLevel());
         //#if build.development
@@ -186,10 +183,10 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
     }
     
     /**
-     * set a new configuration of this extension.
+     * restart extension with new configuration.
      * @param config
      */
-    public void setConfig(T config) {
+    public void restart(T config) {
         if (config != null) {
             this.config = config;
             this.config.setValueChanged(true);

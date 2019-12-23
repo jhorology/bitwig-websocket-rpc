@@ -31,6 +31,7 @@ import com.google.gson.annotations.Expose;
 
 // source
 import com.github.jhorology.bitwig.extension.AbstractExtensionDefinition;
+import com.github.jhorology.bitwig.extension.ExtensionUtils;
 
 /**
  * A Definition class of this extension. 
@@ -39,7 +40,7 @@ public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefi
 {
     // populate from json -->
     @Expose
-    protected Config defaultConfig;
+    private Config defaultConfig;
     // <--
     
     /**
@@ -58,7 +59,9 @@ public class WebSocketRpcServerExtensionDefinition extends AbstractExtensionDefi
      * @return 
      */
     @Override
-    public Config getDefaultConfig() {
-        return defaultConfig;
+    public Config newDefaultConfig() {
+        Config config = new Config();
+        ExtensionUtils.deepCopy(this.defaultConfig, config);
+        return config;
     }
 }

@@ -80,13 +80,5 @@ public abstract class ExtensionContextBase<T extends AbstractConfiguration> {
     public AbstractExtensionDefinition<T> getDefinition() {
         return extension.getDefinition();
     }
-    
-    /**
-     * get a default configuration
-     * @return 
-     */
-    public T getDefaultConfig() {
-        return getDefinition().getDefaultConfig();
-    }
 }
 

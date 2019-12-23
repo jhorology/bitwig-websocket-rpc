@@ -35,6 +35,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.SettableEnumValue;
 import com.bitwig.extension.controller.api.SettableRangedValue;
+import com.bitwig.extension.controller.api.SettableStringValue;
 import com.google.common.eventbus.Subscribe;
 
 // provided dependencies
@@ -352,18 +353,87 @@ public abstract class AbstractConfiguration {
                                    String category,
                                    Supplier<Boolean> getter,
                                    Consumer<Boolean> setter) {
+        addBoolPrefItem(label, category, getter, setter, true);
+    }
+    
+    /**
+     * Add a input item to preferences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param getter
+     * @param setter
+     * @param useRcFile
+     */
+    protected void addBoolPrefItem(String label,
+                                   String category,
+                                   Supplier<Boolean> getter,
+                                   Consumer<Boolean> setter,
+                                   boolean useRcFile) {
 
         SettableBooleanValue value =
             host.getPreferences().getBooleanSetting
             (label, category, getter.get());
-
-        value.set(getter.get());
+        if (useRcFile) {
+            value.set(getter.get());
+        }
         value.addValueObserver((boolean v) -> {
-                if (ignoreHostPrefValue) {
+                if (useRcFile &&  ignoreHostPrefValue) {
                     value.set(getter.get());
                 } else if (getter.get() != v){
                     setter.accept(v);
-                    valueChanged = true;
+                    if (useRcFile) {
+                        valueChanged = true;
+                    }
+                }
+            });
+    }
+    
+    /**
+     * Add a input item to preferences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param length
+     * @param getter
+     * @param setter
+     */
+    protected void addStringPrefItem(String label,
+                                     String category,
+                                     int length,
+                                     Supplier<String> getter,
+                                     Consumer<String> setter) {
+        addStringPrefItem(label, category, length, getter, setter, true);
+    }
+    /**
+     * Add a input item to preferences panel.
+     * @param label         the name of the setting, must not be null
+     * @param category      the name of the category, may not be null
+     * @param length
+     * @param getter
+     * @param setter
+     * @param useRcFile
+     */
+    protected void addStringPrefItem(String label,
+                                     String category,
+                                     int length,
+                                     Supplier<String> getter,
+                                     Consumer<String> setter,
+                                     boolean useRcFile) {
+
+        SettableStringValue value =
+            host.getPreferences().getStringSetting
+            (label, category, length, getter.get());
+
+        if (useRcFile) {
+            value.set(getter.get());
+        }
+        value.addValueObserver((String v) -> {
+                if (useRcFile &&  ignoreHostPrefValue) {
+                    value.set(getter.get());
+                } else if (!getter.get().equals(v)){
+                    setter.accept(v);
+                    if (useRcFile) {
+                        valueChanged = true;
+                    }
                 }
             });
     }

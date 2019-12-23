@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.function.BiFunction;
 
 // dependencies
 import com.google.gson.Gson;
@@ -40,10 +39,12 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcMethod;
-import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
+
+// source
+import com.github.jhorology.bitwig.Config;
 
 public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements PushModel {
     public static final String JSONRPC_VERSION = "2.0";
@@ -66,6 +67,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
             .registerTypeAdapter(Response.class, new ResponseAdapter())
             .registerTypeAdapter(Error.class, new ErrorAdapter())
             .registerTypeAdapter(Notification.class, new NotificationAdapter())
+            .registerTypeAdapter(Config.class, new ConfigAdapter())
             .create();
     }
     
@@ -239,5 +241,4 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
         Response res = createErrorResponse(error, data, id);
         send(gson.toJson(res), conn);
     }
-
 }

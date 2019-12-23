@@ -42,6 +42,18 @@ public interface Rpc {
     public static final String ERROR_INTERNAL_ERROR = "Internal Error";
     
     /**
+     * Get a challenge value for Authentication.
+     * @return
+     */
+    public Object authChallenge();
+    
+    /**
+     * Send a response value for Authentication.
+     * @param response
+     */
+    public void authResponse(Object response);
+    
+    /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
      * @return the mapped results of each event. "ok" or error message.

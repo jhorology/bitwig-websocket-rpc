@@ -294,11 +294,10 @@ public abstract class AbstractExtensionDefinition<T extends AbstractConfiguratio
     }
     
     /**
-     * Returns configuration defaults
+     * Create a new configuration defaults
      * @return 
      */
-    abstract public T getDefaultConfig();
-    
+    abstract public T newDefaultConfig();
     
     private void loadDevelopmentDefinition() throws IOException {
         StringBuilder fileName = new StringBuilder(".bitwig-extension-definition.");

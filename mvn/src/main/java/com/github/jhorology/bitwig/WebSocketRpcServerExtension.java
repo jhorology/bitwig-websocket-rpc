@@ -47,7 +47,7 @@ public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
      * @param host
 s     */
     protected WebSocketRpcServerExtension(WebSocketRpcServerExtensionDefinition definition, ControllerHost host) {
-        super(definition, host, new Config());
+        super(definition, host);
     }
 
     /**
