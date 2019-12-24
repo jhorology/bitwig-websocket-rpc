@@ -52,6 +52,8 @@
     "glob": "^7.1.6",
     "isomorphic-ws": "^4.0.1",
     "js-beautify": "^1.10.2",
+    "md5": "^2.2.1",
+    "nanoid": "^2.1.8",
     "rimraf": "^3.0.0",
     "update-notifier": "^4.0.0",
     "ws": "^7.2.1"

@@ -40,40 +40,45 @@ program
   .command('config')
   .description('Configure RPC modules.')
   .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-p --pass <password>', 'password.')
   .option('-r, --reset',          'reset configuration to defaults.')
   .option('-f, --file <path>',    'config file(.js|.json) path. this option is ignored by -r option.')
   .option('-a, --all',            'enable all RPC methods and events. this option is ignored by -r or -f option.')
   .option('-b, --abbrev',         'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.')
-  .option('-p, --print',          'print present configurationn.')
+  .option('-r, --print',          'print present configurationn.')
   .action(_execCommand(configCommand))
 
 program
   .command('report')
   .description('Report accessible RPC methods and evnets of current configuration as JSON.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-s, --summary',   'total count of methods and events.')
+  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-p --pass <password>', 'password.')
+  .option('-s, --summary',        'report total count of methods and events.')
   .action(_execCommand(reportCommand))
 
 program
   .command('actions')
-  .option('-u, --url <URL>',  'Bitwig Studio WebSockets URL', DEFAULT_URL)
-  .option('-c, --categorize', 'Group by category.')
+  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL', DEFAULT_URL)
+  .option('-p --pass <password>', 'password.')
+  .option('-c, --categorize',     'Group by category.')
   .description('Report result of Application#getActions() as JSON.')
   .action(_execCommand(actionsCommand))
 
 program
   .command('events')
   .description('Monitor events.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-u, --url <URL>',        'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-p --pass <password>',   'password.')
   .option('-m, --module <modules>', 'filter events with specified modules(comma separated module names).')
-  .option('-r, --reconnect', 'keep attempting to reconnect.')
+  .option('-r, --reconnect',        'keep attempting to reconnect.')
   .action(_execCommand(eventsCommand))
 
 program
   .command('logs')
   .description('Trace controller script logs.')
-  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-r, --reconnect', 'keep attempting to reconnect.')
+  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-p --pass <password>', 'password.')
+  .option('-r, --reconnect',      'keep attempting to reconnect.')
   .action(_execCommand(logsCommand))
 
 // error on unknown commands
@@ -112,7 +117,9 @@ function installCommand(options) {
  */
 async function configCommand(options) {
   let config, dirty
-  const ws = new BitwigClient(options.url)
+  const ws = new BitwigClient(options.url, {
+    password: options.pass
+  })
   await ws.connect()
   if (options.reset) {
     config = null
@@ -151,7 +158,9 @@ async function configCommand(options) {
  * report methods & events
  */
 async function reportCommand(options) {
-  const ws = new BitwigClient(options.url)
+  const ws = new BitwigClient(options.url, {
+    password: options.pass
+  })
   await ws.connect()
   const report = await ws.call('rpc.report')
   await ws.close()
@@ -227,7 +236,9 @@ async function reportCommand(options) {
  * report actions
  */
 async function actionsCommand(options) {
-  const ws = new BitwigClient(options.url)
+  const ws = new BitwigClient(options.url, {
+    password: options.pass
+  })
   await ws.connect()
   let config = ws.call('rpc.config')
   if (!config.useApplication) {
@@ -264,8 +275,10 @@ async function actionsCommand(options) {
  * monitor events
  */
 async function eventsCommand(options) {
-  const ws = new BitwigClient(options.url),
-        modules = options.module ? options.module.split(',') : undefined
+  const ws = new BitwigClient(options.url, {
+    password: options.pass
+  })
+  const modules = options.module ? options.module.split(',') : undefined
   let first = true
   while (options.reconnect || first) {
     first = false
@@ -305,7 +318,9 @@ async function eventsCommand(options) {
  * trace controller script logs
  */
 async function logsCommand(options) {
-  const ws = new BitwigClient(options.url)
+  const ws = new BitwigClient(options.url, {
+    password: options.pass
+  })
   let first = true
   while (options.reconnect || first) {
     first = false

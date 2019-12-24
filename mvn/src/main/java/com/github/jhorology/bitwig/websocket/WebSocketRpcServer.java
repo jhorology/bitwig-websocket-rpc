@@ -23,11 +23,15 @@
 package com.github.jhorology.bitwig.websocket;
 
 // jdk
-import com.bitwig.extension.controller.api.ControllerHost;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
+import java.util.HashMap;
+import java.util.Map;
+
+// bitwig api
+import com.bitwig.extension.controller.api.ControllerHost;
 
 // provided dependencies
 import com.google.common.eventbus.AsyncEventBus;
@@ -35,14 +39,21 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.eventbus.SubscriberExceptionContext;
 
+
+
 // dependencies
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // source
+import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
@@ -58,6 +69,7 @@ public class WebSocketRpcServer
 
     private AsyncEventBus eventBus;
     private final ProtocolHandler protocol;
+    private DigestAuthentication auth;
     private boolean running;
     private boolean fullDrained;
 
@@ -65,6 +77,7 @@ public class WebSocketRpcServer
      * Construct a server.
      * @param port
      * @param protocol
+     * @param numWorkerThreads
      * @throws java.net.UnknownHostException
      */
     public WebSocketRpcServer(int port, ProtocolHandler protocol, int numWorkerThreads)
@@ -76,6 +89,7 @@ public class WebSocketRpcServer
      * Construct a server.
      * @param address
      * @param protocol
+     * @param numWorkerThreads
      */
     public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, int numWorkerThreads) {
         super(address, numWorkerThreads);
@@ -108,8 +122,9 @@ public class WebSocketRpcServer
      * @param e
      */
     @Subscribe
-    public final void onInit(InitEvent<?> e) {
+    public final void onInit(InitEvent<Config> e) {
         // event bus for dispatching events to 'Control Surface Session' thread.
+        this.auth = new DigestAuthentication(e.getConfig());
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         if (protocol.isReady()) {
@@ -137,7 +152,7 @@ public class WebSocketRpcServer
      */
     @Subscribe
     @SuppressWarnings("UseSpecificCatch")
-    public final void onExit(ExitEvent<?> e) {
+    public final void onExit(ExitEvent<Config> e) {
         try {
             LOG.info("waiting for WebSocket RPC server stop.");
             eventBus.post(new StopEvent());
@@ -191,17 +206,37 @@ public class WebSocketRpcServer
     }
 
     /**
+     * @see https://github.com/TooTallNate/Java-WebSocket/blob/master/src/main/example/ServerRejectHandshakeExample.java
+     * @param conn
+     * @param draft
+     * @param request
+     * @return
+     * @throws InvalidDataException 
+     */
+    @Override
+    public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(WebSocket conn, Draft draft, ClientHandshake request) throws InvalidDataException {
+        ServerHandshakeBuilder builder = super.onWebsocketHandshakeReceivedAsServer(conn, draft, request);
+        if (!auth.authenticate(conn, request)) {
+            throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, "Not accepted!");
+        }
+        return builder;
+    }
+    
+    /**
      * Called after an opening handshake has been performed and the given websocket is ready to be written on.<br>
      * An implementation of {@link WebSocketServer#onOpen(WebSocket, ClientHandshake)}
      * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
-     * @param handshake The handshake of the websocket instance
+     * @param request The handshake of the websocket instance
      */
     @Override
-    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+    public void onOpen(WebSocket conn, ClientHandshake request) {
+        if (auth.challenge(conn, request)) {
+            return;
+        }
         // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new OpenEvent(conn, handshake));
+        eventBus.post(new OpenEvent(conn, request));
     }
-
+    
     /**
      * Called after the websocket connection has been closed.<br>
      * An implementation of {@link WebSocketServer#onClose(WebSocket, int, String, boolean)}
@@ -295,5 +330,18 @@ public class WebSocketRpcServer
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
+    }
+    
+    private String authChallenge() {
+        Map<String, String> digest = new HashMap<>();
+        digest.put("realm", "bitwig-websocket-rpc");
+        digest.put("nonce", "bitwig-websocket-rpc");
+        digest.put("algorithm", "md5");
+        digest.put("qop", "auth");
+        return null;
+    }
+    
+    private boolean authResponse(String resourceDescripptor) {
+        return false;
     }
 }

@@ -59,25 +59,6 @@ public class RpcImpl implements Rpc {
     }
     
     /**
-     * Get a challenge value for authentication.
-     * @return
-     */
-    @Override
-    public Object authChallenge() {
-        // TODO not implemented yet
-        return null;
-    }
-    
-    /**
-     * Receive a response value for authentication.
-     * @param response
-     */
-    @Override
-    public void authResponse(Object response) {
-        // TODO not implemented yet
-    }
-    
-    /**
      * Add the remote connection to subscriber list of each event.
      * @param eventNames the names of event to subscribe.
      * @return the mapped results of each event. "ok" or error message.

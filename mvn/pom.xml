@@ -200,6 +200,12 @@
       <version>${commons.lang3.version}</version>
       <scope>provided</scope> <!-- provided by libs.jar -->
     </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.8</version>
+      <scope>provided</scope> <!-- provided by libs.jar -->
+    </dependency>
     <!--
         <dependency>
         <groupId>org.msgpack</groupId>

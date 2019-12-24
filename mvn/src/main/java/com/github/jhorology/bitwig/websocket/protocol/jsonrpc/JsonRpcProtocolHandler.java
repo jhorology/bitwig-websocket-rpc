@@ -84,6 +84,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        push(new Notification("_connected"), conn);
     }
     
     /**

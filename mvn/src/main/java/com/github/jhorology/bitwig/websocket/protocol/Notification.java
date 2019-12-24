@@ -12,8 +12,10 @@ public class Notification {
 
     /**
      * construct a notification message.
+     * @param notification
      */
-    public Notification() {
+    public Notification(String notification) {
+        this(notification, null);
     }
 
     /**

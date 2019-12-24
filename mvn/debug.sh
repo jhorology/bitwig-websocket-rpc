@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-BITWIG_VERSION="3.1"
+BITWIG_VERSION="3.1.1"
 
 wslenv() {
   # Full path cmd.exe for /etc/wsl.conf [interop] appendWindowsPath = false
