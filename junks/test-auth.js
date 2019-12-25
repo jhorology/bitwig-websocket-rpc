@@ -19,7 +19,7 @@ async function main(bws) {
   // console.log('### set Authetication on, password=bitwig')
   // await wait(10000)
   console.log('### connecting... with password')
-  await bws.connect('bitwig')
+  await bws.connect(-1)
   console.log('OK', 'status:', bws.readyStateAsString)
   await bws.close()
   // try {

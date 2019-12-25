@@ -18,13 +18,11 @@ export default props => {
           Play
         </button>
         <button onClick={props.onClickStop} >Stop</button>
-        {props.playing && (
-          <style jsx>{`
-            button.play {
-              background-color: #FD8713;
-            }
-         `}</style>)
-        }
+        <style jsx>{`
+          button.play {
+            background-color: ${props.playing ? '#FD8713' : 'none'};
+          }
+        `}</style>)
       </div>
     </div>
   )

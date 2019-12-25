@@ -17,7 +17,11 @@ export class Store {
   }
 
   connect = async () => {
+    if (this.bws) {
+      return
+    }
     const bws = new BitwigClient('ws://localhost:8887', {
+      // password: 'hogehoge'
       // traceLog: (objs) => console.log.apply(undefined, objs),
     })
     this.bws = bws
@@ -52,11 +56,6 @@ export class Store {
   }
 
   disconnect = () => {
-    const bws = this.bws
-    if (bws !== undefined) {
-      this.bws = undefined
-      bws.close()
-    }
   }
 }
 
