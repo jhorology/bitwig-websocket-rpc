@@ -29,10 +29,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 // provided dependencies
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 
 // dependenices
 import com.google.common.base.Splitter;
@@ -43,10 +46,6 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-// sources
-import com.github.jhorology.bitwig.Config;
-import org.apache.commons.lang3.RandomStringUtils;
 
 /**
  * A class for digest challenge and response authentication.
@@ -126,23 +125,17 @@ public class DigestAuthentication {
     }
     
     private final Map<String, Challenge> store;
-    private final Config config;
+    private final Predicate<String> authRequired;
+    private final Supplier<String> password;
     
     /**
      * Constructor.
      * @param config 
      */
-    DigestAuthentication(Config config) {
+    DigestAuthentication(Predicate<String> authRequired, Supplier<String> password) {
         store = new ConcurrentHashMap<>();
-        this.config = config;
-    }
-    
-    /**
-     * Indicates whether authentication is required.
-     * @return 
-     */
-    boolean isAuthRequired() {
-        return config.isAuthRequired();
+        this.authRequired = authRequired;
+        this.password = password;
     }
     
     /**
@@ -153,7 +146,7 @@ public class DigestAuthentication {
      */
     public boolean challenge(WebSocket conn, ClientHandshake request) {
         String resourceDescriptor = request.getResourceDescriptor();
-        if (!config.isAuthRequired()) {
+        if (!authRequired.test(resourceDescriptor)) {
             return false;
         }
         if ("/auth".equals(resourceDescriptor)) {
@@ -174,13 +167,13 @@ public class DigestAuthentication {
      * @return 
      */
     public boolean authenticate(WebSocket conn, ClientHandshake request) {
+        String resourceDescriptor = request.getResourceDescriptor();
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Authentication is {}.", config.isAuthRequired() ? "on" : "off");
+            LOG.trace("Authentication is {}.", authRequired.test(resourceDescriptor) ? "on" : "off");
         }
-        if (!config.isAuthRequired()) {
+        if (!authRequired.test(resourceDescriptor)) {
             return true;
         }
-        String resourceDescriptor = request.getResourceDescriptor();
         String host = request.getFieldValue("Host");
         if (host == null || host.length() == 0) {
             if (LOG.isTraceEnabled()) {
@@ -289,7 +282,7 @@ public class DigestAuthentication {
             }
             return false;
         }
-        String a1 = DigestUtils.md5Hex(USER_NAME + ":" + realm + ":" + config.getAuthPassword());
+        String a1 = DigestUtils.md5Hex(USER_NAME + ":" + realm + ":" + password.get());
         String a2 = DigestUtils.md5Hex(":" + uri);
         String caluculatedResponse = DigestUtils.md5Hex(a1 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + a2);
         store.remove(nonce);

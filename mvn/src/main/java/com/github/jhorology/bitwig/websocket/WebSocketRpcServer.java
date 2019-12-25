@@ -27,8 +27,6 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
-import java.util.HashMap;
-import java.util.Map;
 
 // bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
@@ -38,8 +36,6 @@ import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
 import com.google.common.eventbus.SubscriberExceptionContext;
-
-
 
 // dependencies
 import org.java_websocket.WebSocket;
@@ -123,8 +119,10 @@ public class WebSocketRpcServer
      */
     @Subscribe
     public final void onInit(InitEvent<Config> e) {
+        this.auth = new DigestAuthentication(
+            resourceDescriptor -> e.getConfig().isAuthRequired(),
+            e.getConfig()::getAuthPassword);
         // event bus for dispatching events to 'Control Surface Session' thread.
-        this.auth = new DigestAuthentication(e.getConfig());
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
         if (protocol.isReady()) {
@@ -330,18 +328,5 @@ public class WebSocketRpcServer
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-    }
-    
-    private String authChallenge() {
-        Map<String, String> digest = new HashMap<>();
-        digest.put("realm", "bitwig-websocket-rpc");
-        digest.put("nonce", "bitwig-websocket-rpc");
-        digest.put("algorithm", "md5");
-        digest.put("qop", "auth");
-        return null;
-    }
-    
-    private boolean authResponse(String resourceDescripptor) {
-        return false;
     }
 }
