@@ -1,0 +1,32 @@
+module                           method   event    event * bankDimension
+--------------------------------------------------------------------------------
+rpc                                13        1        1
+test                               16        0        0
+host                               18        1        1
+application                       122        6        6
+project                           897       92       92
+transport                         529       46       46
+arranger                          151       17       77
+groove                            414       42       42
+mixer                              54        6        6
+arrangerCursorClip                709       66       66
+launcherCursorClip                709       66       66
+cursorTrack                       731       74      161
+siblingsTrackBank                 872       91     1319
+childTrackBank                    872       91     1319
+parentTrack                       703       71      158
+cursorDevice                      624       66       76
+chainSelector                     408       43       53
+cursorDeviceLayer                 391       40       50
+cursorRemoteControlsPage          119       13       62
+deviceLayerBank                   440       47      393
+drumPadBank                       460       49      779
+siblingsDeviceBank                280       29       92
+chainDeviceBank                   280       29       92
+sceneBank                         117       11       46
+mainTrackBank                     872       91     1319
+effectTrackBank                   609       64      273
+masterTrack                       549       55      132
+browser                          1446      181      874
+--------------------------------------------------------------------------------
+Total                           13405     1388     7601

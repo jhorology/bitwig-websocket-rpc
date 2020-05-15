@@ -5,11 +5,13 @@ const { BitwigClient, ClientError } = require('..'),
       blackList = [
       ],
       targetMethods = methods.filter(m =>
+        m.method.startsWith('noteInput0.') &&
         !m.method.startsWith('test.') &&
         !m.method.startsWith('rpc.') &&
         !m.method.endsWith('.unsubscribe') &&
         !m.method.endsWith('.subscribe') &&
         !m.method.endsWith('.setIsSubscribed') &&
+        !m.method.endsWith('.setShouldConsumeEvents') &&
         !blackList.includes(m.method))
 
 process.on('unhandledRejection', console.log)
@@ -17,7 +19,7 @@ process.on('unhandledRejection', console.log)
 async function main(bws) {
   await bws.connect()
   await bws.config(config)
-  await bws.subscribe([...eventMap.keys()], 20 * 1000)
+  await bws.subscribe([...Array.from(eventMap.keys()).filter(e => e.startsWith('noteInput0'))], 20 * 1000)
 
   await new Promise(resolve => setTimeout(resolve, 5000))
 
@@ -57,7 +59,7 @@ async function main(bws) {
       log.error = err
     }
     console.log(log)
-    // await new Promise(resolve => setTimeout(resolve, 20))
+    await new Promise(resolve => setTimeout(resolve, 100))
     if (bws.readyState > 1) {
       console.log('Bitwig Studio is dead!')
       break

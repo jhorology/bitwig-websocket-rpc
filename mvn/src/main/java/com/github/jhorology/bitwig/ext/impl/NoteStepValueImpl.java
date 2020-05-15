@@ -35,7 +35,6 @@ import com.bitwig.extension.controller.api.NoteStep;
 
 // source
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
-import com.google.common.base.Objects;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutableTriple;

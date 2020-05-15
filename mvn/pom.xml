@@ -28,7 +28,7 @@
 
     <!-- =====================================
          default development profile for IDE
-         same as -Pdevelopment,extension-api-10
+         same as -Pdevelopment,extension-api-11
          ===================================== -->
     
     <!-- Bitwig extension definition -->
@@ -45,17 +45,17 @@
     
     <!-- dependenceies versions -->
     <commons.lang3.version>3.5</commons.lang3.version>
-    <bitwig.extension.api.version>10</bitwig.extension.api.version>
+    <bitwig.extension.api.version>11</bitwig.extension.api.version>
     
     <!-- extension definition -->
-    <extension.name>WebSocket RPC API 10</extension.name>
+    <extension.name>WebSocket RPC API 11</extension.name>
     <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
-    <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
+    <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
     
     <!-- build env -->
     <build.development>true</build.development>
     <build.production>false</build.production>
-    <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
+    <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
   </properties>
   
   <profiles>
@@ -135,11 +135,28 @@
         
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 10</extension.name>
-        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.uuid>eb3fc630-deca-4a46-91fd-d10652d1d366</extension.uuid>
         <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
         
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>extension-api-11</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <bitwig.extension.api.version>11</bitwig.extension.api.version>
+        
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 11</extension.name>
+        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
+        
+        <!-- build env -->
+        <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
       </properties>
     </profile>
     
@@ -222,7 +239,7 @@
     <dependency>
       <groupId>org.java-websocket</groupId>
       <artifactId>Java-WebSocket</artifactId>
-      <version>1.4.0</version>
+      <version>1.5.1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

@@ -4,7 +4,7 @@ const { BitwigClient } = require('..')
 async function test(time, method) {
   let start, end, count = 0, run = true
   const bws = new BitwigClient('ws://localhost:8887', {
-    traceLog: (objs) => console.log.apply(undefined, objs),
+    // traceLog: (objs) => console.log.apply(undefined, objs),
     chkArgs: false, // strict check tx method, params
     chkMessage: false // strict check rx message
   })
@@ -75,9 +75,13 @@ async function testSet(threads, requestFlush, time, method) {
 async function main() {
   //           worker  requestFlush         RPC method
   await testSet(1,     true,         10000, ws => ws.call('rpc.echo', ['hello']))
+  await testSet(1,     false,        10000, ws => ws.call('rpc.echo', ['hello']))
   await testSet(8,     true,         10000, ws => ws.call('rpc.echo', ['hello']))
+  await testSet(8,     false,        10000, ws => ws.call('rpc.echo', ['hello']))
   await testSet(1,     true,         10000, ws => ws.call('transport.getPosition'))
+  await testSet(1,     false,        10000, ws => ws.call('transport.getPosition'))
   await testSet(8,     true,         10000, ws => ws.call('transport.getPosition'))
+  await testSet(8,     false,        10000, ws => ws.call('transport.getPosition'))
 }
 
 function sum(results) {

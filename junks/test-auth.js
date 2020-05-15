@@ -32,7 +32,8 @@ async function main(bws) {
 }
 
 const bws = new BitwigClient('ws://localhost:8887', {
-  password: 'bitwigx'
+  password: 'bitwig'
+  // traceLog: datas => console.log.apply(undefined, datas)
 })
 main(bws)
   .then(() => console.log('all test done!'))

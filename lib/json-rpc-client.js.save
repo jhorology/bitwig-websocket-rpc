@@ -1,3 +1,4 @@
+
 //  bitwig-websocket-rpc
 //   (c) 2019 Masaafumi Fujimaru
 //    Released under the MIT license.
@@ -85,6 +86,22 @@ class Client extends EventEmitter {
       // debugLog: (objs) => console.log.apply(undefined, objs),
       // traceLog: (objs) => console.log.apply(undefined, objs)
     }
+  }
+
+  /**
+   * Returns the all aveilable events.
+   * @public
+   * @property
+   * @return {Array} - the array of all aveilable events.
+   */
+  get events() {
+    return [
+      'open',
+      'close',
+      '_error',
+      '_message',
+      '_WebSocket.error'
+    ]
   }
 
   /**
