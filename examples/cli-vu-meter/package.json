@@ -1,0 +1,18 @@
+{
+  "name": "cli-vu-meter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CLI Cursor Track Vu-Meter",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bitwig-websocket-rpc": "file:../..",
+    "chalk": "^4.0.0",
+    "commander": "^5.1.0"
+  }
+}

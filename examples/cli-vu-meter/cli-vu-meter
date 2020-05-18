@@ -1,0 +1,128 @@
+#!/usr/bin/env node
+
+const { BitwigClient } = require('bitwig-websocket-rpc'),
+      readline = require('readline'),
+      chalk = require('chalk'),
+      program = require('commander'),
+      pkg = require('./package.json')
+
+class CursorTrackVuMeter {
+  constructor(opts) {
+    this._opts = Object.assign({
+      url: 'ws://localhost:8887',
+      pass: undefined,
+      merge: false,
+      meterRange: 64,
+      meterLength: 64
+    }, opts)
+    this._meterOriginX = 0
+    this._cursorHomeY = 0
+    this._bws = new BitwigClient(this._opts.url)
+  }
+
+  async start() {
+    const LEFT_RMS = { line: 1, title: 'L RMS', level: 0 },
+          LEFT_PEAK = { line: 2, title: 'L Peak', level: 0 },
+          RIGHT_PEAK = { line: 3, title: 'R Peak', level: 0 },
+          RIGHT_RMS = { line: 4, title: 'R RMS', level: 0 }
+
+    this.setupMeter(LEFT_RMS, LEFT_PEAK, RIGHT_PEAK, RIGHT_RMS)
+    await this._bws.connect()
+    await this._bws.config({
+      useCursorTrack: true,
+      cursorTrackShouldFollowSelection: true,
+      vuMeterUsedFor: 'CURSOR_TRACK',
+      vuMeterRange: this._opts.meterRange,
+      vuMeterChannelMode: 'STEREO',
+      vuMeterPeakMode: 'BOTH'
+    }, false)
+    this._bws.subscribe([
+      'cursorTrack.vuMeter',
+      'cursorTrack.name'
+    ])
+
+    this._bws.on('cursorTrack.vuMeter', params => {
+      if (params.ch === 0 && !params.peak) {
+        this.updateMeter(LEFT_RMS, params.value)
+      } else if (params.ch === 0 && params.peak) {
+        this.updateMeter(LEFT_PEAK, params.value)
+      } else if (params.ch === 1 && params.peak) {
+        this.updateMeter(RIGHT_PEAK, params.value)
+      } else if (params.ch === 1 && !params.peak) {
+        this.updateMeter(RIGHT_RMS, params.value)
+      }
+    })
+    this._bws.on('cursorTrack.name', params => this.updateTrackName(params[0]))
+  }
+
+  setupMeter(...meters) {
+    console.clear()
+    const maxTitleLength = meters.reduce((l, m) => Math.max(m.title.length, l), 'Track'.length)
+    this._meterOriginX = maxTitleLength + 3
+    readline.cursorTo(process.stdout, 0, 0)
+    process.stdout.write('Track'.padEnd(maxTitleLength + 1) + '|')
+    meters.forEach(m => {
+      readline.cursorTo(process.stdout, 0, m.line)
+      process.stdout.write(m.title.padEnd(maxTitleLength + 1) + '|')
+      this._cursorHomeY = this._cursorHomeY >= m.line
+        ? this._cursorHomeY
+        : m.line
+    })
+    this._cursorHomeY++
+    readline.cursorTo(process.stdout, 0, this._cursorHomeY)
+  }
+
+  updateTrackName(name) {
+    readline.cursorTo(process.stdout, this._meterOriginX, 0)
+    readline.clearLine(process.stdout, 1)
+    process.stdout.write(name)
+    readline.cursorTo(process.stdout, 0, this._cursorHomeY)
+  }
+
+  updateMeter(meter, value) {
+    const level = ((this._opts.meterLength * value / (this._opts.meterRange - 1)) + 0.5) << 0
+    if (level > meter.level) {
+      readline.cursorTo(process.stdout, this._meterOriginX + meter.level, meter.line)
+      process.stdout.write(this.createBar(meter.level, level))
+      readline.cursorTo(process.stdout, 0, this._cursorHomeY)
+    } else if (level < meter.level) {
+      readline.cursorTo(process.stdout, this._meterOriginX + level, meter.line)
+      readline.clearLine(process.stdout, 1)
+      readline.cursorTo(process.stdout, 0, this._cursorHomeY)
+    }
+    meter.level = level
+  }
+
+  createBar(oldLevel, newLevel) {
+    let bar = ''
+    for (let i = oldLevel; i < newLevel; i++) {
+      bar += this.color(i)('=')
+    }
+    return bar
+  }
+
+  color(level) {
+    if (level < this._opts.meterLength / 2) {
+      return chalk.green
+    } else if (level < this._opts.meterLength * 3 / 5) {
+      return chalk.yellow
+    }
+    return chalk.red
+  }
+}
+
+program
+  .description('Configuration and helper tools for bitwig-websocket-rpc.')
+  .version(pkg.version)
+  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL', 'ws://localhost:8887')
+  .option('-p --pass <password>', 'Password')
+  .option('-m --merge',           'Merge required settings into present configuration. Default action is configured minimal.')
+  .action(opts => {
+    const meter = new CursorTrackVuMeter({
+      url: opts.url,
+      pass: opts.pass,
+      merge: opts.merge
+    })
+    meter.start().catch(err => console.error(err))
+  })
+program.parse(process.argv)
