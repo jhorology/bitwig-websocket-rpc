@@ -25,7 +25,7 @@ done
 
 case "`uname`" in
     Linux*)
-        if grep -q Microsoft /proc/version; then
+        if grep -q -i microsoft /proc/version; then
             PLATFORM="WSL"
             BITWIG_STUDIO="${CWD}/wsl-bitwig-studio"
             USER_HOME="$(wslpath "$(wslenv "USERPROFILE")")"

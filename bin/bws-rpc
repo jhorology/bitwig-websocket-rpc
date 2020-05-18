@@ -32,7 +32,7 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir())
-  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8, 9 or 10', '8')
+  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8-11', '11')
   .action(_execCommand(installCommand))
 
 /* eslint no-multi-spaces: 0 */
