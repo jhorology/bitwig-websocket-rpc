@@ -33,9 +33,9 @@ class CursorTrackVuMeter {
       cursorTrackShouldFollowSelection: true,
       vuMeterUsedFor: 'CURSOR_TRACK',
       vuMeterRange: this._opts.meterRange,
-      vuMeterChannelMode: 'STEREO',
-      vuMeterPeakMode: 'BOTH'
-    }, false)
+      vuMeterChannelMode: 'STEREO', // 'MONO', 'LEFT', 'RIGHT', or 'STEREO'
+      vuMeterPeakMode: 'BOTH' // 'RMS', 'PEAK' or 'BOTH'
+    }, this._opts.merge)
     this._bws.subscribe([
       'cursorTrack.vuMeter',
       'cursorTrack.name'

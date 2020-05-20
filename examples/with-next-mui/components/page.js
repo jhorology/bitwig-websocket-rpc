@@ -4,17 +4,15 @@ import React, { useEffect } from 'react'
 import { makeStyles } from '@material-ui/core/styles'
 
 // components
-import BwsConnectionProvider from './bws-connection-provider'
 import Navbar from './navbar'
 import Footer from './footer'
-
+import { BwsConnectionProvider } from './bws-contexts'
 
 const useStyles = makeStyles(theme => ({
-  page: {
-  }
+  page: {}
 }))
 
-export default function Layout({ children }) {
+export default function Page({ children, config, merge }) {
   // styles
   const classes = useStyles()
   useEffect(() => {
@@ -25,10 +23,10 @@ export default function Layout({ children }) {
     <>
       <Navbar />
       <div className={classes.page}>
-        <BwsConnectionProvider>
+        <BwsConnectionProvider config={config} merge={merge}>
           {children}
         </BwsConnectionProvider>
-        <Footer/>
+        <Footer />
       </div>
     </>
   )

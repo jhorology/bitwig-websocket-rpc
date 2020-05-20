@@ -1,12 +1,12 @@
-# Next.js example
+# bitwig-websocket-rpc example with Next.js and material-ui
 
 ## How to use
 
-Download the example [or clone the repo](https://github.com/mui-org/material-ui):
+Download the example [or clone the repo](https://github.com/jhorology/bitwig-websocket-rpc):
 
 ```sh
-curl https://codeload.github.com/mui-org/material-ui/tar.gz/master | tar -xz --strip=2  material-ui-master/examples/nextjs
-cd nextjs
+curl https://codeload.github.com/jhorology/bitwig-websocket-rpc/tar.gz/master | tar -xz --strip=2  bitwig-websocket-rpc-master/examples/with-next-mui
+cd with-next-mui
 ```
 
 Install it and run:
@@ -15,11 +15,3 @@ Install it and run:
 npm install
 npm run dev
 ```
-
-or:
-
-[![Edit on CodeSandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/mui-org/material-ui/tree/master/examples/nextjs)
-
-## The idea behind the example
-
-[Next.js](https://github.com/zeit/next.js) is a framework for server-rendered React apps.
