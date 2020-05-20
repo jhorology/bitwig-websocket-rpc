@@ -29,7 +29,7 @@ import BitwigIcon from './icons/bitwig'
 
 import Paper from '@material-ui/core/Paper'
 
-import URL from 'url'
+import {parse} from 'url'
 
 import { useBwsLocationContext, useBwsConnectionContext } from './bws-contexts'
 
@@ -127,7 +127,7 @@ export default function BwsChooser({ state, onConnect }) {
   }
 
   const handleSelectUrl = url => {
-    const u = new URL(url)
+    const u = parse(url)
     setValues({
       ...values,
       hostname: u.hostname,
