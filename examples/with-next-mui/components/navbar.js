@@ -14,6 +14,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 
 // @material-ui/icons
+import AdjustIcon from '@material-ui/icons/Adjust'
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline'
 import MenuIcon from '@material-ui/icons/Menu'
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
@@ -21,6 +22,11 @@ import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
 import Link from './link'
 
 const useStyles = makeStyles(theme => ({
+  toolBar: {
+    [theme.breakpoints.down('sm')]: {
+      minHeight: 'fit-content!important'
+    }
+  },
   title: {
     flexGrow: 1
   }
@@ -28,7 +34,8 @@ const useStyles = makeStyles(theme => ({
 
 const pages = [
   { href: '/start', title: 'Start', icon: InfoOutlinedIcon },
-  { href: '/transport', title: 'Transport', icon: PlayCircleOutlineIcon }
+  { href: '/transport', title: 'Transport', icon: PlayCircleOutlineIcon },
+  { href: '/nipplewig-mk1', title: 'Nipplewig Mk1', icon: AdjustIcon }
   // TODO
   // Mix, RemoteControls, CLiplauncher etc...
 ]
@@ -56,7 +63,7 @@ export default function Navbar() {
   const activePage = getPage(router.pathname)
   return (
     <AppBar position="static">
-      <Toolbar variant="dense">
+      <Toolbar variant="dense" className={classes.toolBar}>
         <Hidden smDown>
           <Typography variant="h6" className={classes.title}>
             <Box fontWeight="fontWeightLight">bitwig-websocket-rpc examples : {activePage.title}</Box>

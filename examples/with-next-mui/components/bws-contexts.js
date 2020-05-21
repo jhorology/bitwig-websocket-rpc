@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, createContext } from 'react'
+import React, { useState, useEffect, useMemo, useContext, createContext } from 'react'
 import { BitwigClient } from 'bitwig-websocket-rpc'
 import fetch from 'node-fetch'
 
@@ -7,6 +7,11 @@ import BwsChooser from './bws-chooser'
 const Location = createContext()
 const Connection = createContext()
 
+/**
+ * Bitwig Studio location provider
+ * @property config {object} - configuration
+ * @property merge {boolean} - 
+ */
 export function BwsLocationProvider({ children }) {
   const [context, setContext] = useState()
   useEffect(() => {
@@ -55,38 +60,66 @@ class LocationContext {
   }
 }
 
+/**
+ * Bitwig Studio connection provider
+ * @property config {object} - configuration
+ * @property merge {boolean} - 
+ */
 export function BwsConnectionProvider({ children, config, merge }) {
   const loc = useContext(Location)
-  const [context, setContext] = useState(new ConnectionContext(config, merge, loc.url ? 1 : 0))
-  const [state, setState] = useState(context.state)
-  const handleConnect = (url, password) => {
-    console.info('## handleConnect0 url:', url, 'password:', password)
-    setState(1)
+  const context = useMemo(() => new ConnectionContext(config, merge), [])
+  // readyState
+  //  0: not connected
+  //  1: auto connecting
+  //  2: manual connecting
+  //  3: connected
+  const [readyState, setReadyState] = useState(loc.url ? 1 : 0)
+  const [rpcServices, setRpcServices] = useState(loc.services)
+  // connect to bitwig studio
+  const connect = (s, url, password) => {
+    setReadyState(s) // 1: auto connecting 2: manual connecting
     context.connect(url, password).then(connected => {
-      if (context.isConnected) {
+      if (connected) {
         loc.url = url
         loc.password = password
+        setReadyState(3) // 3: connected
+      } else {
+        setReadyState(0) // 0: not connected
       }
-      setState(context.state)
     })
   }
+  // handles the chooser connect button
+  const handleConnect = (url, password) => {
+    connect(2, url, password) // 2: manual connecting
+  }
+
+  // handles the chooser refresh button
+  const handleRefreshServices = () => {
+    loc.fetchServices()
+    setRpcServices(loc.services)
+  }
+
   useEffect(() => {
     const unmount = () => {
       context.destroy()
     }
     if (loc.url) {
-      setState(1)
-      context.connect(loc.url, loc.password).then(connected => {
-        setState(context.state)
-      })
+      connect(1, loc.url, loc.password) // 1: auto connecting
     }
     return unmount
   }, [])
 
   return (
     <Connection.Provider value={context}>
-      {state === 2 && children}
-      <BwsChooser state={state} onConnect={handleConnect} />
+      {readyState === 3 && children}
+      <BwsChooser
+        open={readyState === 0 || readyState == 2}
+        isConnecting={readyState == 2}
+        rpcServices={rpcServices}
+        onConnect={handleConnect}
+        onRefreshServices={handleRefreshServices}
+        errorText={context.error && 'Connection refused !'}
+      />
     </Connection.Provider>
   )
 }
@@ -97,7 +130,6 @@ export function useBwsConnectionContext() {
 
 class ConnectionContext {
   constructor(config, merge, state) {
-    this._state = state // 0: initial(not connected) 1: connecting 2:connected
     this._config = config
     this._merge = merge
   }
@@ -110,32 +142,14 @@ class ConnectionContext {
     return this._error
   }
 
-  get state() {
-    return this._state
-  }
-
-  get isNotConnected() {
-    return this._state === 0
-  }
-
-  get isConnecting() {
-    return this._state === 1
-  }
-
-  get isConnected() {
-    return this._state === 2
-  }
-
   async connect(url, password) {
-    this._state = 1 // 1: connecting
-    this._error = undefined
     try {
+      this._error = undefined
       this._bws = new BitwigClient(url)
       await this._bws.connect(password)
       if (this._config) {
         await this._bws.config(this._config, this._merge)
       }
-      this._state = 2 // connected
       return true
     } catch (err) {
       this._error = err
@@ -145,7 +159,6 @@ class ConnectionContext {
   }
 
   destroy() {
-    this._state = 0 // not connected
     this._bws &&
       this._bws.close().catch(() => {
         // ignore

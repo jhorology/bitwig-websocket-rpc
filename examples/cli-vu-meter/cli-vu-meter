@@ -116,7 +116,7 @@ program
   .version(pkg.version)
   .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL', 'ws://localhost:8887')
   .option('-p --pass <password>', 'Password')
-  .option('-m --merge',           'Merge required settings into present configuration. Default action is configured minimal.')
+  .option('-m --merge',           'Merge required settings into present configuration. Default action is configured minimal.', false)
   .action(opts => {
     const meter = new CursorTrackVuMeter({
       url: opts.url,

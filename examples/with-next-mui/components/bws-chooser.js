@@ -29,9 +29,7 @@ import BitwigIcon from './icons/bitwig'
 
 import Paper from '@material-ui/core/Paper'
 
-import {parse} from 'url'
-
-import { useBwsLocationContext, useBwsConnectionContext } from './bws-contexts'
+import { parse } from 'url'
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -62,23 +60,16 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function ChooserTable({ onSelectUrl }) {
-  const context = useBwsLocationContext()
-  const [services, setServices] = useState(context.services)
+function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
   const classes = useStyles()
-  const handleRefresh = () => {
-    context.fetchServices().then(svcs => {
-      setServices(context.services)
-    })
-  }
   return (
     <>
       <div className={classes.tableToolbar}>
         <Typography variant="subtitle2" className={classes.tableToolbarTitle}>
-          {services && services.length ? services.length : 'No'} services are detected
+          {rpcServices && rpcServices.length ? rpcServices.length : 'No'} services are detected
         </Typography>
         <Tooltip title="Refresh">
-          <IconButton size="small" onClick={handleRefresh}>
+          <IconButton size="small" onClick={onRefreshServices}>
             <RefreshIcon />
           </IconButton>
         </Tooltip>
@@ -88,9 +79,9 @@ function ChooserTable({ onSelectUrl }) {
           <Table className={classes.table} size="small">
             <TableHead></TableHead>
             <TableBody>
-              {services.map((row, i) => (
+              {rpcServices && rpcServices.map((row, i) => (
                 <TableRow key={i} hover onClick={() => onSelectUrl(row.location)}>
-                  <TableCell className={classes.tableCell}>
+                  <TableCell align="center" className={classes.tableCell}>
                     <PlatformIcon platform={row.platform} fontSize="small" />
                   </TableCell>
                   <TableCell className={classes.tableCell}>{row.location}</TableCell>
@@ -108,13 +99,17 @@ function ChooserTable({ onSelectUrl }) {
 
 /**
  * Bitwig Studio connection chooser Dialog
- * @prop state {Number} - 0: not Connected, 1: connecting 2: connected
- * @prop onConnect {func(url, password)} -  connect hanndler
+ * @property open {boolean} - open state of this dialog
+ * @property rpcServices {Array} - Bitwig WebSocket RPC Services
+ * @property isConnecting {boolean} - connecting state
+ * @property errorText {String} - error text
+ * @propperty onRefreshServices {func} -  connect button hanndler
+ * @propperty onConnect {func(url, password)} -  connect button hanndler
  */
-export default function BwsChooser({ state, onConnect }) {
-  const context = useBwsConnectionContext()
+export default function BwsChooser({ open, rpcServices, isConnecting, errorText, onRefreshServices, onConnect }) {
   const classes = useStyles()
   const passwordInput = useRef()
+  // field values
   const [values, setValues] = useState({
     hostname: '',
     hostnameErr: 'hostname is required',
@@ -122,10 +117,12 @@ export default function BwsChooser({ state, onConnect }) {
     portErr: undefined,
     password: ''
   })
+  // handles the 'CONNECT' Button
   const handleConnect = () => {
     onConnect(`ws://${values.hostname}:${values.port}`, values.password)
   }
 
+  // handles the list select
   const handleSelectUrl = url => {
     const u = parse(url)
     setValues({
@@ -138,6 +135,7 @@ export default function BwsChooser({ state, onConnect }) {
     passwordInput.current.focus()
   }
 
+  // handles the field value change
   const handleValueChange = name => event => {
     const value = event.target.value
     setValues({
@@ -147,6 +145,7 @@ export default function BwsChooser({ state, onConnect }) {
     })
   }
 
+  // field has error ?
   const hasErr = name => {
     if (name) {
       return values[name + 'Err'] ? true : false
@@ -157,6 +156,7 @@ export default function BwsChooser({ state, onConnect }) {
     }
   }
 
+  // validate field values
   const validate = (name, value) => {
     let err
     if (name === 'hostname') {
@@ -179,7 +179,7 @@ export default function BwsChooser({ state, onConnect }) {
       disableEscapeKeyDown
       maxWidth="xs"
       aria-labelledby="confirmation-dialog-title"
-      open={state === 0 || state === 1}>
+      open={open}>
       <DialogTitle id="confirmation-dialog-title" className={classes.title}>
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item>
@@ -228,15 +228,15 @@ export default function BwsChooser({ state, onConnect }) {
         <Box my={2} />
         <Divider />
         <Box my={2} />
-        <ChooserTable onSelectUrl={handleSelectUrl} />
-        {context.error && <Alert severity="error">Connection refused!</Alert>}
+        <ChooserTable rpcServices={rpcServices} onSelectUrl={handleSelectUrl} onRefreshServices={onRefreshServices} />
+        {errorText && <Alert severity="error">{errorText}</Alert>}
       </DialogContent>
       <DialogActions>
         <div className={classes.buttonWrapper}>
-          <Button onClick={handleConnect} disabled={hasErr() || state > 0}>
+          <Button onClick={handleConnect} disabled={hasErr() || isConnecting}>
             Connect
           </Button>
-          {state === 1 && <CircularProgress size={24} color="secondary" className={classes.buttonProgress} />}
+          {isConnecting && <CircularProgress size={24} color="secondary" className={classes.buttonProgress} />}
         </div>
       </DialogActions>
     </Dialog>

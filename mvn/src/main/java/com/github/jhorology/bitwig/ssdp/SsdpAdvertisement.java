@@ -64,15 +64,18 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private static final Logger LOG = LoggerFactory.getLogger(SsdpAdvertisement.class);
     // https://cloud.tencent.com/developer/article/1011721
     private static final byte[][] VIRTUAL_HARDWARE_ADDRESSES = {
-        {0x00, 0x05, 0x69},             // VMWare
-        {0x00, 0x1C, 0x14},             // VMWare
-        {0x00, 0x0C, 0x29},             // VMWare
-        {0x00, 0x50, 0x56},             // VMWare
-        {0x08, 0x00, 0x27},             // Virtualbox
-        {0x0A, 0x00, 0x27},             // Virtualbox
-        {0x00, 0x03, (byte)0xFF},       // Virtual-PC
-        {0x00, 0x1C, 0x42},             // Parallels
-        {0x00, 0x15, 0x5D}              // Hyper-V
+        {0x00, 0x05, 0x69}             // VMWare
+        , {0x00, 0x1C, 0x14}           // VMWare
+        , {0x00, 0x0C, 0x29}           // VMWare
+        , {0x00, 0x50, 0x56}           // VMWare
+        , {0x08, 0x00, 0x27}           // Virtualbox
+        , {0x0A, 0x00, 0x27}           // Virtualbox
+        , {0x00, 0x03, (byte)0xFF}     // Virtual-PC
+        // for debugging on WSL2 and Parallels
+        //#if build.productiondevelopment
+        , {0x00, 0x1C, 0x42}           // Parallels
+        {0x00, 0x15, 0x5D}             // Hyper-V
+        //#endif
     };
     private SsdpService ssdpService;
     private String serviceType;
