@@ -16,11 +16,7 @@ module.exports = {
   rules: {
     'react/prop-types': 0
   },
-  extends: [
-    'eslint:recommended',
-    'plugin:react/recommended',
-    'plugin:prettier/recommended'
-  ],
+  extends: ['eslint:recommended', 'plugin:react/recommended', 'plugin:prettier/recommended'],
   settings: {
     react: {
       version: 'detect'

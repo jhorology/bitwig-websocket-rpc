@@ -21,31 +21,34 @@ const useStyles = makeStyles(theme => ({
   },
   gridContainer: {},
   outerBox: {
+    [theme.breakpoints.down('xs')]: boxCss('xs'),
     [theme.breakpoints.down('sm')]: boxCss('sm'),
     [theme.breakpoints.up('md')]: boxCss('md'),
     [theme.breakpoints.up('lg')]: boxCss('lg')
   },
   innerBox: {
-    borderRadius: '50%',
     backgroundColor: pink[100],
     width: '100%',
-    height: '100%',
+    height: '100%'
   },
   nippleContainer: {}
 }))
 
 function boxCss(size) {
-  const gridSize =
-    {
-      sm: 600,
+  const cellSize =
+    ({
+      xs: 420,
+      sm: 500,
       md: 960,
       lg: 1280
-    }[size] / 6 | 0
-  const padding = gridSize * 0.15 | 0
+    }[size] /
+      6) |
+    0
+  const padding = (cellSize * 0.1) | 0
   return {
     padding: `${padding}px`,
-    width: `${gridSize}px`,
-    height: `${gridSize}px`
+    width: `${cellSize}px`,
+    height: `${cellSize}px`
   }
 }
 
@@ -53,13 +56,13 @@ function NippleMk1() {
   const classes = useStyles()
   return (
     <Box className={classes.outerBox}>
-      <Box className={classes.innerBox} background={pink[100]}>
+      <Box className={classes.innerBox} borderRadius="50%">
         <Nipple
           options={{
-            mode: 'dynamic',
+            mode: 'static',
             color: 'red',
             position: { top: '50%', left: '50%' },
-            restOpacity: 0.5,
+            restOpacity: 0,
             restJoystick: true
           }}
         />
@@ -68,7 +71,6 @@ function NippleMk1() {
   )
 }
 
-
 export default function NipplewigMK1Page() {
   const classes = useStyles()
   return (
@@ -76,8 +78,8 @@ export default function NipplewigMK1Page() {
       <div className={classes.root}>
         <Grid container justify="center" alignItems="center" className={classes.gridContainer}>
           {[0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1].map((v, i) => (
-            <Grid container item justify="center" alignItems="center" xs={2}>
-              {(v === 1) && <NippleMk1 key={i}/>}
+            <Grid key={i} container item justify="center" alignItems="center" xs={2}>
+              {v === 1 && <NippleMk1 />}
             </Grid>
           ))}
         </Grid>

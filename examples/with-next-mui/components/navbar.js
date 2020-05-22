@@ -1,5 +1,4 @@
 import React from 'react'
-import { useRouter } from 'next/router'
 
 // @material-ui/core components
 import { makeStyles } from '@material-ui/core/styles'
@@ -47,20 +46,21 @@ const getPage = href => {
 
 const LinkButton = ({ page }) => {
   return (
-    <Button naked color="inherit" component={Link} href={page.href} startIcon={<page.icon />}>
-      {page.title}
-    </Button>
+    <Box borderBottom={location.pathname.includes(page.href) ? 2 : 0}>
+      <Button naked color="inherit" component={Link} href={page.href} startIcon={<page.icon />}>
+        {page.title}
+      </Button>
+    </Box>
   )
 }
 
 export default function Navbar() {
   const classes = useStyles()
-  const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const handleDrawerToggle = () => {
     setOpen(!open)
   }
-  const activePage = getPage(router.pathname)
+  const activePage = getPage(location.pathname)
   return (
     <AppBar position="static">
       <Toolbar variant="dense" className={classes.toolBar}>
@@ -80,7 +80,7 @@ export default function Navbar() {
           ))}
         </Hidden>
         <Hidden mdUp>
-          <Button color="inherit" justIcon aria-label="open drawer" onClick={handleDrawerToggle}>
+          <Button color="inherit" aria-label="open drawer" onClick={handleDrawerToggle}>
             <MenuIcon />
           </Button>
         </Hidden>

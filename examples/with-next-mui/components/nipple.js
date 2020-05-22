@@ -76,8 +76,7 @@ export default function Nipple({
     setJoystick(js)
     onCreated && onCreated(js)
   }
-  const properties = useMemo(() => {
-  }, [])
+  const properties = useMemo(() => {}, [])
 
   useEffect(() => {
     const unmount = () => {
@@ -88,11 +87,5 @@ export default function Nipple({
     createJoystick()
     return unmount
   }, [])
-  return (
-    <div
-      {...other}
-      ref={handleElement}
-      className={classes.nipple}
-    />
-  )
+  return <div {...other} ref={handleElement} className={classes.nipple} />
 }

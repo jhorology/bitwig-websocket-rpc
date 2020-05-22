@@ -1,5 +1,5 @@
 const fs = require('fs'),
-      { Server, Client } = require('node-ssdp')
+  { Server, Client } = require('node-ssdp')
 
 const rpcServices = {}
 
@@ -10,11 +10,11 @@ const rpcServices = {}
  */
 function start() {
   const server = new Server(),
-        client = new Client({
-          // TODO why need this on windows ?
-          explicitSocketBind: true
-        }),
-        SERVICE_TYPE = /^urn:bitwig-websocket-rpc:service:json-rpc 2\.0:(.+)$/
+    client = new Client({
+      // TODO why need this on windows ?
+      explicitSocketBind: true
+    }),
+    SERVICE_TYPE = /^urn:bitwig-websocket-rpc:service:json-rpc 2\.0:(.+)$/
 
   server.on('advertise-alive', (heads, rinfo) => {
     const match = SERVICE_TYPE.exec(heads.NT)
@@ -38,7 +38,8 @@ function start() {
   })
 
   // start server on all interfaces
-  server.start()
+  server
+    .start()
     .catch(e => {
       console.log('Failed to start SSDP listener:', e)
     })

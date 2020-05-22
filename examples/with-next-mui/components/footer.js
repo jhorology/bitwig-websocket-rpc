@@ -21,16 +21,19 @@ export default function Footer(props) {
   const classes = useStyles()
   return (
     <div className={classes.root}>
-      <Divider/>
+      <Divider />
       <footer>
         <Typography variant="body2" color="textSecondary">
-          Powered by <GitHubIcon fontSize="small"/>&nbsp;&nbsp;
+          Powered by <GitHubIcon fontSize="small" />
+          &nbsp;&nbsp;
           <Link color="inherit" href="https://github.com/jhorology/bitwig-websocket-rpc">
             bitwig-websocket-rpc
-          </Link>&nbsp;|&nbsp;
+          </Link>
+          &nbsp;|&nbsp;
           <Link color="inherit" href="https://github.com/zeit/next.js/">
             Next.js
-          </Link>&nbsp;|&nbsp;
+          </Link>
+          &nbsp;|&nbsp;
           <Link color="inherit" href="https://github.com/mui-org/material-ui">
             material-ui
           </Link>

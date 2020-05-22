@@ -10,7 +10,7 @@ const Connection = createContext()
 /**
  * Bitwig Studio location provider
  * @property config {object} - configuration
- * @property merge {boolean} - 
+ * @property merge {boolean} -
  */
 export function BwsLocationProvider({ children }) {
   const [context, setContext] = useState()
@@ -63,7 +63,7 @@ class LocationContext {
 /**
  * Bitwig Studio connection provider
  * @property config {object} - configuration
- * @property merge {boolean} - 
+ * @property merge {boolean} -
  */
 export function BwsConnectionProvider({ children, config, merge }) {
   const loc = useContext(Location)
@@ -95,8 +95,9 @@ export function BwsConnectionProvider({ children, config, merge }) {
 
   // handles the chooser refresh button
   const handleRefreshServices = () => {
-    loc.fetchServices()
-    setRpcServices(loc.services)
+    loc.fetchServices().then(() => {
+      setRpcServices(loc.services)
+    })
   }
 
   useEffect(() => {
@@ -113,9 +114,9 @@ export function BwsConnectionProvider({ children, config, merge }) {
     <Connection.Provider value={context}>
       {readyState === 3 && children}
       <BwsChooser
-        open={readyState === 0 || readyState == 2}
-        isConnecting={readyState == 2}
-        rpcServices={rpcServices}
+        open={readyState === 0 || readyState === 2}
+        isConnecting={readyState === 2}
+        rpcServices={loc.services}
         onConnect={handleConnect}
         onRefreshServices={handleRefreshServices}
         errorText={context.error && 'Connection refused !'}

@@ -79,16 +79,17 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
           <Table className={classes.table} size="small">
             <TableHead></TableHead>
             <TableBody>
-              {rpcServices && rpcServices.map((row, i) => (
-                <TableRow key={i} hover onClick={() => onSelectUrl(row.location)}>
-                  <TableCell align="center" className={classes.tableCell}>
-                    <PlatformIcon platform={row.platform} fontSize="small" />
-                  </TableCell>
-                  <TableCell className={classes.tableCell}>{row.location}</TableCell>
-                  <TableCell className={classes.tableCell}>{row.bitwigVersion}</TableCell>
-                  <TableCell className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
-                </TableRow>
-              ))}
+              {rpcServices &&
+                rpcServices.map((row, i) => (
+                  <TableRow key={i} hover onClick={() => onSelectUrl(row.location)}>
+                    <TableCell align="center" className={classes.tableCell}>
+                      <PlatformIcon platform={row.platform} fontSize="small" />
+                    </TableCell>
+                    <TableCell className={classes.tableCell}>{row.location}</TableCell>
+                    <TableCell className={classes.tableCell}>{row.bitwigVersion}</TableCell>
+                    <TableCell className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
