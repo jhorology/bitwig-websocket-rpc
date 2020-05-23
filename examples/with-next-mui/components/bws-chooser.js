@@ -220,6 +220,7 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
             <TextField
               inputRef={passwordInput}
               fullWidth
+              type="password"
               label="password"
               value={values.password}
               onChange={handleValueChange('password')}
@@ -234,10 +235,10 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
       </DialogContent>
       <DialogActions>
         <div className={classes.buttonWrapper}>
-          <Button onClick={handleConnect} disabled={hasErr() || isConnecting}>
+          <Button type="submit" color="primary" onClick={handleConnect} disabled={hasErr() || isConnecting}>
             Connect
           </Button>
-          {isConnecting && <CircularProgress size={24} color="secondary" className={classes.buttonProgress} />}
+          {isConnecting && <CircularProgress size={24} color="primary" className={classes.buttonProgress} />}
         </div>
       </DialogActions>
     </Dialog>

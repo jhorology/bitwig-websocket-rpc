@@ -9,8 +9,7 @@
     "start": "NODE_ENV=production node server.js",
     "format:pages": "prettier --write 'pages/**/*.js'",
     "format:components": "prettier --write 'components/**/*.js'",
-    "format": "prettier --write './**/*.js'",
-    "format2": "run-s format:*"
+    "format": "prettier --write './**/*.js'"
   },
   "dependencies": {
     "@material-ui/core": "^4.9.14",

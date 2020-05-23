@@ -72,9 +72,9 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         , {0x0A, 0x00, 0x27}           // Virtualbox
         , {0x00, 0x03, (byte)0xFF}     // Virtual-PC
         // for debugging on WSL2 and Parallels
-        //#if build.productiondevelopment
+        //#if build.production
         , {0x00, 0x1C, 0x42}           // Parallels
-        {0x00, 0x15, 0x5D}             // Hyper-V
+        , {0x00, 0x15, 0x5D}             // Hyper-V
         //#endif
     };
     private SsdpService ssdpService;
