@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react'
-import { useRouter } from 'next/router'
+import React from 'react'
 
 import Page from '../components/page'
 

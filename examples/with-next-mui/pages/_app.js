@@ -9,10 +9,10 @@ import { BwsLocationProvider } from '../components/bws-contexts'
 
 const theme = createMuiTheme({
   palette: {
-    type: 'dark'
-    // primary: {
-    //   main: '#556cd6'
-    // },
+    type: 'dark',
+    primary: {
+      main: '#ff5a00'
+    }
     // secondary: {
     //   main: '#19857b'
     // },

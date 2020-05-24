@@ -279,8 +279,8 @@ public class ReflectionRegistry implements RpcRegistry {
                 Track parentTrack = cursorTrack.createParentTrack(config.getCursorTrackNumSends(),
                                                                   config.getCursorTrackNumScenes());
                 register("parentTrack",
-                        Track.class,
-                        parentTrack)
+                         Track.class,
+                         parentTrack)
                     .registerBankItemCount(SendBank.class,
                                            config.getCursorTrackNumSends())
                     .registerBankItemCount(ClipLauncherSlotOrSceneBank.class,
@@ -662,6 +662,14 @@ public class ReflectionRegistry implements RpcRegistry {
         int bankItemCount = 0;
 
         if (isReturnTypeBitwigAPI) {
+            // detect infinite loop in chain
+            if (isInfiniteLoopChain(parentNode, returnType)) {
+                LOG.debug("method[{}.{}] is ignored, as it cause an infinite loop.",
+                          parentNode.getAbsoluteName(),
+                          method.getName());
+                return;
+            }
+            
             isReturnTypeBitwigValue = ReflectUtils.isBitwigValue(returnType);
             isReturnTypeBitwigParameter = ReflectUtils.isBitwigParameter(returnType);
             if (ReflectUtils.isBankMethod(method)) {
@@ -735,5 +743,16 @@ public class ReflectionRegistry implements RpcRegistry {
             // register method recursively
             mh.getMethodStream().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
+    }
+
+    private boolean isInfiniteLoopChain(RegistryNode parentNode, Class<?> returnType) {
+        RegistryNode node = parentNode;
+        while(node != null) {
+            if (node.getNodeType().isAssignableFrom(returnType)) {
+                return true;
+            }
+            node = node.getParentNode();
+        }
+        return false;
     }
 }

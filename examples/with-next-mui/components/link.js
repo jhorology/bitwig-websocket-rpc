@@ -24,7 +24,14 @@ NextComposed.propTypes = {
 // A styled version of the Next.js Link component:
 // https://nextjs.org/docs/#with-link
 function Link(props) {
-  const { href, activeClassName = 'active', className: classNameProps, innerRef, naked, ...other } = props
+  const {
+    href,
+    activeClassName = 'active',
+    className: classNameProps,
+    innerRef,
+    naked,
+    ...other
+  } = props
 
   const router = useRouter()
   const pathname = typeof href === 'string' ? href : href.pathname
@@ -36,7 +43,15 @@ function Link(props) {
     return <NextComposed className={className} ref={innerRef} href={href} {...other} />
   }
 
-  return <MuiLink component={NextComposed} className={className} ref={innerRef} href={href} {...other} />
+  return (
+    <MuiLink
+      component={NextComposed}
+      className={className}
+      ref={innerRef}
+      href={href}
+      {...other}
+    />
+  )
 }
 
 Link.propTypes = {

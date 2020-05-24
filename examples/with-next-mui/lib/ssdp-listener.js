@@ -19,21 +19,21 @@ function start() {
   server.on('advertise-alive', (heads, rinfo) => {
     const match = SERVICE_TYPE.exec(heads.NT)
     if (match) {
-      _addServer(heads, match[1])
+      _addRpcService(heads, match[1])
     }
   })
 
   server.on('advertise-bye', (heads, rinfo) => {
     const match = SERVICE_TYPE.exec(heads.NT)
     if (match) {
-      _removeServer(heads)
+      _removeRpcService(heads)
     }
   })
 
   client.on('response', (heads, statusCode, rinfo) => {
     const match = SERVICE_TYPE.exec(heads.ST)
     if (match) {
-      _addServer(heads, match[1])
+      _addRpcService(heads, match[1])
     }
   })
 
@@ -63,7 +63,7 @@ function getRpcServices() {
   return list
 }
 
-function _addServer(heads, extensionVersion) {
+function _addRpcService(heads, extensionVersion) {
   rpcServices[heads.USN] = {
     extension: heads.EXTENSION,
     extensionVersion: extensionVersion,
@@ -74,7 +74,7 @@ function _addServer(heads, extensionVersion) {
   }
 }
 
-function _removeServer(heads) {
+function _removeRpcService(heads) {
   delete rpcServices[heads.USN]
 }
 

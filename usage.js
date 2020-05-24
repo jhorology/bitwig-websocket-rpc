@@ -27,7 +27,7 @@ async function main(bws) {
     // { code: -32603,
     //   message: 'Internal error',
     //   data: 'Trying to get a value while not being subscribed.' }
-    console.log(err)
+    console.log('error:', err.data)
   }
 
   // subscribe interest events

@@ -66,7 +66,9 @@ export default function Navbar() {
       <Toolbar variant="dense" className={classes.toolBar}>
         <Hidden smDown>
           <Typography variant="h6" className={classes.title}>
-            <Box fontWeight="fontWeightLight">bitwig-websocket-rpc examples : {activePage.title}</Box>
+            <Box fontWeight="fontWeightLight">
+              bitwig-websocket-rpc examples : {activePage.title}
+            </Box>
           </Typography>
         </Hidden>
         <Hidden mdUp>

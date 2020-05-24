@@ -31,10 +31,16 @@ import Paper from '@material-ui/core/Paper'
 
 import { parse } from 'url'
 
+import { useBwsLocation } from './bws-contexts'
+
 const useStyles = makeStyles(theme => ({
   title: {
     paddingTop: '8px',
     paddingBottom: '0px'
+  },
+  tableDivider: {
+    marginTop: '16px',
+    marginBottom: '8px'
   },
   tableToolbar: {
     display: 'flex'
@@ -44,6 +50,9 @@ const useStyles = makeStyles(theme => ({
   },
   tableContainer: {
     maxHeight: '120px'
+  },
+  tableRow: {
+    cursor: 'pointer'
   },
   tableCell: {
     padding: '6px 12px 6px 8px'
@@ -64,6 +73,7 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
   const classes = useStyles()
   return (
     <>
+      <Divider className={classes.tableDivider} />
       <div className={classes.tableToolbar}>
         <Typography variant="subtitle2" className={classes.tableToolbarTitle}>
           {rpcServices && rpcServices.length ? rpcServices.length : 'No'} services are detected
@@ -78,7 +88,7 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
         <TableContainer className={classes.tableContainer}>
           <Table className={classes.table} size="small">
             <TableHead></TableHead>
-            <TableBody>
+            <TableBody className={classes.tableRow}>
               {rpcServices &&
                 rpcServices.map((row, i) => (
                   <TableRow key={i} hover onClick={() => onSelectUrl(row.location)}>
@@ -87,7 +97,8 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
                     </TableCell>
                     <TableCell className={classes.tableCell}>{row.location}</TableCell>
                     <TableCell className={classes.tableCell}>{row.bitwigVersion}</TableCell>
-                    <TableCell className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
+                    <TableCell
+                      className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
@@ -101,16 +112,15 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
 /**
  * Bitwig Studio connection chooser Dialog
  * @property open {boolean} - open state of this dialog
- * @property rpcServices {Array} - Bitwig WebSocket RPC Services
  * @property isConnecting {boolean} - connecting state
  * @property errorText {String} - error text
- * @propperty onRefreshServices {func} -  connect button hanndler
  * @propperty onConnect {func(url, password)} -  connect button hanndler
  */
-export default function BwsChooser({ open, rpcServices, isConnecting, errorText, onRefreshServices, onConnect }) {
+export default function BwsChooser({ open, isConnecting, errorText, onConnect }) {
   const classes = useStyles()
+  const loc = useBwsLocation()
   const passwordInput = useRef()
-  // field values
+  // input field values
   const [values, setValues] = useState({
     hostname: '',
     hostnameErr: 'hostname is required',
@@ -118,6 +128,7 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
     portErr: undefined,
     password: ''
   })
+  const [rpcServices, setRpcServices] = useState(loc && loc.services)
   // handles the 'CONNECT' Button
   const handleConnect = () => {
     onConnect(`ws://${values.hostname}:${values.port}`, values.password)
@@ -135,6 +146,10 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
     })
     passwordInput.current.focus()
   }
+  // handle the refresh button
+  const handleRefresh = () => {
+    loc && loc.fetchServices().then(services => setRpcServices(services))
+  }
 
   // handles the field value change
   const handleValueChange = name => event => {
@@ -149,11 +164,11 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
   // field has error ?
   const hasErr = name => {
     if (name) {
-      return values[name + 'Err'] ? true : false
+      return !!values[name + 'Err']
     } else {
       return Object.keys(values)
         .filter(key => key.endsWith('Err'))
-        .some(key => typeof values[key] !== 'undefined')
+        .some(key => !!values[key])
     }
   }
 
@@ -193,54 +208,63 @@ export default function BwsChooser({ open, rpcServices, isConnecting, errorText,
           </Grid>
         </Grid>
       </DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={2}>
-          <Grid item xs={8}>
-            <TextField
-              fullWidth
-              autoFocus
-              label="hostname or address"
-              error={hasErr('hostname')}
-              helperText={values.hostnameErr}
-              value={values.hostname}
-              onChange={handleValueChange('hostname')}
-            />
+      <form>
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            <Grid item xs={8}>
+              <TextField
+                fullWidth
+                autoFocus
+                label="hostname or address"
+                error={hasErr('hostname')}
+                helperText={values.hostnameErr}
+                value={values.hostname}
+                onChange={handleValueChange('hostname')}
+              />
+              <TextField
+                inputRef={passwordInput}
+                fullWidth
+                type="password"
+                label="password"
+                value={values.password}
+                onChange={handleValueChange('password')}
+              />
+            </Grid>
+            <Grid item xs={4}>
+              <TextField
+                label="port"
+                value={values.port}
+                error={hasErr('port')}
+                helperText={values.portErr}
+                inputProps={{ maxLength: 5, width: '30px' }}
+                onChange={handleValueChange('port')}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={4}>
-            <TextField
-              label="port"
-              value={values.port}
-              error={hasErr('port')}
-              helperText={values.portErr}
-              inputProps={{ maxLength: 5, width: '30px' }}
-              onChange={handleValueChange('port')}
+          {loc && (
+            <ChooserTable
+              rpcServices={rpcServices}
+              onSelectUrl={handleSelectUrl}
+              onRefreshServices={handleRefresh}
             />
-          </Grid>
-          <Grid item xs={8}>
-            <TextField
-              inputRef={passwordInput}
-              fullWidth
-              type="password"
-              label="password"
-              value={values.password}
-              onChange={handleValueChange('password')}
-            />
-          </Grid>
-        </Grid>
-        <Box my={2} />
-        <Divider />
-        <Box my={2} />
-        <ChooserTable rpcServices={rpcServices} onSelectUrl={handleSelectUrl} onRefreshServices={onRefreshServices} />
-        {errorText && <Alert severity="error">{errorText}</Alert>}
-      </DialogContent>
-      <DialogActions>
-        <div className={classes.buttonWrapper}>
-          <Button type="submit" color="primary" onClick={handleConnect} disabled={hasErr() || isConnecting}>
-            Connect
-          </Button>
-          {isConnecting && <CircularProgress size={24} color="primary" className={classes.buttonProgress} />}
-        </div>
-      </DialogActions>
+          )}
+          {errorText && <Alert severity="error">{errorText}</Alert>}
+        </DialogContent>
+        <DialogActions>
+          <div className={classes.buttonWrapper}>
+            <Button
+              type="submit"
+              color="primary"
+              onClick={handleConnect}
+              disabled={hasErr() || isConnecting}>
+              Connect
+            </Button>
+            {isConnecting && (
+              <CircularProgress size={24} color="primary" className={classes.buttonProgress} />
+            )}
+          </div>
+        </DialogActions>
+      </form>
     </Dialog>
   )
 }

@@ -158,6 +158,14 @@ abstract class RegistryNode {
     Class<?> getNodeType() {
         return nodeType;
     }
+    
+    /**
+     * Returns a parent node.
+     * @return
+     */
+    RegistryNode getParentNode() {
+        return parentNode;
+    }
 
     /**
      * Clear this instance;

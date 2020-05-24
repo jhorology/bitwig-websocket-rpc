@@ -23,7 +23,10 @@ export function BwsLocationProvider({ children }) {
   return <Location.Provider value={context}>{context && children}</Location.Provider>
 }
 
-export function useBwsLocationContext() {
+/**
+ * use Bitwig Studio remote location and location service
+ */
+export function useBwsLocation() {
   return useContext(Location)
 }
 
@@ -57,112 +60,115 @@ class LocationContext {
   async fetchServices() {
     const res = await fetch(location.origin + '/rpc-services')
     this._services = await res.json()
+    return this._services
   }
 }
 
 /**
  * Bitwig Studio connection provider
  * @property config {object} - configuration
- * @property merge {boolean} -
+ * @property merge {boolean} - config
  */
-export function BwsConnectionProvider({ children, config, merge }) {
-  const loc = useContext(Location)
-  const context = useMemo(() => new ConnectionContext(config, merge), [])
+export function BwsConnectionProvider({ children, config, merge = true }) {
+  const loc = useBwsLocation()
   // readyState
   //  0: not connected
   //  1: auto connecting
   //  2: manual connecting
   //  3: connected
-  const [readyState, setReadyState] = useState(loc.url ? 1 : 0)
-  const [rpcServices, setRpcServices] = useState(loc.services)
+  const [states, setStates] = useState({
+    readyState: 0,
+    bws: undefined,
+    error: undefined
+  })
   // connect to bitwig studio
-  const connect = (s, url, password) => {
-    setReadyState(s) // 1: auto connecting 2: manual connecting
-    context.connect(url, password).then(connected => {
-      if (connected) {
-        loc.url = url
-        loc.password = password
-        setReadyState(3) // 3: connected
-      } else {
-        setReadyState(0) // 0: not connected
-      }
-    })
-  }
   // handles the chooser connect button
   const handleConnect = (url, password) => {
-    connect(2, url, password) // 2: manual connecting
-  }
-
-  // handles the chooser refresh button
-  const handleRefreshServices = () => {
-    loc.fetchServices().then(() => {
-      setRpcServices(loc.services)
-    })
+    setStates({ ...states, readyState: 2 })
+    connect(url, password, config, merge, setStates, loc)
   }
 
   useEffect(() => {
     const unmount = () => {
-      context.destroy()
+      states.bws && states.bws.close()
     }
-    if (loc.url) {
-      connect(1, loc.url, loc.password) // 1: auto connecting
+    // auto connect
+    if (loc && loc.url) {
+      setStates({ ...states, readyState: 1 })
+      connect(loc.url, loc.password, config, merge, setStates)
     }
     return unmount
   }, [])
 
   return (
-    <Connection.Provider value={context}>
-      {readyState === 3 && children}
+    <Connection.Provider value={states.bws}>
+      {states.readyState === 3 && children}
       <BwsChooser
-        open={readyState === 0 || readyState === 2}
-        isConnecting={readyState === 2}
-        rpcServices={loc.services}
+        open={states.readyState === 0 || states.readyState === 2}
+        isConnecting={states.readyState === 2}
         onConnect={handleConnect}
-        onRefreshServices={handleRefreshServices}
-        errorText={context.error && 'Connection refused !'}
+        errorText={states.error}
       />
     </Connection.Provider>
   )
 }
 
-export function useBwsConnectionContext() {
-  return useContext(Connection)
+/**
+ * use Bitwig Studio connection
+ */
+export function useBwsConnection() {
+  const bws = useContext(Connection)
+  return bws
 }
 
-class ConnectionContext {
-  constructor(config, merge, state) {
-    this._config = config
-    this._merge = merge
-  }
-
-  get bws() {
-    return this._bws
-  }
-
-  get error() {
-    return this._error
-  }
-
-  async connect(url, password) {
-    try {
-      this._error = undefined
-      this._bws = new BitwigClient(url)
-      await this._bws.connect(password)
-      if (this._config) {
-        await this._bws.config(this._config, this._merge)
-      }
-      return true
-    } catch (err) {
-      this._error = err
-      this.destroy()
+/**
+ * use Bitwig Studio event params
+ */
+export function useBwsEventParams(event) {
+  const bws = useBwsConnection()
+  const [params, setParams] = useState()
+  useEffect(() => {
+    if (!bws.isSubscribed(event)) {
+      bws.subscribe([event])
     }
-    return false
-  }
+    bws.on(event, params => setParams(params))
+  }, [])
+  return params
+}
 
-  destroy() {
-    this._bws &&
-      this._bws.close().catch(() => {
-        // ignore
+async function connect(url, password, config, merge, setStates, loc) {
+  let bws
+  try {
+    bws = new BitwigClient(url)
+    await bws.connect(password)
+    if (config) {
+      await bws.config(config, merge)
+    }
+    if (loc) {
+      loc.url = url
+      loc.password = password
+    }
+    bws.once('close', () => {
+      setStates({
+        readyState: 0,
+        bws: undefined,
+        error: 'Connection closed by remote host !'
       })
+    })
+    setStates({
+      readyState: 3,
+      bws: bws,
+      error: undefined
+    })
+  } catch (err) {
+    console.error(err)
+    if (bws) {
+      bws.close()
+    }
+    setStates({
+      readyState: 0,
+      bws: undefined,
+      error: 'Connection refused !'
+    })
   }
 }

@@ -151,7 +151,7 @@ async function configCommand(options) {
   if (options.print) {
     _print(config)
   }
-  await ws.close()
+  ws.close()
 }
 
 /**
@@ -163,7 +163,7 @@ async function reportCommand(options) {
   })
   await ws.connect()
   const report = await ws.call('rpc.report')
-  await ws.close()
+  ws.close()
   if (!options.summary) {
     _print(report)
     return
@@ -283,7 +283,7 @@ async function eventsCommand(options) {
   while (options.reconnect || first) {
     first = false
     try {
-      await ws.connect()
+      await ws.connect(options.reconnect ? -1 : 0)
       const startTime = Date.now()
       const report = await ws.call('rpc.report')
       const events = report.events
@@ -304,11 +304,9 @@ async function eventsCommand(options) {
       // infinite wait until close
       await ws.promise('close', true, 0)
     } catch (err) {
-      console.log(err)
-      try { await ws.close() } catch {
-      }
-      if (options.reconnect) {
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!options.reconnect) {
+        console.log(err)
+        ws.close()
       }
     }
   }
@@ -325,7 +323,7 @@ async function logsCommand(options) {
   while (options.reconnect || first) {
     first = false
     try {
-      await ws.connect()
+      await ws.connect(options.reconnect ? -1 : 0)
       ws.on('rpc.log', params => {
         console.log(params[0])
       })
@@ -333,10 +331,9 @@ async function logsCommand(options) {
       // infinite wait until close
       await ws.promise('close', true, 0)
     } catch (err) {
-      try { await ws.close() } catch {
-      }
-      if (options.reconnect) {
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+      if (!options.reconnect) {
+        console.log(err)
+        ws.close()
       }
     }
   }

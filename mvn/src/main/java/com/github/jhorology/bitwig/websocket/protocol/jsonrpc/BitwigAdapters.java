@@ -27,6 +27,9 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 // bitwig api
 import com.bitwig.extension.api.util.midi.ShortMidiMessage;
@@ -37,6 +40,10 @@ import com.bitwig.extension.controller.api.BooleanValue;
 import com.bitwig.extension.controller.api.ColorValue;
 import com.bitwig.extension.controller.api.DoubleValue;
 import com.bitwig.extension.controller.api.EnumValue;
+//#if bitwig.extension.api.version >= 11
+import com.bitwig.extension.controller.api.EnumDefinition;
+import com.bitwig.extension.controller.api.EnumValueDefinition;
+//#endif
 import com.bitwig.extension.controller.api.IntegerValue;
 //#if bitwig.extension.api.version >= 10
 import com.bitwig.extension.controller.api.NoteStep;
@@ -58,6 +65,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 // source
 import com.github.jhorology.bitwig.ext.BeatTime;
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
+import com.google.gson.JsonArray;
 
 /**
  * GSON type adapters for Bitwig Value Objects.
@@ -84,6 +92,10 @@ public class BitwigAdapters {
         ADAPTED_TYPES.add(new ImmutablePair<>(CollectionValue.class,  CollectionValueAdapter::new));
         //#if bitwig.extension.api.version >= 10
         ADAPTED_TYPES.add(new ImmutablePair<>(NoteStep.class,         NoteStepAdapter::new));
+        //#endif
+        //#if bitwig.extension.api.version >= 11
+        ADAPTED_TYPES.add(new ImmutablePair<>(EnumDefinition.class,   EnumDefinitionAdapter::new));
+        ADAPTED_TYPES.add(new ImmutablePair<>(EnumValueDefinition.class, EnumValueDefinitionAdapter::new));
         //#endif
     }
 
@@ -348,6 +360,41 @@ public class BitwigAdapters {
             json.addProperty("gain", src.gain());
             json.addProperty("transpose", src.transpose());
             json.addProperty("selected", src.isIsSelected());
+            return json;
+        }
+    }
+    //#endif
+
+    //#if bitwig.extension.api.version >= 11
+    /**
+     * A GSON type adapter for EnumDefinition.
+     */
+    public static class EnumDefinitionAdapter implements JsonSerializer<EnumDefinition> {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JsonElement serialize(EnumDefinition src, Type typeOfSrc, JsonSerializationContext context) {
+            List<EnumValueDefinition> array = IntStream.range(0, src.getValueCount())
+                .mapToObj(src::valueDefinitionAt)
+                .collect(Collectors.toList());
+            return context.serialize(array);
+        }
+    }
+    
+    /**
+     * A GSON type adapter for EnumValueDefinition.
+     */
+    public static class EnumValueDefinitionAdapter implements JsonSerializer<EnumValueDefinition> {
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public JsonElement serialize(EnumValueDefinition src, Type typeOfSrc, JsonSerializationContext context) {
+            JsonObject json = new JsonObject();
+            json.addProperty("valueIndex", src.getValueIndex());
+            json.addProperty("id", src.getId());
+            json.addProperty("displayName", src.getDisplayName());
             return json;
         }
     }

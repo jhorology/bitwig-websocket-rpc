@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Page({ children, config, merge }) {
+export default function Page({ children, config, merge, events }) {
   // styles
   const classes = useStyles()
   useEffect(() => {
@@ -37,7 +37,7 @@ export default function Page({ children, config, merge }) {
   return (
     <div className={classes.root}>
       <Navbar />
-      <BwsConnectionProvider config={config} merge={merge}>
+      <BwsConnectionProvider config={config} merge={merge} events={events}>
         <Container fixed disableGutters className={classes.pageContainer}>
           {children}
         </Container>

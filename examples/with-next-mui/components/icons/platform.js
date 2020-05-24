@@ -1,3 +1,5 @@
+import React from 'react'
+
 import AppleIcon from '@material-ui/icons/Apple'
 import WindowsIcon from './windows'
 import LinuxIcon from './ubuntu'
