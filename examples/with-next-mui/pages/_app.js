@@ -4,26 +4,9 @@ import Head from 'next/head'
 import { ThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
+import theme from '../components/theme'
 import { BwsLocationProvider } from '../components/bws-contexts'
 // import { red } from '@material-ui/core/colors'
-
-const theme = createMuiTheme({
-  palette: {
-    type: 'dark',
-    primary: {
-      main: '#ff5a00'
-    }
-    // secondary: {
-    //   main: '#19857b'
-    // },
-    // error: {
-    //   main: red.A400
-    // },
-    // background: {
-    //   default: '#fff'
-    // }
-  }
-})
 
 export default function MyApp(props) {
   const { Component, pageProps } = props

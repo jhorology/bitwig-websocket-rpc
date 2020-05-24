@@ -112,7 +112,7 @@ class CursorTrackVuMeter {
 }
 
 program
-  .description('Configuration and helper tools for bitwig-websocket-rpc.')
+  .description('CLI cursor track vu-meter.')
   .version(pkg.version)
   .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL', 'ws://localhost:8887')
   .option('-p --pass <password>', 'Password')

@@ -3,7 +3,6 @@ import { makeStyles } from '@material-ui/core/styles'
 
 // material-ui components
 import Alert from '@material-ui/lab/Alert'
-import Box from '@material-ui/core/Box'
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Dialog from '@material-ui/core/Dialog'
@@ -199,7 +198,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
       <DialogTitle id="confirmation-dialog-title" className={classes.title}>
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item>
-            <BitwigIcon fontSize="large" />
+            <BitwigIcon color="primary" fontSize="large" />
           </Grid>
           <Grid item>
             <Typography variant="h6" gutterBottom>

@@ -8,7 +8,6 @@ import Hidden from '@material-ui/core/Hidden'
 // components
 import Navbar from './navbar'
 import Footer from './footer'
-import { BwsConnectionProvider } from './bws-contexts'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -37,11 +36,9 @@ export default function Page({ children, config, merge, events }) {
   return (
     <div className={classes.root}>
       <Navbar />
-      <BwsConnectionProvider config={config} merge={merge} events={events}>
-        <Container fixed disableGutters className={classes.pageContainer}>
-          {children}
-        </Container>
-      </BwsConnectionProvider>
+      <Container fixed disableGutters className={classes.pageContainer}>
+        {children}
+      </Container>
       <Hidden smDown>
         <Footer />
       </Hidden>
