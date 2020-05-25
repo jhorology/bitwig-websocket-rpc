@@ -128,10 +128,15 @@ export function useBwsEventParams(event) {
   const bws = useBwsConnection()
   const [params, setParams] = useState()
   useEffect(() => {
+    const handleEvent = params => setParams(params)
+    const handleUnmount = () => {
+      bws.off(event, handleEvent)
+    }
     if (!bws.isSubscribed(event)) {
       bws.subscribe([event])
     }
-    bws.on(event, params => setParams(params))
+    bws.on(event, handleEvent)
+    return handleUnmount
   }, [])
   return params
 }

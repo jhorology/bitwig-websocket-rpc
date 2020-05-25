@@ -1,5 +1,6 @@
 const fs = require('fs'),
-  { Server, Client } = require('node-ssdp')
+  { Server, Client } = require('node-ssdp'),
+  dev = process.env.NODE_ENV !== 'production'
 
 const rpcServices = {}
 
@@ -12,7 +13,7 @@ function start() {
   const server = new Server(),
     client = new Client({
       // TODO why need this on windows ?
-      explicitSocketBind: true
+      // explicitSocketBind: true
     }),
     SERVICE_TYPE = /^urn:bitwig-websocket-rpc:service:json-rpc 2\.0:(.+)$/
 
@@ -64,6 +65,9 @@ function getRpcServices() {
 }
 
 function _addRpcService(heads, extensionVersion) {
+  if (dev && !rpcServices[heads.USN]) {
+    console.log('[ssdp-listener] detecct RPC service.', heads)
+  }
   rpcServices[heads.USN] = {
     extension: heads.EXTENSION,
     extensionVersion: extensionVersion,
@@ -75,6 +79,9 @@ function _addRpcService(heads, extensionVersion) {
 }
 
 function _removeRpcService(heads) {
+  if (dev && rpcServices[heads.USN]) {
+    console.log('[ssdp-listener] remove RPC service.', heads)
+  }
   delete rpcServices[heads.USN]
 }
 
