@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function EnumSelect({ label, labelId, event, slotIndexes, ...other }) {
+function EnumSelect({ label, labelId, event, slotIndexes, enumFilter, ...other }) {
   const classes = useStyles()
   const bws = useBwsConnection()
   const [enumValues, setEnumValues] = useState()
@@ -26,7 +26,9 @@ function EnumSelect({ label, labelId, event, slotIndexes, ...other }) {
     bws.call(event + '.set', [e.target.value])
   }
   useEffect(() => {
-    bws.call(event + '.enumDefinition').then(result => setEnumValues(result))
+    bws
+      .call(event + '.enumDefinition')
+      .then(result => setEnumValues(enumFilter ? result.filter(enumFilter) : result))
   }, [])
   return (
     <FormControl className={classes.formControl}>
@@ -55,10 +57,12 @@ export function PreRollSelect(props) {
 }
 
 export function DefaultLaunchQuantizationSelect(props) {
+  // enumDefinition include pointless 'default', maybe it's share with Clip's definition.
   return (
     <EnumSelect
       label="Default launch quantiztion"
       event="transport.defaultLaunchQuantization"
+      enumFilter={e => e.id !== 'default'}
       {...props}
     />
   )
