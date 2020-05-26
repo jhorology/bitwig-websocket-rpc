@@ -21,24 +21,19 @@ function EnumSelect({ label, labelId, event, slotIndexes, ...other }) {
   const bws = useBwsConnection()
   const [enumValues, setEnumValues] = useState()
   const params = useBwsEventParams(event, slotIndexes)
-  const genLabelId = labelId || `${label}-id`
+  const genLabelId = labelId || `${event}-id`
   const handleChange = e => {
     bws.call(event + '.set', [e.target.value])
   }
   useEffect(() => {
     bws.call(event + '.enumDefinition').then(result => setEnumValues(result))
   }, [])
-  console.log('### EnumSelect params:', params)
   return (
     <FormControl className={classes.formControl}>
       <InputLabel id={genLabelId}>{label}</InputLabel>
       {enumValues && params && (
-        <Select
-          labelId={genLabelId}
-          value={params[0]}
-          onChange={handleChange}
-          {...other}>
-          {enumValues && enumValues.map(e => (
+        <Select labelId={genLabelId} value={params[0]} onChange={handleChange} {...other}>
+          {enumValues.map(e => (
             <MenuItem key={e.id} value={e.id}>
               {e.displayName}
             </MenuItem>
@@ -51,22 +46,12 @@ function EnumSelect({ label, labelId, event, slotIndexes, ...other }) {
 
 export function AutomationWriteModeSelect(props) {
   return (
-    <EnumSelect
-      label="Automation Write"
-      event="transport.automationWriteMode"
-      {...props}
-    />
+    <EnumSelect label="Automation Write" event="transport.automationWriteMode" {...props} />
   )
 }
 
 export function PreRollSelect(props) {
-  return (
-    <EnumSelect
-      label="Pre roll"
-      event="transport.preRoll"
-      {...props}
-    />
-  )
+  return <EnumSelect label="Pre roll" event="transport.preRoll" {...props} />
 }
 
 export function DefaultLaunchQuantizationSelect(props) {

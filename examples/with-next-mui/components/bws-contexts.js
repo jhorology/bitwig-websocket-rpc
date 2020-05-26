@@ -1,11 +1,5 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useContext,
-  createContext
-} from 'react'
+import React, { useState, useEffect, useContext, createContext } from 'react'
+import getConfig from 'next/config'
 import { BitwigClient } from 'bitwig-websocket-rpc'
 import fetch from 'node-fetch'
 
@@ -65,8 +59,11 @@ class LocationContext {
   }
 
   async fetchServices() {
-    const res = await fetch(location.origin + '/rpc-services')
-    this._services = await res.json()
+    const useSSDP = getConfig().publicRuntimeConfig.useSSDP === 'yes'
+    if (useSSDP) {
+      const res = await fetch(location.origin + '/rpc-services')
+      this._services = await res.json()
+    }
     return this._services
   }
 }

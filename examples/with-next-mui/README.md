@@ -14,4 +14,6 @@ Install it and run:
 ```sh
 npm install
 npm run dev
+# or use SSDP UPnP service, it's needed to run custom server on local network.
+# npm run dev:ssdp
 ```

@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import getConfig from 'next/config'
 
 // material-ui components
 import Alert from '@material-ui/lab/Alert'
@@ -21,6 +21,8 @@ import Divider from '@material-ui/core/Divider'
 import IconButton from '@material-ui/core/IconButton'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
+import { makeStyles } from '@material-ui/core/styles'
+
 // icons
 import PlatformIcon from './icons/platform'
 import RefreshIcon from '@material-ui/icons/Refresh'
@@ -31,6 +33,8 @@ import Paper from '@material-ui/core/Paper'
 import { parse } from 'url'
 
 import { useBwsLocation } from './bws-contexts'
+
+// use ssdp-listner on custom-server
 
 const useStyles = makeStyles(theme => ({
   title: {
@@ -119,6 +123,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
   const classes = useStyles()
   const loc = useBwsLocation()
   const passwordInput = useRef()
+  const useSSDP = getConfig().publicRuntimeConfig.useSSDP === 'yes'
   // input field values
   const [values, setValues] = useState({
     hostname: '',
@@ -240,7 +245,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
               />
             </Grid>
           </Grid>
-          {loc && (
+          {useSSDP && loc && (
             <ChooserTable
               rpcServices={rpcServices}
               onSelectUrl={handleSelectUrl}

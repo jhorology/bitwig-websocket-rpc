@@ -4,9 +4,11 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "next",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js",
+    "start": "next start",
+    "dev:ssdp": "USE_SSDP=yes node server.js",
+    "start:ssdp": "USE_SSDP=yes NODE_ENV=production node server.js",
     "format:pages": "prettier --write 'pages/**/*.js'",
     "format:components": "prettier --write 'components/**/*.js'",
     "format": "prettier --write './**/*.js'"
