@@ -4,7 +4,7 @@ import { makeStyles } from '@material-ui/core/styles'
 // material-ui core component
 import Button from '@material-ui/core/Button'
 import ButtonGroup from '@material-ui/core/ButtonGroup'
-import withWidth, { isWidthUp } from '@material-ui/core/withWidth';
+import withWidth, { isWidthUp } from '@material-ui/core/withWidth'
 
 // material-ui icons
 import PlayIcon from '@material-ui/icons/PlayArrow'
@@ -30,12 +30,13 @@ function TwoStateButton({
   color = 'default',
   selectedColor = 'primary',
   event,
+  slotIndexes,
   modifier,
   onClick,
   ...other
 }) {
   const classes = useStyles()
-  const params = useBwsEventParams(event)
+  const params = useBwsEventParams(event, slotIndexes)
   const selected = params && (modifier ? modifier(params) : params[0])
   return (
     <Button
@@ -55,7 +56,7 @@ export function PlayButton(props) {
     <TwoStateButton
       event="transport.isPlaying"
       startIcon={<PlayIcon />}
-      onClick={() => bws.call('transport.togglePlay')}
+      onClick={() => bws.call('transport.isPlaying.toggle')}
       {...props}>
       Play
     </TwoStateButton>
@@ -145,7 +146,7 @@ export function AbletonLinkButton(props) {
   )
 }
 
-export const ArrangerButtonGroup = withWidth()(props => {
+export function ArrangerButtonGroup(props) {
   return (
     <ButtonGroup variant="outlined" {...props}>
       <PlayButton />
@@ -155,4 +156,4 @@ export const ArrangerButtonGroup = withWidth()(props => {
       <ArrangerOverdubButton />
     </ButtonGroup>
   )
-})
+}

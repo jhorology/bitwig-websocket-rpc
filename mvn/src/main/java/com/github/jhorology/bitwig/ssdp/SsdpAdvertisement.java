@@ -74,11 +74,12 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         // for debugging on WSL2 and Parallels
         //#if build.production
         , {0x00, 0x1C, 0x42}           // Parallels
-        , {0x00, 0x15, 0x5D}             // Hyper-V
+        , {0x00, 0x15, 0x5D}           // Hyper-V
         //#endif
     };
     private SsdpService ssdpService;
     private String serviceType;
+    private String[] serviceTypeNameSpace;
     private String usn;
     private SsdpMessage byebyeMessage;
     private Map<NetworkInterface, SsdpMessage> responses;
@@ -92,7 +93,8 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         serviceType = String.format("urn:bitwig-websocket-rpc:service:%s:%s",
                                     e.getConfig().getRpcProtocol().getDisplayName().toLowerCase(),
                                     e.getDefinition().getVersion());
-        usn = "uuid:" + UUID.randomUUID().toString();
+        serviceTypeNameSpace = serviceType.split(":");
+            usn = "uuid:" + UUID.randomUUID().toString();
 
         final List<NetworkInterface> nics = new ArrayList<>();
         responses = new HashMap<>();
@@ -174,15 +176,14 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         if (LOG.isTraceEnabled()) {
             try {
                 LOG.trace("SSDP ch[{}] recieved message:[\n{}] from:[{}]",
-                        sp.getChannel().getNetworkInterface(),
-                        message.toString(),
-                        sp.getSocketAddress());
+                          sp.getChannel().getNetworkInterface(),
+                          message.toString(),
+                          sp.getSocketAddress());
             } catch (IOException ex) {
             }
         }
         if (message.getType() == SsdpMessageType.MSEARCH) {
-            String st = message.getHeader("ST");
-            if ("ssdp:all".equals(st) || serviceType.equals(st)) {
+            if (isUrnMatch(message.getHeader("ST"))) {
                 try {
                     SsdpMessage response = responses.get(sp.getChannel().getNetworkInterface());
                     if (response != null) {
@@ -198,6 +199,8 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         }
     }
 
+    
+    
     private SsdpMessage createResponse(InitEvent<Config> e, String location) {
         return createMessage(e, SsdpMessageType.RESPONSE, null, location);
     }
@@ -219,7 +222,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         }
         message.setHeader("USN", usn);
         if (mType == SsdpMessageType.RESPONSE || nType == SsdpNotificationType.ALIVE) {
-            message.setHeader("CACHE-CONTROL", "max-age = 7200");
+            message.setHeader("CACHE-CONTROL", "max-age = 1200");
             message.setHeader("EXTENSION", e.getDefinition().getName());
             message.setHeader("BITWIG-VERSION", e.getHost().getHostVersion());
             message.setHeader("API-VERSION", String.valueOf(e.getHost().getHostApiVersion()));
@@ -235,12 +238,12 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private String createLocation(NetworkInterface nic, int port) {
         Enumeration<InetAddress> addrEnum = nic.getInetAddresses();
         while(addrEnum.hasMoreElements()) {
-           InetAddress addr = addrEnum.nextElement();
-           if (addr instanceof Inet4Address && addr.isSiteLocalAddress()) {
+            InetAddress addr = addrEnum.nextElement();
+            if (addr instanceof Inet4Address && addr.isSiteLocalAddress()) {
                 return String.format("ws://%s:%d", addr.getHostAddress(), port);
-           }
-       }
-       return null;
+            }
+        }
+        return null;
     }
 
     // https://cloud.tencent.com/developer/article/1011721
@@ -264,5 +267,24 @@ public class SsdpAdvertisement implements SsdpPacketListener {
             }
         }
         return false;
+    }
+
+    private boolean isUrnMatch(String st) {
+        if (st == null || st.length() == 0) {
+            return false;
+        }
+        if ("ssdp:all".equals(st)) {
+            return true;
+        }
+        String[] nameSpace = st.split(":");
+            if (nameSpace.length < 2) {
+                return false;
+            }
+        for(int i = 0; i < nameSpace.length; i++) {
+            if (!serviceTypeNameSpace[i].equals(nameSpace[i]))  {
+                return false;
+            }
+        }
+        return true;
     }
 }

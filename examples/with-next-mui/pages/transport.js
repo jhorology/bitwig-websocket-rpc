@@ -8,6 +8,7 @@ import { makeStyles } from '@material-ui/core/styles'
 import Page from '../components/page'
 import { BwsConnectionProvider } from '../components/bws-contexts'
 import { ArrangerButtonGroup } from '../components/bws-buttons'
+import { TransportSettings } from '../components/bws-selects'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -17,6 +18,7 @@ const useStyles = makeStyles(theme => ({
 
 // RPC remote host configuration
 const config = {
+  useApplication: true,
   useTransport: true,
   useGroove: true
 }
@@ -28,9 +30,13 @@ export default function TransportPage() {
       <BwsConnectionProvider config={config}>
         <div className={classes.root}>
           <Typography variant="subtitle1" className={classes.tableToolbarTitle}>
-            Arranger button group
+            Buttons
           </Typography>
           <ArrangerButtonGroup />
+          <Typography variant="subtitle1" className={classes.tableToolbarTitle}>
+            Settings
+          </Typography>
+          <TransportSettings />
         </div>
       </BwsConnectionProvider>
     </Page>

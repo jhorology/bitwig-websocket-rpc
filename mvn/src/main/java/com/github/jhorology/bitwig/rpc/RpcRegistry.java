@@ -55,4 +55,10 @@ public interface RpcRegistry {
      * @return
      */
     Object report();
+    
+    /**
+     * report all RPC events of current configuration.
+     * @return
+     */
+    Object reportEvents();
 }

@@ -78,6 +78,12 @@ public interface Rpc {
     Object report();
 
     /**
+     * report all RPC events of current configuration.
+     * @return List of event definition
+     */
+    Object reportEvents();
+    
+    /**
      * log event for debugging
      * @return latest log message.
      */

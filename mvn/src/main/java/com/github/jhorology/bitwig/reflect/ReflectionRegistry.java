@@ -615,9 +615,11 @@ public class ReflectionRegistry implements RpcRegistry {
     }
 
     /**
-     * @return
+     * report all RPC events of current configuration.
+     * @return List of event definition
      */
-    private Object reportEvents() {
+    @Override
+    public Object reportEvents() {
         List<Object> list = events.values()
             .stream()
             .map(e-> e.reportRpcEvent())
@@ -634,7 +636,7 @@ public class ReflectionRegistry implements RpcRegistry {
     private void registerMethod(ModuleHolder module, Method method, RegistryNode parentNode, int chainDepth) {
         // filter unusable methods
         Class<?> returnType = method.getReturnType();
-        if (chainDepth > 5) {
+        if (chainDepth > 6) {
             LOG.error("method:[{}.{}] chain depth is too long. Something is wrong !",
                       parentNode.getAbsoluteName(),
                       method.getName());

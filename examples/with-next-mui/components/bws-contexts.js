@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useMemo, useContext, createContext } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useContext,
+  createContext
+} from 'react'
 import { BitwigClient } from 'bitwig-websocket-rpc'
 import fetch from 'node-fetch'
 
@@ -123,17 +130,49 @@ export function useBwsConnection() {
 
 /**
  * use Bitwig Studio event params
+ * @param {String} event - event name
+ * @param {Array} [slotIndexes] - bank slot indexes
+ * @return {Array} - a array of event param, or undefined
+ * @example
+ * <pre><code>
+ *   // track bank at slot 3, send bank at slot 0
+ *   const params = useBwsEventParams('mainTrackBank.getItemAt.sendBank.getItemAt.sendChannelColor', [3, 0])
+ * </code></pre>
  */
-export function useBwsEventParams(event) {
+export function useBwsEventParams(event, slotIndexes) {
   const bws = useBwsConnection()
   const [params, setParams] = useState()
   useEffect(() => {
-    const handleEvent = params => setParams(params)
+    const handleEvent = params => {
+      if (slotIndexes) {
+        if (slotIndexes.every((index, i) => params[i] === index)) {
+          setParams(params.slice(slotIndexes.length))
+        }
+      } else {
+        setParams(params)
+      }
+    }
+    const getInitialValue = () => {
+      bws.call(event).then(result => {
+        if (typeof result === 'object') {
+          setParams(result)
+        } else {
+          setParams([result])
+        }
+      })
+    }
     const handleUnmount = () => {
       bws.off(event, handleEvent)
+      // unsubscribe([event]) is not needed
+      // BwsConnectionProvider context will destroy connection.
     }
-    if (!bws.isSubscribed(event)) {
-      bws.subscribe([event])
+    // bitwig-websocket-rpc extesion will push an initial-value as event on subscribe()
+    // this feature will may be deprecated in future. considering client-side state-manager....
+    // so far, getting initial-value is safe, but it's not cost-effective.
+    if (bws.isSubscribed(event)) {
+      getInitialValue()
+    } else {
+      bws.subscribe([event]).then(getInitialValue)
     }
     bws.on(event, handleEvent)
     return handleUnmount

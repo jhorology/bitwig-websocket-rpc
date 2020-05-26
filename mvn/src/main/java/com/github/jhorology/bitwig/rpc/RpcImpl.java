@@ -124,6 +124,15 @@ public class RpcImpl implements Rpc {
     }
 
     /**
+     * report all RPC events of current configuration.
+     * @return List of event definition
+     */
+    @Override
+    public Object reportEvents() {
+        return registry.reportEvents();
+    }
+    
+    /**
      * remote configuration
      * @param config
      */

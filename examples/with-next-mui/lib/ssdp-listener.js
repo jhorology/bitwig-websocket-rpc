@@ -27,7 +27,7 @@ function start() {
   server.on('advertise-bye', (heads, rinfo) => {
     const match = SERVICE_TYPE.exec(heads.NT)
     if (match) {
-      _removeRpcService(heads)
+      _removeRpcService(heads.USN)
     }
   })
 
@@ -47,9 +47,11 @@ function start() {
     .then(() => {
       console.log('SSDP listener started.')
     })
-
-  // search all SSDP devices
-  client.search('ssdp:all')
+  client.search('urn:bitwig-websocket-rpc')
+  setInterval(() => {
+    _removeExpiredRpcServices()
+    client.search('urn:bitwig-websocket-rpc')
+  }, 12000)
 }
 
 /**
@@ -68,7 +70,9 @@ function _addRpcService(heads, extensionVersion) {
   if (dev && !rpcServices[heads.USN]) {
     console.log('[ssdp-listener] detecct RPC service.', heads)
   }
+  const now = new Date().getTime()
   rpcServices[heads.USN] = {
+    expireTime: now + parseInt(heads['MAX-AGE']) * 1000,
     extension: heads.EXTENSION,
     extensionVersion: extensionVersion,
     bitwigVersion: heads['BITWIG-VERSION'],
@@ -78,11 +82,21 @@ function _addRpcService(heads, extensionVersion) {
   }
 }
 
-function _removeRpcService(heads) {
-  if (dev && rpcServices[heads.USN]) {
-    console.log('[ssdp-listener] remove RPC service.', heads)
+function _removeExpiredRpcServices() {
+  const now = new Date().getTime()
+  Object.keys(rpcServices)
+    .filter(usn => rpcServices[usn].expireTime >= now)
+    .forEach(usn => _removeRpcService(usn))
+}
+
+function _removeRpcService(usn) {
+  if (dev) {
+    const rpcService = rpcServices[usn]
+    if (rpcService) {
+      console.log('[ssdp-listener] remove RPC service.', rpcService)
+    }
   }
-  delete rpcServices[heads.USN]
+  delete rpcServices[usn]
 }
 
 module.exports = {
