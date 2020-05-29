@@ -11,7 +11,7 @@ const path = require('path'),
       { installExtension, defaultExtensionDir } = require('../lib/extension-installer'),
       pkg = require('../package.json'),
       beautify = require('js-beautify'),
-      DEFAULT_URL = 'ws://localhost:8887'
+      DEFAULT_URL = _defaultUrl()
 
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({ pkg })
@@ -386,4 +386,15 @@ function _checkRequireObject(file) {
 
 function _print(obj) {
   console.log(beautify(JSON.stringify(obj), { indent_size: 2 }))
+}
+
+function _defaultUrl() {
+  // WSL2 ?
+  if (/^\/run\/WSL\/.*/.exec(process.env.WSL_INTEROP)) {
+    const match = /^nameserver\s+([0-9|.]+)/m.exec(fs.readFileSync('/etc/resolv.conf'))
+    if (match) {
+      return `ws://${match[1]}:8887`
+    }
+  }
+  return 'ws://localhost:8887'
 }
