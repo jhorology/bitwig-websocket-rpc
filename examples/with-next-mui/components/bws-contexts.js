@@ -59,6 +59,7 @@ class LocationContext {
   }
 
   async fetchServices() {
+    console.info(getConfig())
     const useSSDP = getConfig().publicRuntimeConfig.useSSDP === 'yes'
     if (useSSDP) {
       const res = await fetch(location.origin + '/rpc-services')

@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
   },
   rail: {
     stroke: 'currentColor',
-    strokeOpacity: 0.38
+    strokeOpacity: 0.3
   },
   arc: {
     stroke: 'currentColor',
@@ -33,26 +33,28 @@ const useStyles = makeStyles(theme => ({
 /**
  * @param radius - outer radius
  * @param startAngle - angle in degree (north=0 clockwise) -180..180
- * @param endAngle - angle in degree (north=0 clock direction) >= startAngle, < startAngle + 360
+ * @param endAngle - angle in degree (north=0 clockwise) >= startAngle, < startAngle + 360
  * @param thickness - line width
  */
 function calcArc(radius, startAngle, endAngle, thickness) {
   // degree to mathematical radian (east=0 counter-clockwise)
   const arcAngle = endAngle - startAngle
-  const r = (radius - thickness / 2).toFixed(3)
+  const r = radius - thickness / 2
   const startRad = ((endAngle - 90) * Math.PI) / 180
   const endRad = ((startAngle - 90) * Math.PI) / 180
   // arc start/end points
-  const x1 = (r * Math.cos(startRad)).toFixed(3)
-  const y1 = (r * Math.sin(startRad)).toFixed(3)
-  const x2 = (r * Math.cos(endRad)).toFixed(3)
-  const y2 = (r * Math.sin(endRad)).toFixed(3)
+  const x1 = r * Math.cos(startRad)
+  const y1 = r * Math.sin(startRad)
+  const x2 = r * Math.cos(endRad)
+  const y2 = r * Math.sin(endRad)
   const largeArc = arcAngle > 180 ? 1 : 0
   // minimun/maximum x, y coordinate
 
   return {
-    path: ['M', x1, y1, 'A', r, r, 0, largeArc, 0, x2, y2].join(' '),
-    arcLength: ((r * arcAngle * Math.PI) / 180).toFixed(3)
+    path: ['M', x1, y1, 'A', r, r, 0, largeArc, 0, x2, y2]
+      .map(n => (typeof n === 'number' ? Math.round(n, 3) : n))
+      .join(' '),
+    arcLength: (r * arcAngle * Math.PI) / 180
   }
 }
 
@@ -90,7 +92,7 @@ export default function ArcMeter({
     if (boundsGroup && boundsGroup.current) {
       const rect = boundsGroup.current.getBBox()
       setStates({
-        viewBox: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n)),
+        viewBox: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n, 3)),
         arc: calcArc(RADIUS, startAngle, endAngle, thickness)
       })
     }
@@ -134,7 +136,7 @@ export default function ArcMeter({
           d={states.arc.path}
           fill="none"
           strokeDasharray={states.arc.arcLength}
-          strokeDashoffset={(-states.arc.arcLength * (1 - value / max)).toFixed(3)}
+          strokeDashoffset={-states.arc.arcLength * (1 - value / max)}
           strokeWidth={thickness}
           strokeLinecap={linecap}
         />

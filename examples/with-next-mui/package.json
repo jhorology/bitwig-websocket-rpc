@@ -8,6 +8,7 @@
     "build": "next build",
     "start": "next start",
     "dev:ssdp": "USE_SSDP=yes node server.js",
+    "build:ssdp": "USE_SSDP=yes next build",
     "start:ssdp": "USE_SSDP=yes NODE_ENV=production node server.js",
     "format:pages": "prettier --write 'pages/**/*.js'",
     "format:components": "prettier --write 'components/**/*.js'",
