@@ -1,7 +1,8 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-BITWIG_VERSION="3.2 Beta 6"
+if [ -z ${BITWIG_VERSION+x} ]; then BITWIG_VERSION="3.2 Beta 6"; fi
+
 
 wslenv() {
   # Full path cmd.exe for /etc/wsl.conf [interop] appendWindowsPath = false

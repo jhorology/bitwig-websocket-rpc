@@ -17,6 +17,7 @@ import AdjustIcon from '@material-ui/icons/Adjust'
 import PlayCircleOutlineIcon from '@material-ui/icons/PlayCircleOutline'
 import MenuIcon from '@material-ui/icons/Menu'
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined'
+import DeveloperBoardIcon from '@material-ui/icons/DeveloperBoard'
 
 import Link from './link'
 
@@ -34,7 +35,8 @@ const useStyles = makeStyles(theme => ({
 const pages = [
   { href: '/start', title: 'Start', icon: InfoOutlinedIcon },
   { href: '/transport', title: 'Transport', icon: PlayCircleOutlineIcon },
-  { href: '/nipplewig-mk1', title: 'Nipplewig Mk1', icon: AdjustIcon }
+  { href: '/nipplewig-mk1', title: 'Nipplewig Mk1', icon: AdjustIcon },
+  { href: '/dev', title: 'Dev', icon: DeveloperBoardIcon }
   // TODO
   // Mix, RemoteControls, CLiplauncher etc...
 ]

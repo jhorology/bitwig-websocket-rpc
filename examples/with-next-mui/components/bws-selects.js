@@ -4,15 +4,18 @@ import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
 import FormControl from '@material-ui/core/FormControl'
 import Select from '@material-ui/core/Select'
+import Grid from '@material-ui/core/Grid'
 
 import { makeStyles } from '@material-ui/core/styles'
 import { useBwsConnection, useBwsEventParams } from './bws-contexts'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
-    margin: theme.spacing(1),
-    minWidth: 120,
-    maxWidth: 600
+    minWidth: 180,
+    maxWidth: 180
+  },
+  inputLabel: {
+    whiteSpace: 'nowrap'
   }
 }))
 
@@ -23,7 +26,7 @@ function EnumSelect({ label, labelId, event, slotIndexes, enumFilter, ...other }
   const params = useBwsEventParams(event, slotIndexes)
   const genLabelId = labelId || `${event}-id`
   const handleChange = e => {
-    bws.call(event + '.set', [e.target.value])
+    bws.notify(event + '.set', [e.target.value])
   }
   useEffect(() => {
     bws
@@ -32,7 +35,9 @@ function EnumSelect({ label, labelId, event, slotIndexes, enumFilter, ...other }
   }, [])
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel id={genLabelId}>{label}</InputLabel>
+      <InputLabel id={genLabelId} maring="dense" shrink className={classes.inputLabel}>
+        {label}
+      </InputLabel>
       {enumValues && params && (
         <Select labelId={genLabelId} value={params[0]} onChange={handleChange} {...other}>
           {enumValues.map(e => (
@@ -60,7 +65,7 @@ export function DefaultLaunchQuantizationSelect(props) {
   // enumDefinition include pointless 'default', maybe it's share with Clip's definition.
   return (
     <EnumSelect
-      label="Default launch quantiztion"
+      label="Default launch quantization"
       event="transport.defaultLaunchQuantization"
       enumFilter={e => e.id !== 'default'}
       {...props}
@@ -81,7 +86,7 @@ export function ClipLauncherPostRecordingActionSelect(props) {
 export function RecordQuantizationSelect(props) {
   return (
     <EnumSelect
-      label="Record quantiztion"
+      label="Record quantization"
       event="application.recordQuantizationGrid"
       {...props}
     />
@@ -90,12 +95,12 @@ export function RecordQuantizationSelect(props) {
 
 export function TransportSettings(props) {
   return (
-    <>
+    <Grid container spacing={2}>
       <AutomationWriteModeSelect />
       <PreRollSelect />
       <DefaultLaunchQuantizationSelect />
       <ClipLauncherPostRecordingActionSelect />
       <RecordQuantizationSelect />
-    </>
+    </Grid>
   )
 }

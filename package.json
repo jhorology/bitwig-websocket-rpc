@@ -10,7 +10,7 @@
     "dev:build:api-11": "cd mvn && mvn -P development,extension-api-11 clean package",
     "dev:build": "run-s dev:build:**",
     "dev:install": "bin/bws-rpc install --api 11",
-    "dev:debug": "mvn/debug.sh",
+    "dev:debug": "BITWIG_VERSION='3.2 Beta 7' mvn/debug.sh",
     "dev:debug:midi": "mvn/debug.sh -midi",
     "dev:midi": "run-s dev:build:api-10 dev:install dev:debug:midi",
     "dev": "run-s dev:build:api-11 dev:install dev:debug",

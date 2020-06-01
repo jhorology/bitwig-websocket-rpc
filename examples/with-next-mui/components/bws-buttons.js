@@ -4,7 +4,6 @@ import { makeStyles } from '@material-ui/core/styles'
 // material-ui core component
 import Button from '@material-ui/core/Button'
 import ButtonGroup from '@material-ui/core/ButtonGroup'
-import withWidth, { isWidthUp } from '@material-ui/core/withWidth'
 
 // material-ui icons
 import PlayIcon from '@material-ui/icons/PlayArrow'
@@ -56,7 +55,7 @@ export function PlayButton(props) {
     <TwoStateButton
       event="transport.isPlaying"
       startIcon={<PlayIcon />}
-      onClick={() => bws.call('transport.isPlaying.toggle')}
+      onClick={() => bws.notify('transport.isPlaying.toggle')}
       {...props}>
       Play
     </TwoStateButton>
@@ -70,7 +69,7 @@ export function StopButton(props) {
     <Button
       className={classes.button}
       startIcon={<StopIcon />}
-      onClick={() => bws.call('transport.stop')}
+      onClick={() => bws.notify('transport.stop')}
       {...props}>
       Stop
     </Button>
@@ -84,7 +83,7 @@ export function ArrangerRecordButton(props) {
       selectedColor="secondary"
       event="transport.isArrangerRecordEnabled"
       startIcon={<RecordIcon />}
-      onClick={() => bws.call('transport.isArrangerRecordEnabled.toggle')}
+      onClick={() => bws.notify('transport.isArrangerRecordEnabled.toggle')}
       {...props}>
       Record
     </TwoStateButton>
@@ -98,7 +97,7 @@ export function ArrangerAutomationWriteButton(props) {
       selectedColor="secondary"
       event="transport.isArrangerAutomationWriteEnabled"
       startIcon={<AutomationWriteIcon />}
-      onClick={() => bws.call('transport.isArrangerAutomationWriteEnabled.toggle')}
+      onClick={() => bws.notify('transport.isArrangerAutomationWriteEnabled.toggle')}
       {...props}>
       Automation
     </TwoStateButton>
@@ -111,7 +110,7 @@ export function ArrangerOverdubButton(props) {
     <TwoStateButton
       event="transport.isArrangerOverdubEnabled"
       startIcon={<OverdubIcon />}
-      onClick={() => bws.call('transport.isArrangerOverdubEnabled.toggle')}
+      onClick={() => bws.notify('transport.isArrangerOverdubEnabled.toggle')}
       {...props}>
       Overdub
     </TwoStateButton>
@@ -124,7 +123,9 @@ export function GrooveButton(props) {
     <TwoStateButton
       event="groove.getEnabled.value"
       startIcon={<GrooveIcon />}
-      onClick={params => bws.call('groove.getEnabled.value.set', [params && params[0] ? 0 : 1])}
+      onClick={params =>
+        bws.notify('groove.getEnabled.value.set', [params && params[0] ? 0 : 1])
+      }
       {...props}>
       Groove
     </TwoStateButton>

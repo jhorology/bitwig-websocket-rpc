@@ -18,13 +18,14 @@
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.54",
     "bitwig-websocket-rpc": "file:../..",
-    "next": "^9.4.2",
+    "next": "^9.4.4",
     "nipplejs": "^0.8.5",
     "node-fetch": "^2.6.0",
     "node-ssdp": "^4.0.0",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "two.js": "^0.7.0-stable.1"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",

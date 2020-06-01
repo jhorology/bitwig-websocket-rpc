@@ -13,7 +13,7 @@ function start() {
   const server = new Server(),
     client = new Client({
       // TODO why need this on windows ?
-      // explicitSocketBind: true
+      explicitSocketBind: true
     }),
     SERVICE_TYPE = /^urn:bitwig-websocket-rpc:service:json-rpc 2\.0:(.+)$/
 
@@ -48,10 +48,12 @@ function start() {
       console.log('SSDP listener started.')
     })
   client.search('urn:bitwig-websocket-rpc')
+  dev && console.log('[ssdp-listner] send query:', 'urn:bitwig-websocket-rpc')
   setInterval(() => {
     _removeExpiredRpcServices()
     client.search('urn:bitwig-websocket-rpc')
-  }, 12000)
+    dev && console.log('[ssdp-listner] send query:', 'urn:bitwig-websocket-rpc')
+  }, 120 * 1000)
 }
 
 /**
@@ -67,12 +69,14 @@ function getRpcServices() {
 }
 
 function _addRpcService(heads, extensionVersion) {
-  if (dev && !rpcServices[heads.USN]) {
-    console.log('[ssdp-listener] detecct RPC service.', heads)
-  }
   const now = new Date().getTime()
-  rpcServices[heads.USN] = {
-    expireTime: now + parseInt(heads['MAX-AGE']) * 1000,
+  let expireTime = now + 1200 * 1000
+  const match = /^max-age\s*=\s*([0-9]+)/.exec(heads['CACHE-CONTROL'])
+  if (match) {
+    expireTime = now + parseInt(match[1]) * 1000
+  }
+  const rpcService = {
+    expireTime: expireTime,
     extension: heads.EXTENSION,
     extensionVersion: extensionVersion,
     bitwigVersion: heads['BITWIG-VERSION'],
@@ -80,12 +84,20 @@ function _addRpcService(heads, extensionVersion) {
     platform: heads.PLATFORM,
     location: heads.LOCATION
   }
+  if (dev) {
+    if (rpcServices[heads.USN]) {
+      console.log('[ssdp-listener] update RPC service.', rpcService)
+    } else {
+      console.log('[ssdp-listener] newly detecct RPC service.', rpcService)
+    }
+  }
+  rpcServices[heads.USN] = rpcService
 }
 
 function _removeExpiredRpcServices() {
   const now = new Date().getTime()
   Object.keys(rpcServices)
-    .filter(usn => rpcServices[usn].expireTime >= now)
+    .filter(usn => rpcServices[usn].expireTime <= now)
     .forEach(usn => _removeRpcService(usn))
 }
 
