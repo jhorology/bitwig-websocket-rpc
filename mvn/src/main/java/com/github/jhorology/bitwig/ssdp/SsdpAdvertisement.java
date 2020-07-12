@@ -29,17 +29,18 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.UUID;
 import java.util.Map;
+import java.util.HashMap;
 
 // bitwig api
 
 // provided dependencies
 import com.google.common.eventbus.Subscribe;
-import java.util.HashMap;
 
 // dependenices
 import com.nls.net.ssdp.SsdpCommonHeaders;
@@ -82,7 +83,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private String[] serviceTypeNameSpace;
     private String usn;
     private SsdpMessage byebyeMessage;
-    private Map<NetworkInterface, SsdpMessage> responses;
+    private Map<ByteBuffer, SsdpMessage> responses;
 
     /**
      * Handles the start of extension's life-cycle.
@@ -94,7 +95,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                                     e.getConfig().getRpcProtocol().getDisplayName().toLowerCase(),
                                     e.getDefinition().getVersion());
         serviceTypeNameSpace = serviceType.split(":");
-            usn = "uuid:" + UUID.randomUUID().toString();
+        usn = "uuid:" + UUID.randomUUID().toString();
 
         final List<NetworkInterface> nics = new ArrayList<>();
         responses = new HashMap<>();
@@ -107,7 +108,8 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                     && !isVirtualNic(nic)) {
                     String location = createLocation(nic, e.getConfig().getWebSocketPort());
                     if (location != null) {
-                        responses.put(nic, createResponse(e, location));
+                        // NetwrokInterface is not usable as hash key.
+                        responses.put(ByteBuffer.wrap(nic.getHardwareAddress()), createResponse(e, location));
                         nics.add(nic);
                         if (LOG.isTraceEnabled()) {
                             LOG.trace("NIC [{}] binding SSDP. Advertise service location [{}].", nic, location);
@@ -185,7 +187,8 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         if (message.getType() == SsdpMessageType.MSEARCH) {
             if (isUrnMatch(message.getHeader("ST"))) {
                 try {
-                    SsdpMessage response = responses.get(sp.getChannel().getNetworkInterface());
+                    // NetwrokInterface is not usable as hash key.
+                    SsdpMessage response = responses.get(ByteBuffer.wrap(sp.getChannel().getNetworkInterface().getHardwareAddress()));
                     if (response != null) {
                         sp.getChannel().send(response, sp.getSocketAddress());
                         if (LOG.isTraceEnabled()) {

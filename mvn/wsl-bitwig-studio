@@ -15,7 +15,7 @@ function win2wslpath(winPath) {
   return execSync(`wslpath "${winPath}"`)
     .toString().replace(/[\r\n]+$/g, '')
 }
-const bitwig = path.join(win2wslpath(winenv('PROGRAMFILES')), `Bitwig Studio${beta ? ' ' + process.env.BITWIG_VERSION : ''}`, 'Bitwig Studio.exe')
+const bitwig = path.join(win2wslpath(winenv('PROGRAMFILES')), 'Bitwig Studio', process.env.BITWIG_VERSION, 'Bitwig Studio.exe')
 const childProcess = spawn(bitwig, [], {
   detached: true,
   stdio: 'pipe',
