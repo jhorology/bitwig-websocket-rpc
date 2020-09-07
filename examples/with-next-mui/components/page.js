@@ -3,11 +3,6 @@ import React, { useEffect } from 'react'
 // @material-ui/core components
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
-import Hidden from '@material-ui/core/Hidden'
-
-// components
-import Navbar from './navbar'
-import Footer from './footer'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,13 +30,9 @@ export default function Page({ children, config, merge, events }) {
   }, [])
   return (
     <div className={classes.root}>
-      <Navbar />
       <Container fixed disableGutters className={classes.pageContainer}>
         {children}
       </Container>
-      <Hidden smDown>
-        <Footer />
-      </Hidden>
     </div>
   )
 }

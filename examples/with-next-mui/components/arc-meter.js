@@ -4,15 +4,10 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 
 import clsx from 'clsx'
-import PropTypes from 'prop-types'
 import { makeStyles } from '@material-ui/core/styles'
-
-const RADIUS = 40
-
-function capitalize(string) {
-  return string.charAt(0).toUpperCase() + string.slice(1)
-}
-
+import { capitalize, round } from './utils'
+const RADIUS = 32
+const INITIAL_VIEWBOX = [0, 0, 0, 0]
 const useStyles = makeStyles(theme => ({
   root: {},
   colorPrimary: {
@@ -23,17 +18,17 @@ const useStyles = makeStyles(theme => ({
   },
   rail: {
     stroke: 'currentColor',
-    strokeOpacity: 0.3
+    strokeOpacity: 0.38
   },
   arc: {
-    stroke: 'currentColor',
-    transition: theme.transitions.create('stroke-dashoffset')
+    stroke: 'currentColor'
   }
 }))
+
 /**
  * @param radius - outer radius
  * @param startAngle - angle in degree (north=0 clockwise) -180..180
- * @param endAngle - angle in degree (north=0 clockwise) >= startAngle, < startAngle + 360
+ * @param endAngle - angle in degree (north=0 clock direction) >= startAngle, < startAngle + 360
  * @param thickness - line width
  */
 function calcArc(radius, startAngle, endAngle, thickness) {
@@ -51,13 +46,17 @@ function calcArc(radius, startAngle, endAngle, thickness) {
   // minimun/maximum x, y coordinate
 
   return {
-    path: ['M', x1, y1, 'A', r, r, 0, largeArc, 0, x2, y2]
-      .map(n => (typeof n === 'number' ? Math.round(n, 3) : n))
-      .join(' '),
+    path: ['M', x1, y1, 'A', r, r, 0, largeArc, 0, x2, y2].join(' '),
     arcLength: (r * arcAngle * Math.PI) / 180
   }
 }
 
+/**
+ * @property className - outer radius
+ * @param startAngle - angle in degree (north=0 clockwise) -180..180
+ * @param endAngle - angle in degree (north=0 clock direction) >= startAngle, < startAngle + 360
+ * @param thickness - line width
+ */
 export default function ArcMeter({
   className,
   color = 'inherit',
@@ -65,40 +64,51 @@ export default function ArcMeter({
   endAngle = 135,
   size = 'normal',
   style,
-  thickness = 6,
+  thickness = 4,
   value = 0,
   max = 1,
+  min = 0,
   noRail = false,
+  zeroOrigin = false,
   linecap = 'butt',
   ...other
 }) {
   const width =
     {
-      big: 80,
-      normal: 64,
+      large: 96,
       small: 40
-    }[size] || 40
+    }[size] || 64
 
   const classes = useStyles()
   // initial placeholder group for getting arc bounds
   const boundsGroup = useRef(null)
   // inner/outer arc path for getting bounds
-  const [states, setStates] = useState({
-    viewBox: [-RADIUS, -RADIUS, 2 * RADIUS, 2 * RADIUS],
-    outerArc: calcArc(RADIUS, startAngle, endAngle, 0),
-    innerArc: calcArc(RADIUS - thickness, startAngle, endAngle, 0)
-  })
+  const outerArc = useMemo(() => calcArc(RADIUS, startAngle, endAngle, 0), [])
+  const innerArc = useMemo(() => calcArc(RADIUS - thickness, startAngle, endAngle, 0), [])
+  const rail = !noRail && useMemo(() => calcArc(RADIUS, startAngle, endAngle, thickness), [])
+  const [viewBox, setViewBox] = useState()
+  const [arc, setArc] = useState()
   useEffect(() => {
     if (boundsGroup && boundsGroup.current) {
       const rect = boundsGroup.current.getBBox()
-      setStates({
-        viewBox: [rect.x, rect.y, rect.width, rect.height].map(n => Math.round(n, 3)),
-        arc: calcArc(RADIUS, startAngle, endAngle, thickness)
-      })
+      setViewBox([rect.x, rect.y, rect.width, rect.height].map(n => round(n, 3)))
     }
   }, [])
-
-  // TODO which is faster stroke-dashoffset or arc path ?
+  useEffect(() => {
+    const k = (endAngle - startAngle) / (max - min)
+    let v = value
+    if (v > max) v = max
+    if (v < min) v = min
+    if (zeroOrigin) {
+      if (v >= 0) {
+        setArc(calcArc(RADIUS, startAngle - min * k, startAngle + (v - min) * k, thickness))
+      } else {
+        setArc(calcArc(RADIUS, startAngle + (v - min) * k, startAngle - min * k, thickness))
+      }
+    } else {
+      setArc(calcArc(RADIUS, startAngle, startAngle + (v - min) * k, thickness))
+    }
+  }, [value])
 
   return (
     <svg
@@ -113,30 +123,28 @@ export default function ArcMeter({
         width: width,
         ...style
       }}
-      viewBox={states.viewBox.join(',')}
+      viewBox={(viewBox || INITIAL_VIEWBOX).join(',')}
       {...other}>
-      {states.innerArc && states.outerArc && (
+      {!viewBox && (
         <g ref={boundsGroup} visibilty="hidden">
-          <path d={states.innerArc.path} fill="none" />
-          <path d={states.outerArc.path} fill="none" />
+          <path d={innerArc.path} fill="none" />
+          <path d={outerArc.path} fill="none" />
         </g>
       )}
-      {!noRail && states.arc && (
+      {rail && (
         <path
           className={classes.rail}
-          d={states.arc.path}
+          d={rail.path}
           fill="none"
           strokeWidth={thickness}
           strokeLinecap={linecap}
         />
       )}
-      {states.arc && (
+      {arc && (
         <path
           className={classes.arc}
-          d={states.arc.path}
+          d={arc.path}
           fill="none"
-          strokeDasharray={states.arc.arcLength}
-          strokeDashoffset={-states.arc.arcLength * (1 - value / max)}
           strokeWidth={thickness}
           strokeLinecap={linecap}
         />

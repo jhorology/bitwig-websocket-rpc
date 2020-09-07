@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-if [ -z ${BITWIG_VERSION+x} ]; then BITWIG_VERSION="3.2.4"; fi
+if [ -z ${BITWIG_VERSION+x} ]; then BITWIG_VERSION="3.2.7"; fi
 
 
 wslenv() {

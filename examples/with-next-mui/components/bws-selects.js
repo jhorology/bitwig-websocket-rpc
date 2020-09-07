@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import InputLabel from '@material-ui/core/InputLabel'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -19,12 +19,12 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-function EnumSelect({ label, labelId, event, slotIndexes, enumFilter, ...other }) {
+function EnumSelect({ label, id, event, slotIndexes, enumFilter, ...other }) {
   const classes = useStyles()
   const bws = useBwsConnection()
   const [enumValues, setEnumValues] = useState()
   const params = useBwsEventParams(event, slotIndexes)
-  const genLabelId = labelId || `${event}-id`
+  const selectLabelId = label && id ? `${id}-label` : undefined
   const handleChange = e => {
     bws.notify(event + '.set', [e.target.value])
   }
@@ -35,11 +35,13 @@ function EnumSelect({ label, labelId, event, slotIndexes, enumFilter, ...other }
   }, [])
   return (
     <FormControl className={classes.formControl}>
-      <InputLabel id={genLabelId} maring="dense" shrink className={classes.inputLabel}>
-        {label}
-      </InputLabel>
+      {label && (
+        <InputLabel id={selectLabelId} maring="dense" shrink className={classes.inputLabel}>
+          {label}
+        </InputLabel>
+      )}
       {enumValues && params && (
-        <Select labelId={genLabelId} value={params[0]} onChange={handleChange} {...other}>
+        <Select labelId={selectLabelId} value={params[0]} onChange={handleChange} {...other}>
           {enumValues.map(e => (
             <MenuItem key={e.id} value={e.id}>
               {e.displayName}

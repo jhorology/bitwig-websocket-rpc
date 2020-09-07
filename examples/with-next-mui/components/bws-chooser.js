@@ -58,7 +58,10 @@ const useStyles = makeStyles(theme => ({
     cursor: 'pointer'
   },
   tableCell: {
-    padding: '6px 12px 6px 8px'
+    padding: '4px 8px 4px 8px'
+  },
+  locationButton: {
+    textTransform: 'none'
   },
   buttonWrapper: {
     position: 'relative'
@@ -98,7 +101,9 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
                     <TableCell align="center" className={classes.tableCell}>
                       <PlatformIcon platform={row.platform} fontSize="small" />
                     </TableCell>
-                    <TableCell className={classes.tableCell}>{row.location}</TableCell>
+                    <TableCell className={classes.tableCell}>
+                      <Button className={classes.locationButton}>{row.location}</Button>
+                    </TableCell>
                     <TableCell className={classes.tableCell}>{row.bitwigVersion}</TableCell>
                     <TableCell
                       className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
@@ -214,7 +219,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
       </DialogTitle>
       <form>
         <DialogContent dividers>
-          <Grid container spacing={2}>
+          <Grid container spacing={0}>
             <Grid item xs={8}>
               <TextField
                 fullWidth
@@ -225,14 +230,6 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
                 value={values.hostname}
                 onChange={handleValueChange('hostname')}
               />
-              <TextField
-                inputRef={passwordInput}
-                fullWidth
-                type="password"
-                label="password"
-                value={values.password}
-                onChange={handleValueChange('password')}
-              />
             </Grid>
             <Grid item xs={4}>
               <TextField
@@ -242,6 +239,16 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
                 helperText={values.portErr}
                 inputProps={{ maxLength: 5, width: '30px' }}
                 onChange={handleValueChange('port')}
+              />
+            </Grid>
+            <Grid item xs={8}>
+              <TextField
+                inputRef={passwordInput}
+                fullWidth
+                type="password"
+                label="password"
+                value={values.password}
+                onChange={handleValueChange('password')}
               />
             </Grid>
           </Grid>

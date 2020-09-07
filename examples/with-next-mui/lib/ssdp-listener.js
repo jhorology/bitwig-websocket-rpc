@@ -10,10 +10,13 @@ const rpcServices = {}
  * Start the SSDP listener service
  */
 function start() {
-  const server = new Server(),
+  const server = new Server({
+      // explicitSocketBind: true,
+      suppressRootDeviceAdvertisements: true
+    }),
     client = new Client({
       // TODO why need this on windows ?
-      explicitSocketBind: true
+      // explicitSocketBind: true
     }),
     SERVICE_TYPE = /^urn:bitwig-websocket-rpc:service:json-rpc 2\.0:(.+)$/
 

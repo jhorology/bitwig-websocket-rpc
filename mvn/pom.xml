@@ -28,7 +28,7 @@
 
     <!-- =====================================
          default development profile for IDE
-         same as -Pdevelopment,extension-api-11
+         same as -Pdevelopment,extension-api-12
          ===================================== -->
     
     <!-- Bitwig extension definition -->
@@ -45,17 +45,17 @@
     
     <!-- dependenceies versions -->
     <commons.lang3.version>3.5</commons.lang3.version>
-    <bitwig.extension.api.version>11</bitwig.extension.api.version>
+    <bitwig.extension.api.version>12</bitwig.extension.api.version>
     
     <!-- extension definition -->
     <extension.name>WebSocket RPC API 11</extension.name>
     <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
-    <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
+    <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
     
     <!-- build env -->
     <build.development>true</build.development>
     <build.production>false</build.production>
-    <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
+    <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
   </properties>
   
   <profiles>
@@ -152,11 +152,28 @@
         
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 11</extension.name>
-        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.uuid>7bf57411-ba57-4f4f-9ba9-ef06ae1755ca</extension.uuid>
         <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
         
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>extension-api-12</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <bitwig.extension.api.version>12</bitwig.extension.api.version>
+        
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 12</extension.name>
+        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
+        
+        <!-- build env -->
+        <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
       </properties>
     </profile>
     

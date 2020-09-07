@@ -123,7 +123,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
                 // need to investigate other client implementation.
             }
             byebyeMessage = createNotification(e, SsdpNotificationType.BYEBYE);
-            
+
             ssdpService = new SsdpService(nics, this);
             ssdpService.listen();
 
@@ -202,12 +202,12 @@ public class SsdpAdvertisement implements SsdpPacketListener {
         }
     }
 
-    
-    
+
+
     private SsdpMessage createResponse(InitEvent<Config> e, String location) {
         return createMessage(e, SsdpMessageType.RESPONSE, null, location);
     }
-    
+
     private SsdpMessage createNotification(InitEvent<Config> e, SsdpNotificationType nType) {
         return createMessage(e, SsdpMessageType.NOTIFY, nType, null);
     }
@@ -215,7 +215,7 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     private SsdpMessage createNotification(InitEvent<Config> e, SsdpNotificationType nType, String location) {
         return createMessage(e, SsdpMessageType.NOTIFY, nType, location);
     }
-    
+
     private SsdpMessage createMessage(InitEvent<Config> e, SsdpMessageType mType, SsdpNotificationType nType, String location) {
         SsdpMessage message = new SsdpMessage(mType);
         message.setHeader("HOST", "239.255.255.250:1900");
@@ -280,9 +280,9 @@ public class SsdpAdvertisement implements SsdpPacketListener {
             return true;
         }
         String[] nameSpace = st.split(":");
-            if (nameSpace.length < 2) {
-                return false;
-            }
+        if (nameSpace.length < 2) {
+            return false;
+        }
         for(int i = 0; i < nameSpace.length; i++) {
             if (!serviceTypeNameSpace[i].equals(nameSpace[i]))  {
                 return false;
