@@ -58,33 +58,34 @@ async function main(bws) {
   bws.notify('transport.getPosition.set', [0])
 
   // safety margin
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+  await new Promise(resolve => setTimeout(resolve, 1000))
 
   // play 4 bars from 1.1
 
-  bws.event('transport.isPlaying')
+  bws
+    .event('transport.isPlaying')
     .become([true])
-    .within(1000).millis() // timeout 1000 milliseconds
+    .within(1000)
+    .millis() // timeout 1000 milliseconds
     .asPromised() // promise resolve event params,
     .then(params => console.log('start!', params))
 
   bws.notify('transport.play')
-  await bws.event('transport.getPosition')
+  await bws
+    .event('transport.getPosition')
     .match(params => params.bars > 4)
-    .within(20).sec() // timeout 20 seconds
+    .within(20)
+    .sec() // timeout 20 seconds
     .asPromised()
   bws.notify('transport.stop')
 
   // unsubscribe events
-  await bws.unsubscribe([
-    'transport.getPosition',
-    'transport.isPlaying'
-  ])
+  await bws.unsubscribe(['transport.getPosition', 'transport.isPlaying'])
 }
 
 const bws = new BitwigClient('ws://localhost:8887')
 
 main(bws)
   .then(() => console.log('done!'))
-  .catch((err) => console.log('done with error!', err))
+  .catch(err => console.log('done with error!', err))
   .finally(() => bws.close())

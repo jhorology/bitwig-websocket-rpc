@@ -68,7 +68,6 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.ext.BeatTime;
-import com.github.jhorology.bitwig.websocket.protocol.jsonrpc.BitwigAdapters;
 
 /**
  * A utility class for creating all known callbacks of Bitwig API.
@@ -393,13 +392,6 @@ public class BitwigCallbacks {
      */
     public static ObjectValueChangedCallback<?> newObjectValueChangedCallback(Consumer<Object[]> lambda) {
         return (Object value) -> {
-            // for debug
-            if (LOG.isDebugEnabled() &&
-                value != null &&
-                ReflectUtils.isBitwigAPI(value.getClass()) &&
-                !BitwigAdapters.isAdapted(value)) {
-                LOG.debug("maybe need seiralization adapter valueType:{}", value.getClass());
-            }
             lambda.accept(new Object[] {value});
         };
     }

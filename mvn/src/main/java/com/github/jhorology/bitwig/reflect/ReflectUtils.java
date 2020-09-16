@@ -77,6 +77,7 @@ import org.slf4j.LoggerFactory;
 
 // source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 
 /**
  * utility class
@@ -375,11 +376,12 @@ public class ReflectUtils {
     /**
      * Returns specified type is pure HardwareBindable class.or not
      * @param type
+     * @param protocol
      * @return 
      */
-    public static boolean isPureHardwareBindable(Class<?> type) {
+    public static boolean isPureHardwareBindable(Class<?> type, ProtocolHandler protocol) {
         if (HardwareBindable.class.isAssignableFrom(type) && !(
-            isBitwigValue(type) || isBank(type))) {
+            isBitwigValue(type) || isBank(type) || protocol.isSerializableBitwigType(type))) {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("class[{}] is Pure HardwareBindable.", type);
             }

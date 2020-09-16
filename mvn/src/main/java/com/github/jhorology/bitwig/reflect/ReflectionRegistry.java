@@ -629,7 +629,7 @@ public class ReflectionRegistry implements RpcRegistry {
 
 
     private void registerMethods(ModuleHolder module) {
-        module.getMethodStream()
+        module.getMethodStream(protocol)
             .forEach(m -> registerMethod(module, m, module, 0));
     }
 
@@ -743,7 +743,7 @@ public class ReflectionRegistry implements RpcRegistry {
         }
         if (isReturnTypeBitwigAPI && !returnType.isEnum()) {
             // register method recursively
-            mh.getMethodStream().forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
+            mh.getMethodStream(protocol).forEach(m -> registerMethod(module, m, mh, chainDepth + 1));
         }
     }
 

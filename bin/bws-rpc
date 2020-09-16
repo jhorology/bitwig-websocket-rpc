@@ -3,15 +3,18 @@
 //   (c) 2019 Masaafumi Fujimaru
 //    Released under the MIT license.
 const path = require('path'),
-      fs = require('fs'),
-      { isAsyncFunction } = require('util').types,
-      updateNotifier = require('update-notifier'),
-      program = require('commander'),
-      { BitwigClient } = require('..'),
-      { installExtension, defaultExtensionDir } = require('../lib/extension-installer'),
-      pkg = require('../package.json'),
-      beautify = require('js-beautify'),
-      DEFAULT_URL = _defaultUrl()
+  fs = require('fs'),
+  { isAsyncFunction } = require('util').types,
+  updateNotifier = require('update-notifier'),
+  program = require('commander'),
+  { BitwigClient } = require('..'),
+  {
+    installExtension,
+    defaultExtensionDir
+  } = require('../lib/extension-installer'),
+  pkg = require('../package.json'),
+  beautify = require('js-beautify'),
+  DEFAULT_URL = _defaultUrl()
 
 // check if a new version is available and print an update notification
 const notifier = updateNotifier({ pkg })
@@ -31,67 +34,93 @@ program
 program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
-  .option('-e, --extension-dir <path>', 'Bitwig Studio Extension directory', defaultExtensionDir())
-  .option('-a, --api <version>', 'Bitwig Studio Extension API version. version=8-12', '12')
+  .option(
+    '-e, --extension-dir <path>',
+    'Bitwig Studio Extension directory',
+    defaultExtensionDir()
+  )
+  .option(
+    '-a, --api <version>',
+    'Bitwig Studio Extension API version. version=8-12',
+    '12'
+  )
   .action(_execCommand(installCommand))
 
 /* eslint no-multi-spaces: 0 */
 program
   .command('config')
   .description('Configure RPC modules.')
-  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-p --pass <password>', 'password.')
-  .option('-r, --reset',          'reset configuration to defaults.')
-  .option('-f, --file <path>',    'config file(.js|.json) path. this option is ignored by -r option.')
-  .option('-a, --all',            'enable all RPC methods and events. this option is ignored by -r or -f option.')
-  .option('-b, --abbrev',         'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.')
-  .option('-r, --print',          'print present configurationn.')
+  .option('-r, --reset', 'reset configuration to defaults.')
+  .option(
+    '-f, --file <path>',
+    'config file(.js|.json) path. this option is ignored by -r option.'
+  )
+  .option(
+    '-a, --all',
+    'enable all RPC methods and events. this option is ignored by -r or -f option.'
+  )
+  .option(
+    '-b, --abbrev',
+    'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.'
+  )
+  .option('-r, --print', 'print present configurationn.')
   .action(_execCommand(configCommand))
 
 program
   .command('report')
-  .description('Report accessible RPC methods and evnets of current configuration as JSON.')
-  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .description(
+    'Report accessible RPC methods and evnets of current configuration as JSON.'
+  )
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-p --pass <password>', 'password.')
-  .option('-s, --summary',        'report total count of methods and events.')
+  .option('-s, --summary', 'report total count of methods and events.')
   .action(_execCommand(reportCommand))
 
 program
   .command('actions')
-  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL', DEFAULT_URL)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL', DEFAULT_URL)
   .option('-p --pass <password>', 'password.')
-  .option('-c, --categorize',     'Group by category.')
+  .option('-c, --categorize', 'Group by category.')
   .description('Report result of Application#getActions() as JSON.')
   .action(_execCommand(actionsCommand))
 
 program
   .command('events')
   .description('Monitor events.')
-  .option('-u, --url <URL>',        'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-p --pass <password>',   'password.')
-  .option('-m, --module <modules>', 'filter events with specified modules(comma separated module names).')
-  .option('-r, --reconnect',        'keep attempting to reconnect.')
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-p --pass <password>', 'password.')
+  .option(
+    '-m, --module <modules>',
+    'filter events with specified modules(comma separated module names).'
+  )
+  .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(eventsCommand))
 
 program
   .command('logs')
   .description('Trace controller script logs.')
-  .option('-u, --url <URL>',      'Bitwig Studio WebSockets URL.', DEFAULT_URL)
+  .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
   .option('-p --pass <password>', 'password.')
-  .option('-r, --reconnect',      'keep attempting to reconnect.')
+  .option('-r, --reconnect', 'keep attempting to reconnect.')
   .action(_execCommand(logsCommand))
 
 // error on unknown commands
-program
-  .on('command:*', function() {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', program.args.join(' '))
-    process.exit(1)
-  })
+program.on('command:*', function () {
+  console.error(
+    'Invalid command: %s\nSee --help for a list of available commands.',
+    program.args.join(' ')
+  )
+  process.exit(1)
+})
 
 program.parse(process.argv)
 
 if (!commandExecuted) {
-  console.error('no command given!\nSee --help for a list of available commands.')
+  console.error(
+    'no command given!\nSee --help for a list of available commands.'
+  )
   process.exit(1)
 }
 
@@ -132,7 +161,11 @@ async function configCommand(options) {
     config = await ws.call('rpc.config')
     if (options.all) {
       Object.keys(config).forEach(key => {
-        if (key.match(/^use[A-Z]/) && key !== 'useAbbreviatedMethodNames' && !config[key]) {
+        if (
+          key.match(/^use[A-Z]/) &&
+          key !== 'useAbbreviatedMethodNames' &&
+          !config[key]
+        ) {
           config[key] = true
           dirty = true
         }
@@ -212,14 +245,16 @@ async function reportCommand(options) {
     'module'.padEnd(32),
     'method'.padEnd(8),
     'event'.padEnd(8),
-    'event * bankDimension')
+    'event * bankDimension'
+  )
   console.log(''.padEnd(80, '-'))
   summary.forEach(o => {
     console.log(
       o.module.padEnd(28),
       ('' + o.numMethods).padStart(8),
       ('' + o.numEvents).padStart(8),
-      ('' + o.numBankedEvents).padStart(8))
+      ('' + o.numBankedEvents).padStart(8)
+    )
     total.numMethods += o.numMethods
     total.numEvents += o.numEvents
     total.numBankedEvents += o.numBankedEvents
@@ -229,7 +264,8 @@ async function reportCommand(options) {
     'Total'.padEnd(28),
     ('' + total.numMethods).padStart(8),
     ('' + total.numEvents).padStart(8),
-    ('' + total.numBankedEvents).padStart(8))
+    ('' + total.numBankedEvents).padStart(8)
+  )
 }
 
 /**
@@ -243,9 +279,12 @@ async function actionsCommand(options) {
   let config = ws.call('rpc.config')
   if (!config.useApplication) {
     // ws.config(settings, merge, reconnect)
-    config = await ws.config({
-      useApplication: true
-    }, true)
+    config = await ws.config(
+      {
+        useApplication: true
+      },
+      true
+    )
   }
   const method = config.useAbbreviatedMethodNames
     ? 'app.actions'
@@ -253,7 +292,9 @@ async function actionsCommand(options) {
   let actions = await ws.call(method)
   if (options.categorize) {
     actions = actions.reduce((categories, action) => {
-      let category = categories.find(category => category.id === action.category.id)
+      let category = categories.find(
+        category => category.id === action.category.id
+      )
       if (!category) {
         category = {
           id: action.category.id,
@@ -296,9 +337,12 @@ async function eventsCommand(options) {
             return true
           }
           return modules.some(m => s.startsWith(`${m}.`))
-        }).map(e => e.event)
-      events.forEach((e) => {
-        ws.on(e, (params) => console.log(Date.now() - startTime, '|', e, '|', params))
+        })
+        .map(e => e.event)
+      events.forEach(e => {
+        ws.on(e, params =>
+          console.log(Date.now() - startTime, '|', e, '|', params)
+        )
       })
       await ws.subscribe(events, 50000)
       // infinite wait until close
@@ -340,10 +384,10 @@ async function logsCommand(options) {
 }
 
 function _execCommand(func) {
-  return function(options) {
+  return function (options) {
     commandExecuted = true
     if (isAsyncFunction(func)) {
-      func(options).catch((err) => {
+      func(options).catch(err => {
         console.error(err)
         process.exit(1)
       })
@@ -391,7 +435,9 @@ function _print(obj) {
 function _defaultUrl() {
   // WSL2 ?
   if (/^\/run\/WSL\/.*/.exec(process.env.WSL_INTEROP)) {
-    const match = /^nameserver\s+([0-9|.]+)/m.exec(fs.readFileSync('/etc/resolv.conf'))
+    const match = /^nameserver\s+([0-9|.]+)/m.exec(
+      fs.readFileSync('/etc/resolv.conf')
+    )
     if (match) {
       return `ws://${match[1]}:8887`
     }

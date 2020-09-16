@@ -104,7 +104,7 @@ public class BitwigAdapters {
      * @param value
      * @return
      */
-    public static boolean isAdapted(Object value) {
+    static boolean isAdapted(Object value) {
         if (value == null) {
             return true;
         }
@@ -116,7 +116,7 @@ public class BitwigAdapters {
      * @param type
      * @return
      */
-    public static boolean isAdaptedType(Class<?> type) {
+    static boolean isAdaptedType(Class<?> type) {
         Class<?> clazz = type.isArray()
                 ? type.getComponentType()
                 : type;

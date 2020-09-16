@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2020 Masafumi Fujimaru
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -84,7 +84,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
      */
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        push(new Notification("_connected"), conn);
+        push(new Notification("_accepted"), conn);
     }
     
     /**
@@ -195,7 +195,7 @@ public class JsonRpcProtocolHandler extends AbstractProtocolHandler implements P
     public PushModel getPushModel() {
         return this;
     }
-    
+
     private String onBatchRequest(List<Request> batch) {
         List<Response> results = batch.stream()
             .map(req -> processRequest(req))

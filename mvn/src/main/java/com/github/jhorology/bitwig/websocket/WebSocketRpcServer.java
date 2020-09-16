@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2020 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -125,24 +125,9 @@ public class WebSocketRpcServer
         // event bus for dispatching events to 'Control Surface Session' thread.
         eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
         eventBus.register(protocol);
-        if (protocol.isReady()) {
-            start();
-            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
-        } else {
-            stater(e.getHost());
-        }
+        start(e.getHost());
     }
     
-    private void stater(ControllerHost host) {
-        if (protocol.isReady()) {
-            start();
-            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
-        } else {
-            LOG.debug("Protocol is not yet ready.");
-            host.scheduleTask(() -> stater(host), 200L);
-        }
-    }
-
     /**
      * De-initialize at extension's end of life-cycle.
      * This method is called from within 'Control Surfaces Session' thread.
@@ -212,7 +197,8 @@ public class WebSocketRpcServer
      * @throws InvalidDataException 
      */
     @Override
-    public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(WebSocket conn, Draft draft, ClientHandshake request) throws InvalidDataException {
+    public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(WebSocket conn, Draft draft, ClientHandshake request)
+        throws InvalidDataException {
         ServerHandshakeBuilder builder = super.onWebsocketHandshakeReceivedAsServer(conn, draft, request);
         if (!auth.authenticate(conn, request)) {
             throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, "Not accepted!");
@@ -310,9 +296,20 @@ public class WebSocketRpcServer
      * @param context
      */
     @Override
-    public void handleException(Throwable ex,
-                                SubscriberExceptionContext context) {
+    public void handleException(
+        Throwable ex,
+        SubscriberExceptionContext context) {
         LOG.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
+    }
+
+    private void start(ControllerHost host) {
+        if (protocol.isReady()) {
+            start();
+            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
+        } else {
+            LOG.debug("Protocol is not yet ready.");
+            host.scheduleTask(() -> start(host), 200L);
+        }
     }
 
     @SuppressWarnings("SleepWhileInLoop")

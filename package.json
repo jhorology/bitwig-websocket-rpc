@@ -11,7 +11,7 @@
     "dev:build:api-12": "cd mvn && mvn -P development,extension-api-12 clean package",
     "dev:build": "run-s dev:build:**",
     "dev:install": "bin/bws-rpc install --api 12",
-    "dev:debug": "BITWIG_VERSION=3.2.4 mvn/debug.sh",
+    "dev:debug": "BITWIG_VERSION=3.2.7 mvn/debug.sh",
     "dev:debug:midi": "mvn/debug.sh -midi",
     "dev:midi": "run-s dev:build:api-12 dev:install dev:debug:midi",
     "dev": "run-s dev:build:api-12 dev:install dev:debug",
@@ -30,6 +30,7 @@
     "test:browser": "open test/test.html",
     "test": "run-s test:**",
     "eslint": "eslint lib/*.js ./*.js bin/bws-rpc",
+    "format": "prettier --write lib/*.js ./*.js bin/bws-rpc",
     "coffeelint": "coffeelint -f coffeelint.json test/",
     "prepublishOnly": "run-s coffeelint eslint prod:build:**"
   },
@@ -72,15 +73,13 @@
     "coffeeify": "^3.0.1",
     "coffeelint": "^2.1.0",
     "coffeescript": "^2.5.1",
-    "eslint": "^7.8.1",
-    "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
+    "eslint": "^7.9.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
     "mocha": "^8.1.3",
     "node-ssdp": "^4.0.0",
     "npm-run-all": "^4.1.5",
+    "prettier": "^2.1.2",
     "underscore": "^1.11.0"
   }
 }

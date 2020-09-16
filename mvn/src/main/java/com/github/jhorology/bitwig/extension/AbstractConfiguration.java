@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2020 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -56,7 +56,7 @@ public abstract class AbstractConfiguration {
     @Expose
     //#endif
     private boolean logOutputSystemConsole = false;
-    
+
     @Expose
     protected boolean doNotUseRequestFlush = false;
     // <--
@@ -87,7 +87,7 @@ public abstract class AbstractConfiguration {
     public boolean isLogOutputSystemConsole() {
         return logOutputSystemConsole;
     }
-    
+
     /**
      * Return a flag to use Hos#requestFlush for thread dispatching, or not.
      * for performance test.
@@ -98,7 +98,7 @@ public abstract class AbstractConfiguration {
     }
 
     // TODO Guava 19 or above are able to register non-public @﻿Subscribe
-    
+
     /**
      * this method is called at extension's start of life-cycle.
      * Do not call or override this method.
@@ -114,7 +114,7 @@ public abstract class AbstractConfiguration {
         logLevelEnumFilter = level -> level.ordinal() >= LogSeverity.INFO.ordinal();
         //#endif
         ignoreHostPrefValue();
-        
+
         addEnumPrefItem("Log Level", "Logging",
                         logLevelEnumFilter,
                         t -> t.name(),
@@ -128,7 +128,7 @@ public abstract class AbstractConfiguration {
         //#endif
 
         addPrefItems();
-        
+
         host.getPreferences()
             .getSignalSetting("Apply new settings", "Restart this extension", "Restart")
             .addSignalObserver(host::restart);
@@ -140,14 +140,14 @@ public abstract class AbstractConfiguration {
                     host.restart();
                 });
     }
-    
+
     /**
      * Add input elements of preferences panel.
      */
     abstract protected void addPrefItems();
 
     // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
-    
+
     /**
      * this method is called at extension's end of life-cycle.
      * Do not call this method.
@@ -156,7 +156,7 @@ public abstract class AbstractConfiguration {
     @Subscribe
     public final void onExit(ExitEvent<?> e) {
     }
-    
+
     /**
      * Returns configuration has bean changed, or not.
      * @return
@@ -164,13 +164,13 @@ public abstract class AbstractConfiguration {
     boolean isValueChanged() {
         return valueChanged;
     }
-    
+
     /**
      * Sets configuration has bean changed, or not.
      * @param valueChanged
      */
     void setValueChanged(boolean valueChanged) {
-        this.valueChanged = valueChanged; 
+        this.valueChanged = valueChanged;
     }
 
     /**
@@ -180,7 +180,7 @@ public abstract class AbstractConfiguration {
     boolean isRequestReset() {
         return requestReset;
     }
-    
+
     /**
      * Sets whether to reset this configuration.
      * @param requestRest
@@ -248,14 +248,14 @@ public abstract class AbstractConfiguration {
 
         // display string -> enum
         Function<String, T> valueOf = (s -> Stream.of(values)
-            .filter(e -> mapper.apply(e).equals(s))
-            .findFirst().orElse(getter.get()));
+                                       .filter(e -> mapper.apply(e).equals(s))
+                                       .findFirst().orElse(getter.get()));
 
         SettableEnumValue value = host.getPreferences().getEnumSetting
             (label, category,
              Stream.of(values).filter(filter)
-                .map(mapper)
-                .toArray(String[]::new),
+             .map(mapper)
+             .toArray(String[]::new),
              mapper.apply(getter.get()));
 
         value.set(mapper.apply(getter.get()));
@@ -328,11 +328,11 @@ public abstract class AbstractConfiguration {
                                   Consumer<Integer> setter) {
 
         SettableRangedValue value =
-            host.getPreferences().getNumberSetting
-            (label, category, minValue, maxValue, 1, unit, getter.get());
+            host.getPreferences().getNumberSetting(
+                label, category, minValue, maxValue, 1, unit, getter.get());
 
         value.setRaw(getter.get());
-        value.addValueObserver((double v) -> {
+        value.addRawValueObserver((double v) -> {
                 if (ignoreHostPrefValue) {
                     value.setRaw(getter.get());
                 } else if (getter.get() != (int)v){
@@ -355,7 +355,7 @@ public abstract class AbstractConfiguration {
                                    Consumer<Boolean> setter) {
         addBoolPrefItem(label, category, getter, setter, true);
     }
-    
+
     /**
      * Add a input item to preferences panel.
      * @param label         the name of the setting, must not be null
@@ -387,7 +387,7 @@ public abstract class AbstractConfiguration {
                 }
             });
     }
-    
+
     /**
      * Add a input item to preferences panel.
      * @param label         the name of the setting, must not be null
@@ -437,7 +437,7 @@ public abstract class AbstractConfiguration {
                 }
             });
     }
-    
+
     private void ignoreHostPrefValue() {
         ignoreHostPrefValue = true;
         host.scheduleTask(() -> {

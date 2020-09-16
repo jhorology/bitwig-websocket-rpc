@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Masafumi Fujimaru
+ * Copyright (c) 2020 Masafumi Fujimaru
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.ext.ExtApiFactory;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
+import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 
 /**
  * An interface that defines registry node.
@@ -174,18 +175,19 @@ abstract class RegistryNode {
 
     /**
      * Get a stream of member methods.
+     * @param protocl
      * @return the stream of methods
      */
-    Stream<Method> getMethodStream() {
-        Stream<Method> stream = getMethodStream(nodeType);
+    Stream<Method> getMethodStream(ProtocolHandler protocol) {
+        Stream<Method> stream = getMethodStream(nodeType, protocol);
         Class<?> extApi = ExtApiFactory.getExtApiInterface(config, nodeType);
         if (extApi != null) {
-            stream = Stream.concat(stream, getMethodStream(extApi));
+            stream = Stream.concat(stream, getMethodStream(extApi, protocol));
         }
         return stream;
     }
     
-    private Stream<Method> getMethodStream(Class<?> api) {
+    private Stream<Method> getMethodStream(Class<?> api, ProtocolHandler protocol) {
         // may be a proxy class that implements extended API.
         Stream<Method> methodStream = Stream.of(api.getMethods())
             .filter(m -> !ReflectUtils.isDeprecated(m))
@@ -239,7 +241,7 @@ abstract class RegistryNode {
         
         //#if bitwig.extension.api.version >= 10
         methodStream = methodStream
-            .filter(m -> !ReflectUtils.isPureHardwareBindable(m.getReturnType()));
+            .filter(m -> !ReflectUtils.isPureHardwareBindable(m.getReturnType(), protocol));
         //#endif
         
         

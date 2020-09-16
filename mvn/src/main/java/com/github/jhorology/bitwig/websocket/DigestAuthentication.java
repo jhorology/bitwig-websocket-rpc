@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2019 masafumi.
+ * Copyright 2020 masafumi.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
 package com.github.jhorology.bitwig.websocket;
 
 // jdk
+import java.net.InetAddress;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,8 +57,9 @@ public class DigestAuthentication {
     private static final int MAX_STORE_SIZE = 200;
     private static final long CHALLENGE_VALID_PERIOD = 30000L;
     private static final String USER_NAME = "bitwig";
-    
+
     private static final class Challenge {
+        private final InetAddress remoteAddress;
         private final String uri;
         @Expose
         private final String realm = "biwig-websocket-rpc"; // for future changes
@@ -70,49 +72,54 @@ public class DigestAuthentication {
         private final long timestamp;
         private final AtomicInteger nc;
         private String json = null;
-        
-        private Challenge(String uri) {
+
+        private Challenge(InetAddress remoteAddress, String uri) {
+            this.remoteAddress = remoteAddress;
             this.uri = uri;
             this.nonce = RandomStringUtils.randomAlphanumeric(21);
             this.timestamp = System.currentTimeMillis();
             this.nc = new AtomicInteger(0);
         }
-        
+
+        public InetAddress getRemoteAddress() {
+            return remoteAddress;
+        }
+
         public String getUri() {
             return uri;
         }
-        
+
         public String getRealm() {
             return realm;
         }
-        
+
         public String getNonce() {
             return nonce;
         }
-        
+
         public String getAlgorithm() {
             return algorithm;
         }
-        
+
         public String getQop() {
             return qop;
         }
-        
+
         public Long getTimestamp() {
             return timestamp;
         }
-        
+
         public String incrementAndGetNc() {
             int num = nc.incrementAndGet();
             String strNum =  "00000000" + Integer.toHexString(num).toLowerCase();
             return strNum.substring(strNum.length() - 8);
         }
-        
+
         public boolean isValid() {
             long now = System.currentTimeMillis();
             return (timestamp + CHALLENGE_VALID_PERIOD) <= now;
         }
-        
+
         public String toJson() {
             if (json == null) {
                 Gson gson = new GsonBuilder()
@@ -123,26 +130,26 @@ public class DigestAuthentication {
             return json;
         }
     }
-    
+
     private final Map<String, Challenge> store;
     private final Predicate<String> authRequired;
     private final Supplier<String> password;
-    
+
     /**
      * Constructor.
-     * @param config 
+     * @param config
      */
     DigestAuthentication(Predicate<String> authRequired, Supplier<String> password) {
         store = new ConcurrentHashMap<>();
         this.authRequired = authRequired;
         this.password = password;
     }
-    
+
     /**
-     * if needed, generate challenge and return it as reason for close. 
+     * if needed, generate challenge and return it as reason for close.
      * @param conn
      * @param request
-     * @return 
+     * @return
      */
     public boolean challenge(WebSocket conn, ClientHandshake request) {
         String resourceDescriptor = request.getResourceDescriptor();
@@ -153,18 +160,19 @@ public class DigestAuthentication {
             // first challenge
             String host = request.getFieldValue("Host");
             String uri = String.format("ws://%s%s", host, resourceDescriptor);
-            Challenge challenge = createAndStoreChallenge(uri);
+            
+            Challenge challenge = createAndStoreChallenge(conn.getRemoteSocketAddress().getAddress(), uri);
             conn.close(CHALLENGE_CLOSE_CODE, challenge.toJson());
             return true;
         }
         return false;
     }
-    
+
     /**
      * authenticate WebSocket connection.
      * @param conn
      * @param request
-     * @return 
+     * @return
      */
     public boolean authenticate(WebSocket conn, ClientHandshake request) {
         String resourceDescriptor = request.getResourceDescriptor();
@@ -198,32 +206,32 @@ public class DigestAuthentication {
         }
         return false;
     }
-    
-    private Challenge createAndStoreChallenge(String uri) {
-        Challenge challenge = new Challenge(uri);
+
+    private Challenge createAndStoreChallenge(InetAddress remoteAddress, String uri) {
+        Challenge challenge = new Challenge(remoteAddress, uri);
         removeExpiredChallenge();
         store.put(challenge.getNonce(), challenge);
         return challenge;
     };
-    
+
     private void removeExpiredChallenge() {
         store.values().stream()
             .filter(c -> !c.isValid())
             .map(c -> c.getNonce())
             .collect(Collectors.toList())
             .forEach(n -> {
-                store.remove(n);
-            });
+                    store.remove(n);
+                });
         if (LOG.isWarnEnabled() && store.size() >= MAX_STORE_SIZE) {
             LOG.warn("Challenge store reached full capacity, maybe malicious attack!!!");
         }
         while (store.size() >= MAX_STORE_SIZE) {
-            Challenge mostOld = Collections.min(store.values(), 
-                (Challenge o1, Challenge o2) -> o1.getTimestamp().compareTo(o2.getTimestamp()));
+            Challenge mostOld = Collections.min(store.values(),
+                                                (Challenge o1, Challenge o2) -> o1.getTimestamp().compareTo(o2.getTimestamp()));
             store.remove(mostOld.getNonce());
         }
     }
-    
+
     private boolean validateResponse(WebSocket conn, String query) {
         Map<String, String> params;
         try {
@@ -262,6 +270,12 @@ public class DigestAuthentication {
         if (challenge == null) {
             if (LOG.isTraceEnabled()) {
                 LOG.trace("connection[{}] was rejected. nonce param is missing.", conn);
+            }
+            return false;
+        }
+        if (!challenge.getRemoteAddress().equals(conn.getRemoteSocketAddress().getAddress())) {
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("connection[{}] was rejected. recieved response from unknown host.", conn);
             }
             return false;
         }
