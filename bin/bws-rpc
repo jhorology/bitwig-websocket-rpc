@@ -10,7 +10,7 @@ const path = require('path'),
   { BitwigClient } = require('..'),
   {
     installExtension,
-    defaultExtensionDir
+    defaultExtensionsDir
   } = require('../lib/extension-installer'),
   pkg = require('../package.json'),
   beautify = require('js-beautify'),
@@ -35,9 +35,9 @@ program
   .command('install')
   .description('Install Bitwig Studio WebSockets RPC server extension.')
   .option(
-    '-e, --extension-dir <path>',
+    '-e, --extensions-dir <path>',
     'Bitwig Studio Extension directory',
-    defaultExtensionDir()
+    defaultExtensionsDir()
   )
   .option(
     '-a, --api <version>',
