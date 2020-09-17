@@ -55,8 +55,6 @@ public class Config extends AbstractConfiguration {
     private Protocols rpcProtocol = Protocols.JSONRPC20;
     @Expose
     private boolean ssdpEnabled = true;
-    @Expose
-    private boolean useAbbreviatedMethodNames;
     //#if build.development
     @Expose
     //#endif
@@ -241,14 +239,6 @@ public class Config extends AbstractConfiguration {
         return ssdpEnabled;
     }
     
-    /**
-     * Returns a configuration value of the use or not use abbreviated method names.
-     * @return
-     */
-    public boolean useAbbreviatedMethodNames() {
-        return useAbbreviatedMethodNames;
-    }
-
     /**
      * Return a number of worker threads
      * for performance test.
@@ -853,10 +843,6 @@ public class Config extends AbstractConfiguration {
                        this::getNumWorkerThreads,
                        v -> {numWorkerThreads = v;});
         
-        addBoolPrefItem("Use abbreviated method and event name", WEBSOCKET_PREF_CATEGORY,
-                        this::useAbbreviatedMethodNames,
-                        v -> {useAbbreviatedMethodNames = v;});
-
         // --> Application
         addBoolPrefItem("Use", "Application",
                         this::useApplication,

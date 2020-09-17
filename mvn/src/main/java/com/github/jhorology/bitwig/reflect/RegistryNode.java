@@ -120,7 +120,7 @@ abstract class RegistryNode {
      */
     protected RegistryNode(Config config, String nodeName, Class<?> nodeType, RegistryNode parentNode, int bankItemCount) {
         this.config = config;
-        this.nodeName = config.useAbbreviatedMethodNames() ? AbbrevDict.abbrev(nodeName) : nodeName;
+        this.nodeName = nodeName;
         this.nodeType = nodeType;
         this.parentNode = parentNode;
         this.bankItemCount = bankItemCount;

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 //  bitwig-websocket-rpc
-//   (c) 2019 Masaafumi Fujimaru
+//   (c) 2020 Masaafumi Fujimaru
 //    Released under the MIT license.
 const path = require('path'),
   fs = require('fs'),
@@ -61,11 +61,7 @@ program
     '-a, --all',
     'enable all RPC methods and events. this option is ignored by -r or -f option.'
   )
-  .option(
-    '-b, --abbrev',
-    'enable abbreviated method and event name (experimental), this option is ignored by -r, -f or -a option.'
-  )
-  .option('-r, --print', 'print present configurationn.')
+  .option('-i, --print', 'print present configurationn.')
   .action(_execCommand(configCommand))
 
 program
@@ -163,18 +159,12 @@ async function configCommand(options) {
       Object.keys(config).forEach(key => {
         if (
           key.match(/^use[A-Z]/) &&
-          key !== 'useAbbreviatedMethodNames' &&
           !config[key]
         ) {
           config[key] = true
           dirty = true
         }
       })
-    } else if (options.abbrev) {
-      if (!config.useAbbreviatedMethodNames) {
-        config.useAbbreviatedMethodNames = true
-        dirty = true
-      }
     }
   }
   if (dirty) {
@@ -286,10 +276,7 @@ async function actionsCommand(options) {
       true
     )
   }
-  const method = config.useAbbreviatedMethodNames
-    ? 'app.actions'
-    : 'application.getActions'
-  let actions = await ws.call(method)
+  let actions = await ws.call('application.getActions')
   if (options.categorize) {
     actions = actions.reduce((categories, action) => {
       let category = categories.find(
