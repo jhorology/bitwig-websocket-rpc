@@ -290,18 +290,25 @@ public abstract class AbstractConfiguration {
         if (options == null || options.length <= 1) {
             return;
         }
+        Supplier<Integer> safeValue = () -> {
+            int v = getter.get() == null ? options[0] : getter.get();
+            for(int opt : options) {
+                if (v <= opt) return opt;
+            }
+            return options[options.length - 1];
+        };
         SettableEnumValue value = host.getPreferences().getEnumSetting
             (label, category,
              IntStream.of(options).mapToObj(String::valueOf).toArray(String[]::new),
-             String.valueOf(getter.get()));
+             String.valueOf(safeValue.get()));
 
-        value.set(String.valueOf(getter.get()));
+        value.set(String.valueOf(safeValue.get()));
         value.addValueObserver((String s) -> {
                 if (ignoreHostPrefValue) {
-                    value.set(String.valueOf(getter.get()));
+                    value.set(String.valueOf(safeValue.get()));
                 } else {
                     int v = Integer.valueOf(s);
-                    if (getter.get() != v) {
+                    if (safeValue.get() != v) {
                         setter.accept(v);
                         valueChanged = true;
                     }
@@ -327,15 +334,20 @@ public abstract class AbstractConfiguration {
                                   Supplier<Integer> getter,
                                   Consumer<Integer> setter) {
 
+        Supplier<Integer> safeValue = () -> {
+            int v = getter.get() == null ? minValue : getter.get();
+            if (v < minValue) v = minValue;
+            if (v > maxValue) v = maxValue;
+            return v;
+        };
         SettableRangedValue value =
             host.getPreferences().getNumberSetting(
-                label, category, minValue, maxValue, 1, unit, getter.get());
-
-        value.setRaw(getter.get());
+                label, category, minValue, maxValue, 1, unit, safeValue.get());
+        value.setRaw(safeValue.get());
         value.addRawValueObserver((double v) -> {
                 if (ignoreHostPrefValue) {
-                    value.setRaw(getter.get());
-                } else if (getter.get() != (int)v){
+                    value.setRaw(safeValue.get());
+                } else if (safeValue.get() != (int)v){
                     setter.accept((int)v);
                     valueChanged = true;
                 }
