@@ -170,7 +170,7 @@
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 12</extension.name>
         <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
-        <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
+        <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
         
         <!-- build env -->
         <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
