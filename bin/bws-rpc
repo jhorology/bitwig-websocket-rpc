@@ -11,7 +11,7 @@ const path = require('path'),
   {
     installExtension,
     defaultExtensionsDir
-  } = require('../lib/extension-installer'),
+  } = require('../lib/tools'),
   pkg = require('../package.json'),
   beautify = require('js-beautify'),
   DEFAULT_URL = _defaultUrl()
