@@ -105,6 +105,7 @@
         <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
         
         <!-- build env -->
+        <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
       </properties>
     </profile>
@@ -122,6 +123,7 @@
         <extension.requiredAPIVersion>9</extension.requiredAPIVersion>
         
         <!-- build env -->
+        <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API9.bwextension</build.extension.file.name>
       </properties>
     </profile>
@@ -139,6 +141,7 @@
         <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
         
         <!-- build env -->
+        <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
       </properties>
     </profile>
@@ -156,6 +159,7 @@
         <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
         
         <!-- build env -->
+        <build.target.java.version>11</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
       </properties>
     </profile>
@@ -173,6 +177,7 @@
         <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
         
         <!-- build env -->
+        <build.target.java.version>11</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
       </properties>
     </profile>
