@@ -48,7 +48,7 @@
     <bitwig.extension.api.version>12</bitwig.extension.api.version>
     
     <!-- extension definition -->
-    <extension.name>WebSocket RPC API 11</extension.name>
+    <extension.name>WebSocket RPC API 12</extension.name>
     <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
     <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
     

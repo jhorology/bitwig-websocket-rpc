@@ -203,7 +203,7 @@ async function connect(url, password, config, merge, setStates, loc) {
       error: undefined
     })
   } catch (err) {
-    console.error(err)
+    console.log(err)
     if (bws) {
       bws.close()
     }

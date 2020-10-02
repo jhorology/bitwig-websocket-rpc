@@ -135,11 +135,12 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
     hostnameErr: 'hostname is required',
     port: '8887',
     portErr: undefined,
-    password: ''
+    password: undefined
   })
   const [rpcServices, setRpcServices] = useState(loc && loc.services)
   // handles the 'CONNECT' Button
-  const handleConnect = () => {
+  const handleSubmit = e => {
+    e.preventDefault()
     onConnect(`ws://${values.hostname}:${values.port}`, values.password)
   }
 
@@ -162,7 +163,10 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
 
   // handles the field value change
   const handleValueChange = name => event => {
-    const value = event.target.value
+    let value = event.target.value
+    if (typeof value === 'string' && value.trim() === '') {
+      value = undefined
+    }
     setValues({
       ...values,
       [name]: value,
@@ -217,7 +221,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
           </Grid>
         </Grid>
       </DialogTitle>
-      <form>
+      <form onSubmit={handleSubmit}>
         <DialogContent dividers>
           <Grid container spacing={0}>
             <Grid item xs={8}>
@@ -263,11 +267,7 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
         </DialogContent>
         <DialogActions>
           <div className={classes.buttonWrapper}>
-            <Button
-              type="submit"
-              color="primary"
-              onClick={handleConnect}
-              disabled={hasErr() || isConnecting}>
+            <Button type="submit" color="primary" disabled={hasErr() || isConnecting}>
               Connect
             </Button>
             {isConnecting && (
