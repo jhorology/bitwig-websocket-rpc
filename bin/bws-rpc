@@ -8,10 +8,7 @@ const path = require('path'),
   updateNotifier = require('update-notifier'),
   program = require('commander'),
   { BitwigClient } = require('..'),
-  {
-    installExtension,
-    defaultExtensionsDir
-  } = require('../lib/tools'),
+  { installExtension, defaultExtensionsDir } = require('../lib/tools'),
   pkg = require('../package.json'),
   beautify = require('js-beautify'),
   DEFAULT_URL = _defaultUrl()
@@ -157,10 +154,7 @@ async function configCommand(options) {
     config = await ws.call('rpc.config')
     if (options.all) {
       Object.keys(config).forEach(key => {
-        if (
-          key.match(/^use[A-Z]/) &&
-          !config[key]
-        ) {
+        if (key.match(/^use[A-Z]/) && !config[key]) {
           config[key] = true
           dirty = true
         }

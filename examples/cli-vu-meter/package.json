@@ -13,6 +13,6 @@
   "dependencies": {
     "bitwig-websocket-rpc": "file:../..",
     "chalk": "^4.1.0",
-    "commander": "^6.1.0"
+    "commander": "^6.2.0"
   }
 }
