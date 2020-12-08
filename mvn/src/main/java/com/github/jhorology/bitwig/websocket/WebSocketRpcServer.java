@@ -140,17 +140,17 @@ public class WebSocketRpcServer
             LOG.info("waiting for WebSocket RPC server stop.");
             eventBus.post(new StopEvent());
             // --> unnecessary, but it's depend on FlushExecutor
-            eventBus.register(this);
-            fullDrained = false;
-            eventBus.post(new FullDrainedEvent());
-            waitFor(() -> fullDrained, 500L);
-            if (fullDrained) {
-                LOG.info("AsyncEventBus has been full drained.");
-            }
+            // eventBus.register(this);
+            // fullDrained = false;
+            // eventBus.post(new FullDrainedEvent());
+            // waitFor(() -> fullDrained, 500L);
+            // if (fullDrained) {
+            //     LOG.info("AsyncEventBus has been full drained.");
+            // }
             // <--
             stop();
             // prevent Address in use error on restart extension.
-            waitFor(() -> !running, 2000L);
+            waitFor(() -> !running, 200L);
             if (!running) {
                 LOG.info("WebSocketServer has been stopped.");
             }

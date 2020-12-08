@@ -48,7 +48,7 @@ program
   .command('config')
   .description('Configure RPC modules.')
   .option('-u, --url <URL>', 'Bitwig Studio WebSockets URL.', DEFAULT_URL)
-  .option('-p --pass <password>', 'password.')
+  .option('-p, --pass <password>', 'password.')
   .option('-r, --reset', 'reset configuration to defaults.')
   .option(
     '-f, --file <path>',
