@@ -26,25 +26,23 @@ package com.github.jhorology.bitwig.ext.api;
 //#if bitwig.extension.api.version >= 10
 import com.bitwig.extension.controller.api.NoteStep;
 //#endif
-
-// source
 import com.github.jhorology.bitwig.ext.NoteStepState;
 
 /**
  * The extended API that allows to access VU Meter of Channel.
  */
 public interface ClipExt {
-    /**
-     * Return a Value object that report which note grid steps/keys contain notes.
-     * @return 
-     */
-    CollectionValue<NoteStepState> noteStepState();
-    
-    //#if bitwig.extension.api.version >= 10
-    /**
-     * Return a Value object that report which note grid steps/keys contain notes.
-     * @return 
-     */
-    CollectionValue<NoteStep> noteStep();
-    //#endif
+  /**
+   * Return a Value object that report which note grid steps/keys contain notes.
+   * @return
+   */
+  CollectionValue<NoteStepState> noteStepState();
+
+  //#if bitwig.extension.api.version >= 10
+  /**
+   * Return a Value object that report which note grid steps/keys contain notes.
+   * @return
+   */
+  CollectionValue<NoteStep> noteStep();
+  //#endif
 }

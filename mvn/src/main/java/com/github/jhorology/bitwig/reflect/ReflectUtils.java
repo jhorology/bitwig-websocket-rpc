@@ -22,18 +22,6 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jdk
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.Map;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
-
-// bitwig api
 import com.bitwig.extension.callback.Callback;
 import com.bitwig.extension.controller.api.Bank;
 // import com.bitwig.extension.controller.api.BrowserFilterColumn;
@@ -70,362 +58,418 @@ import com.bitwig.extension.controller.api.SendBank;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Value;
-
-// dependencies
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-// source
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * utility class
  */
 @SuppressWarnings("UseSpecificCatch")
 public class ReflectUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(ReflectUtils.class);
 
-    /**
-     * empty array of Object.
-     */
-    public static final Object[] EMPTY_ARRAY = {};
-    /**
-     * empty array of Class<?>.
-     */
-    public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
-    public static final Class<?>[] BANK_METHOD_PARAM_TYPES = {int.class};
-    private static final Map<Class<?>, Class<?>> BANK_ITEM_TYPES;
-    private static final Map<Class<?>, Class<?>> SEMI_BANK_ITEM_TYPES;
-    private static final Set<Method> BANK_METHODS;
-    static {
-        BANK_ITEM_TYPES = new LinkedHashMap<>();
-        SEMI_BANK_ITEM_TYPES = new LinkedHashMap<>();
-        BANK_METHODS = new LinkedHashSet<>();
-        try {
-            // All known sub-interfaces of Bank
-            // ItemType can't be resolved at runtime.
-            
-            // public interface Bank<ItemType extends ObjectProxy> extends ObjectProxy, Scrollable
-            // BANK_ITEM_TYPES.put(BrowsingSessionBank.class, GenericBrowsingSession.class);
-            // BANK_ITEM_TYPES.put(BrowserFilterColumnBank.class, BrowserFilterColumn.class);
-            BANK_ITEM_TYPES.put(BrowserItemBank.class, BrowserItem.class);
-            BANK_ITEM_TYPES.put(CueMarkerBank.class, CueMarker.class);
-            BANK_ITEM_TYPES.put(DeviceBank.class, Device.class);
-            BANK_ITEM_TYPES.put(SendBank.class, Send.class);
-            //public interface ChannelBank<ChannelType extends Channel> extends ObjectProxy, Bank<ChannelType>
-            BANK_ITEM_TYPES.put(DeviceLayerBank.class, DeviceLayer.class);
-            BANK_ITEM_TYPES.put(DrumPadBank.class, DrumPad.class);
-            BANK_ITEM_TYPES.put(TrackBank.class, Track.class);
-            BANK_ITEM_TYPES.put(ChannelBank.class, Channel.class);
-            // public interface ClipLauncherSlotOrSceneBank<ItemType extends ClipLauncherSlotOrScene> extends Bank<ItemType>
-            BANK_ITEM_TYPES.put(ClipLauncherSlotBank.class, ClipLauncherSlot.class);
-            BANK_ITEM_TYPES.put(SceneBank.class, Scene.class);
-            BANK_ITEM_TYPES.put(ClipLauncherSlotOrSceneBank.class, ClipLauncherSlotOrScene.class);
-            // not implemented Bank
-            SEMI_BANK_ITEM_TYPES.put(RemoteControlsPage.class, RemoteControl.class);
-            SEMI_BANK_ITEM_TYPES.put(ParameterBank.class, Parameter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReflectUtils.class);
 
-            // bank methods
-            BANK_METHODS.add(Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES));
-            BANK_METHODS.add(RemoteControlsPage.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
-            BANK_METHODS.add(ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES));
-            // TODO need more methods...
+  /**
+   * empty array of Object.
+   */
+  public static final Object[] EMPTY_ARRAY = {};
+  /**
+   * empty array of Class<?>.
+   */
+  public static final Class<?>[] EMPTY_CLASS_ARRAY = {};
+  public static final Class<?>[] BANK_METHOD_PARAM_TYPES = { int.class };
+  private static final Map<Class<?>, Class<?>> BANK_ITEM_TYPES;
+  private static final Map<Class<?>, Class<?>> SEMI_BANK_ITEM_TYPES;
+  private static final Set<Method> BANK_METHODS;
 
-        } catch (Exception ex) {
+  static {
+    BANK_ITEM_TYPES = new LinkedHashMap<>();
+    SEMI_BANK_ITEM_TYPES = new LinkedHashMap<>();
+    BANK_METHODS = new LinkedHashSet<>();
+    try {
+      // All known sub-interfaces of Bank
+      // ItemType can't be resolved at runtime.
+
+      // public interface Bank<ItemType extends ObjectProxy> extends ObjectProxy, Scrollable
+      // BANK_ITEM_TYPES.put(BrowsingSessionBank.class, GenericBrowsingSession.class);
+      // BANK_ITEM_TYPES.put(BrowserFilterColumnBank.class, BrowserFilterColumn.class);
+      BANK_ITEM_TYPES.put(BrowserItemBank.class, BrowserItem.class);
+      BANK_ITEM_TYPES.put(CueMarkerBank.class, CueMarker.class);
+      BANK_ITEM_TYPES.put(DeviceBank.class, Device.class);
+      BANK_ITEM_TYPES.put(SendBank.class, Send.class);
+      //public interface ChannelBank<ChannelType extends Channel> extends ObjectProxy, Bank<ChannelType>
+      BANK_ITEM_TYPES.put(DeviceLayerBank.class, DeviceLayer.class);
+      BANK_ITEM_TYPES.put(DrumPadBank.class, DrumPad.class);
+      BANK_ITEM_TYPES.put(TrackBank.class, Track.class);
+      BANK_ITEM_TYPES.put(ChannelBank.class, Channel.class);
+      // public interface ClipLauncherSlotOrSceneBank<ItemType extends ClipLauncherSlotOrScene> extends Bank<ItemType>
+      BANK_ITEM_TYPES.put(ClipLauncherSlotBank.class, ClipLauncherSlot.class);
+      BANK_ITEM_TYPES.put(SceneBank.class, Scene.class);
+      BANK_ITEM_TYPES.put(
+        ClipLauncherSlotOrSceneBank.class,
+        ClipLauncherSlotOrScene.class
+      );
+      // not implemented Bank
+      SEMI_BANK_ITEM_TYPES.put(RemoteControlsPage.class, RemoteControl.class);
+      SEMI_BANK_ITEM_TYPES.put(ParameterBank.class, Parameter.class);
+
+      // bank methods
+      BANK_METHODS.add(
+        Bank.class.getMethod("getItemAt", BANK_METHOD_PARAM_TYPES)
+      );
+      BANK_METHODS.add(
+        RemoteControlsPage.class.getMethod(
+            "getParameter",
+            BANK_METHOD_PARAM_TYPES
+          )
+      );
+      BANK_METHODS.add(
+        ParameterBank.class.getMethod("getParameter", BANK_METHOD_PARAM_TYPES)
+      );
+      // TODO need more methods...
+
+    } catch (Exception ex) {}
+  }
+
+  public static boolean isVarargs(Method method) {
+    return isVarargs(method.getGenericParameterTypes());
+  }
+
+  public static boolean isVarargs(Type[] paramTypes) {
+    if (paramTypes.length == 1) {
+      Type t = paramTypes[0];
+      return (
+        (t instanceof Class && ((Class<?>) t).isArray()) ||
+        t instanceof GenericArrayType
+      );
+    }
+    return false;
+  }
+
+  /**
+   * convert to varargs type if available
+   * [Number, Number, Number] -> [Namber[]]
+   * @param rpcParamTypes
+   * @return
+   */
+  public static RpcParamType[] toVarargs(RpcParamType[] rpcParamTypes) {
+    if (rpcParamTypes.length >= 1) {
+      final RpcParamType expectedType = rpcParamTypes[0];
+      if (!expectedType.isArray()) {
+        boolean allSameType = Stream
+          .of(rpcParamTypes)
+          .allMatch(t -> (t == expectedType));
+        if (allSameType) {
+          RpcParamType arrayType = expectedType.getArrayType();
+          return new RpcParamType[] { arrayType };
         }
+      }
     }
+    return null;
+  }
 
-    public static boolean isVarargs(Method method) {
-        return isVarargs(method.getGenericParameterTypes());
-    }
-    
-    public static boolean isVarargs(Type[] paramTypes) {
-        if (paramTypes.length == 1) {
-            Type t = paramTypes[0];
-            return (t instanceof Class && ((Class<?>)t).isArray())
-                || t instanceof GenericArrayType;
-        }
-        return false;
-    }
+  /**
+   * return interface type is Bitwig API or not.
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBitwigAPI(Class<?> interfaceType) {
+    return interfaceType.getName().startsWith("com.bitwig.extension.");
+  }
 
-    /**
-     * convert to varargs type if available
-     * [Number, Number, Number] -> [Namber[]]
-     * @param rpcParamTypes
-     * @return
-     */
-    public static RpcParamType[] toVarargs(RpcParamType[] rpcParamTypes) {
-        if (rpcParamTypes.length >= 1) {
-            final RpcParamType expectedType = rpcParamTypes[0];
-            if(!expectedType.isArray()) {
-                boolean allSameType = Stream.of(rpcParamTypes)
-                    .allMatch(t -> (t == expectedType));
-                if (allSameType) {
-                    RpcParamType arrayType = expectedType.getArrayType();
-                    return new RpcParamType[] {arrayType};
-                }
-            }
-        }
-        return null;
-    }
+  /**
+   * return interface type is extended API or not.
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isExtAPI(Class<?> interfaceType) {
+    return interfaceType
+      .getName()
+      .startsWith("com.github.jhorology.bitwig.ext.api.");
+  }
 
-    /**
-     * return interface type is Bitwig API or not.
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBitwigAPI(Class<?> interfaceType) {
-        return interfaceType.getName().startsWith("com.bitwig.extension.");
-    }
-    
-    /**
-     * return interface type is extended API or not.
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isExtAPI(Class<?> interfaceType) {
-        return interfaceType.getName().startsWith("com.github.jhorology.bitwig.ext.api.");
-    }
+  /**
+   * return interface type is Bitwig Controller API or not.
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBitwigControllerAPI(Class<?> interfaceType) {
+    return interfaceType
+      .getName()
+      .startsWith("com.bitwig.extension.controller.api.");
+  }
 
-    /**
-     * return interface type is Bitwig Controller API or not.
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBitwigControllerAPI(Class<?> interfaceType) {
-        return interfaceType.getName().startsWith("com.bitwig.extension.controller.api.");
-    }
+  /**
+   * Specified interfaceType is Bitwig Extension API or not.
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBitwigExtensionAPI(Class<?> interfaceType) {
+    return interfaceType.getName().startsWith("com.bitwig.extension.api.");
+  }
 
-    /**
-     * Specified interfaceType is Bitwig Extension API or not.
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBitwigExtensionAPI(Class<?> interfaceType) {
-        return interfaceType.getName().startsWith("com.bitwig.extension.api.");
-    }
+  /**
+   * Return value of spcified method is implemented Value interface or not ?
+   * it mean having addValueObserver method or not.
+   * @param method
+   * @return
+   */
+  public static boolean isBitwigValue(Method method) {
+    return isBitwigValue(method.getReturnType());
+  }
 
-    /**
-     * Return value of spcified method is implemented Value interface or not ?
-     * it mean having addValueObserver method or not.
-     * @param method
-     * @return
-     */
-    public static boolean isBitwigValue(Method method) {
-        return isBitwigValue(method.getReturnType());
-    }
+  /**
+   * Specifid interfaceType is implemented Value interface or not ?
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBitwigValue(Class<?> interfaceType) {
+    return Value.class.isAssignableFrom(interfaceType);
+  }
 
-    /**
-     * Specifid interfaceType is implemented Value interface or not ?
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBitwigValue(Class<?> interfaceType) {
-        return Value.class.isAssignableFrom(interfaceType);
-    }
+  /**
+   * Return value of specified method is implemented Prameter interface or not ?
+   * @param method
+   * @return
+   */
+  public static boolean isBitwigParameter(Method method) {
+    return isBitwigParameter(method.getReturnType());
+  }
 
-    /**
-     * Return value of specified method is implemented Prameter interface or not ?
-     * @param method
-     * @return
-     */
-    public static boolean isBitwigParameter(Method method) {
-        return isBitwigParameter(method.getReturnType());
-    }
+  /**
+   * Secified interfaceType is implemented Prameter interface or not ?
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBitwigParameter(Class<?> interfaceType) {
+    return Parameter.class.isAssignableFrom(interfaceType);
+  }
 
-    /**
-     * Secified interfaceType is implemented Prameter interface or not ?
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBitwigParameter(Class<?> interfaceType) {
-        return Parameter.class.isAssignableFrom(interfaceType);
-    }
+  /**
+   * Method has any paramater of Callback or not.
+   * @param method
+   * @return
+   */
+  public static boolean hasAnyCallbackParameter(Method method) {
+    Class<?>[] types = method.getParameterTypes();
+    if (types.length == 0) return false;
+    return Stream.of(types).anyMatch(Callback.class::isAssignableFrom);
+  }
 
-    /**
-     * Method has any paramater of Callback or not.
-     * @param method
-     * @return
-     */
-    public static boolean hasAnyCallbackParameter(Method method) {
-        Class<?>[] types = method.getParameterTypes();
-        if (types.length == 0) return false;
-        return Stream.of(types)
-            .anyMatch(Callback.class::isAssignableFrom);
-    }
+  /**
+   * Returns specified method has any object parameter or not.
+   * @param method
+   * @return
+   */
+  public static boolean hasAnyBitwigObjectParameter(Method method) {
+    Class<?>[] types = method.getParameterTypes();
+    if (types.length == 0) return false;
+    return Stream
+      .of(types)
+      .map(t -> t.isArray() ? t.getComponentType() : t)
+      .filter(ReflectUtils::isBitwigAPI)
+      .map(RpcParamType::of)
+      .anyMatch(t -> t == RpcParamType.OBJECT);
+  }
 
-    /**
-     * Returns specified method has any object parameter or not.
-     * @param method
-     * @return
-     */
-    public static boolean hasAnyBitwigObjectParameter(Method method) {
-        Class<?>[] types = method.getParameterTypes();
-        if (types.length == 0) return false;
-        return Stream.of(types)
-            .map(t -> t.isArray() ? t.getComponentType() : t)
-            .filter(ReflectUtils::isBitwigAPI)
-            .map(RpcParamType::of)
-            .anyMatch(t -> t == RpcParamType.OBJECT);
-    }
+  /**
+   * Method has any parameter of OBJECT or ARRAY.
+   * @param method
+   * @return
+   */
+  public static boolean hasAnyObjectOrArrayParameter(Method method) {
+    Type[] types = method.getGenericParameterTypes();
+    if (types.length == 0) return false;
+    return Stream
+      .of(types)
+      .map(RpcParamType::of)
+      .anyMatch(t -> (t == RpcParamType.OBJECT || t.isArray()));
+  }
 
-    /**
-     * Method has any parameter of OBJECT or ARRAY.
-     * @param method
-     * @return
-     */
-    public static boolean hasAnyObjectOrArrayParameter(Method method) {
-        Type [] types = method.getGenericParameterTypes();
-        if (types.length == 0) return false;
-        return Stream.of(types)
-            .map(RpcParamType::of)
-            .anyMatch(t -> (t == RpcParamType.OBJECT || t.isArray()));
-    }
+  /**
+   * Returns method is deprecated or not.
+   * @param method
+   * @return
+   */
+  public static boolean isDeprecated(Method method) {
+    return method.getAnnotation(Deprecated.class) != null;
+  }
 
-    /**
-     * Returns method is deprecated or not.
-     * @param method
-     * @return
-     */
-    public static boolean isDeprecated(Method method) {
-        return method.getAnnotation(Deprecated.class) != null;
-    }
+  /**
+   * Return class is deprecated or not.
+   * @param clazz
+   * @return
+   */
+  public static boolean isDeprecated(Class<?> clazz) {
+    return clazz.getAnnotation(Deprecated.class) != null;
+  }
 
-    /**
-     * Return class is deprecated or not.
-     * @param clazz
-     * @return
-     */
-    public static boolean isDeprecated(Class<?> clazz) {
-        return clazz.getAnnotation(Deprecated.class) != null;
+  /**
+   * Retun specified method is core module factory or not.
+   *  it's should be managed as RPC module.
+   * @param method
+   * @return
+   */
+  public static boolean isModuleFactory(Method method) {
+    // TODO need to investigate core modules that can be instantiated at only within init.
+    // this is enough for now.
+    boolean result =
+      method.getName().startsWith("create") &&
+      !isBitwigValue(method.getReturnType()) &&
+      isBitwigAPI(method.getReturnType());
+    if (result && LOG.isTraceEnabled()) {
+      LOG.trace(
+        "method[{}#{}] has been ignored as factory method for core module.",
+        method.getDeclaringClass().getSimpleName(),
+        method.getName()
+      );
     }
+    return result;
+  }
 
-    /**
-     * Retun specified method is core module factory or not.
-     *  it's should be managed as RPC module.
-     * @param method
-     * @return
-     */
-    public static boolean isModuleFactory(Method method) {
-        // TODO need to investigate core modules that can be instantiated at only within init.
-        // this is enough for now.
-        boolean result = method.getName().startsWith("create")
-            && !isBitwigValue(method.getReturnType())
-            && isBitwigAPI(method.getReturnType());
-        if (result && LOG.isTraceEnabled()) {
-            LOG.trace("method[{}#{}] has been ignored as factory method for core module.",
-                      method.getDeclaringClass().getSimpleName(), method.getName());
-        }
-        return result;
-    }
+  /**
+   * Secified interfaceType is implemented Bank or not ?
+   * @param interfaceType
+   * @return
+   */
+  public static boolean isBank(Class<?> interfaceType) {
+    return (
+      Bank.class.isAssignableFrom(interfaceType) ||
+      SEMI_BANK_ITEM_TYPES
+        .keySet()
+        .stream()
+        .anyMatch(c -> c.isAssignableFrom(interfaceType))
+    );
+  }
 
-    /**
-     * Secified interfaceType is implemented Bank or not ?
-     * @param interfaceType
-     * @return
-     */
-    public static boolean isBank(Class<?> interfaceType) {
-        return Bank.class.isAssignableFrom(interfaceType) ||
-            SEMI_BANK_ITEM_TYPES.keySet().stream()
-            .anyMatch(c -> c.isAssignableFrom(interfaceType));
-    }
+  /**
+   * Secified interfaceType is implemented Bank or not ?
+   * @param method
+   * @return
+   */
+  public static boolean isBankMethod(Method method) {
+    return BANK_METHODS.contains(method);
+  }
 
-    /**
-     * Secified interfaceType is implemented Bank or not ?
-     * @param method
-     * @return
-     */
-    public static boolean isBankMethod(Method method) {
-        return BANK_METHODS.contains(method);
-    }
-
-    /**
-     * Returns a bank item type of specified bank type.
-     * @param bankType the type of bank.
-     * @return the type of bank item.
-     */
-    @SuppressWarnings("unchecked")
-    public static Class<?> getBankItemType(Class<?> bankType) {
-        Class<?> bankItemType;
-        if (Bank.class.isAssignableFrom(bankType)) {
-            bankItemType = BANK_ITEM_TYPES.get((Class<? extends Bank<?>>)bankType);
-            if (bankItemType != null) {
-                return bankItemType;
-            }
-        }
-        bankItemType = SEMI_BANK_ITEM_TYPES.get(bankType);
-        if (bankItemType != null) {
-            return bankItemType;
-        }
-        bankItemType = BANK_ITEM_TYPES.keySet().stream()
-            .filter(c -> c.isAssignableFrom(bankType))
-            .map(BANK_ITEM_TYPES::get)
-            .findFirst().orElse(null);
-        if (bankItemType != null) {
-            return bankItemType;
-        }
-        bankItemType = SEMI_BANK_ITEM_TYPES.keySet().stream()
-            .filter(c -> c.isAssignableFrom(bankType))
-            .map(SEMI_BANK_ITEM_TYPES::get)
-            .findFirst().orElse(null);
+  /**
+   * Returns a bank item type of specified bank type.
+   * @param bankType the type of bank.
+   * @return the type of bank item.
+   */
+  @SuppressWarnings("unchecked")
+  public static Class<?> getBankItemType(Class<?> bankType) {
+    Class<?> bankItemType;
+    if (Bank.class.isAssignableFrom(bankType)) {
+      bankItemType = BANK_ITEM_TYPES.get((Class<? extends Bank<?>>) bankType);
+      if (bankItemType != null) {
         return bankItemType;
+      }
     }
-    
-    //#if bitwig.extension.api.version >= 10
-    /**
-     * Returns specified type is pure HardwareBindable class.or not
-     * @param type
-     * @param protocol
-     * @return 
-     */
-    public static boolean isPureHardwareBindable(Class<?> type, ProtocolHandler protocol) {
-        if (HardwareBindable.class.isAssignableFrom(type) && !(
-            isBitwigValue(type) || isBank(type) || protocol.isSerializableBitwigType(type))) {
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("class[{}] is Pure HardwareBindable.", type);
-            }
-            return true;
-        }
-        return false;
+    bankItemType = SEMI_BANK_ITEM_TYPES.get(bankType);
+    if (bankItemType != null) {
+      return bankItemType;
     }
-    //#endif
-    
-    
-    /**
-     * Returns a java API expression of specified method.
-     * @param method
-     * @return 
-     */
-    public static String javaExpression(Method method) {
-        return javaExpression(method, true, true);
+    bankItemType =
+      BANK_ITEM_TYPES
+        .keySet()
+        .stream()
+        .filter(c -> c.isAssignableFrom(bankType))
+        .map(BANK_ITEM_TYPES::get)
+        .findFirst()
+        .orElse(null);
+    if (bankItemType != null) {
+      return bankItemType;
     }
-    
-    /**
-     * Returns a java API expression of specified method.
-     * @param method
-     * @param includeReturnType
-     * @param includeDeclaringClass
-     * @return 
-     */
-    public static String javaExpression(Method method,
-            boolean includeReturnType, boolean includeDeclaringClass) {
-        StringBuilder sb = new StringBuilder();
-        if (includeReturnType) {
-            sb.append(method.getReturnType().getSimpleName());
-            sb.append(" ");
-        }
-        if (includeDeclaringClass) {
-            sb.append(method.getDeclaringClass().getSimpleName());
-            sb.append("#");
-        }
-        sb.append(method.getName());
-        sb.append("(");
-        sb.append(Stream.of(method.getGenericParameterTypes())
-            .map(t -> t.getTypeName())
-            .collect(Collectors.joining(", ")));
-        sb.append(")");
-        return sb.toString();
-    }
+    bankItemType =
+      SEMI_BANK_ITEM_TYPES
+        .keySet()
+        .stream()
+        .filter(c -> c.isAssignableFrom(bankType))
+        .map(SEMI_BANK_ITEM_TYPES::get)
+        .findFirst()
+        .orElse(null);
+    return bankItemType;
+  }
 
+  //#if bitwig.extension.api.version >= 10
+  /**
+   * Returns specified type is pure HardwareBindable class.or not
+   * @param type
+   * @param protocol
+   * @return
+   */
+  public static boolean isPureHardwareBindable(
+    Class<?> type,
+    ProtocolHandler protocol
+  ) {
+    if (
+      HardwareBindable.class.isAssignableFrom(type) &&
+      !(
+        isBitwigValue(type) ||
+        isBank(type) ||
+        protocol.isSerializableBitwigType(type)
+      )
+    ) {
+      if (LOG.isTraceEnabled()) {
+        LOG.trace("class[{}] is Pure HardwareBindable.", type);
+      }
+      return true;
+    }
+    return false;
+  }
+
+  //#endif
+
+  /**
+   * Returns a java API expression of specified method.
+   * @param method
+   * @return
+   */
+  public static String javaExpression(Method method) {
+    return javaExpression(method, true, true);
+  }
+
+  /**
+   * Returns a java API expression of specified method.
+   * @param method
+   * @param includeReturnType
+   * @param includeDeclaringClass
+   * @return
+   */
+  public static String javaExpression(
+    Method method,
+    boolean includeReturnType,
+    boolean includeDeclaringClass
+  ) {
+    StringBuilder sb = new StringBuilder();
+    if (includeReturnType) {
+      sb.append(method.getReturnType().getSimpleName());
+      sb.append(" ");
+    }
+    if (includeDeclaringClass) {
+      sb.append(method.getDeclaringClass().getSimpleName());
+      sb.append("#");
+    }
+    sb.append(method.getName());
+    sb.append("(");
+    sb.append(
+      Stream
+        .of(method.getGenericParameterTypes())
+        .map(t -> t.getTypeName())
+        .collect(Collectors.joining(", "))
+    );
+    sb.append(")");
+    return sb.toString();
+  }
 }

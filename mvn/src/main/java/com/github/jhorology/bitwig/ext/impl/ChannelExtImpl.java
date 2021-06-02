@@ -32,14 +32,26 @@ import com.github.jhorology.bitwig.ext.api.VuMeterValue;
  *
  */
 public class ChannelExtImpl implements ChannelExt {
-    private final VuMeterValue vuMeter;
-    
-    ChannelExtImpl(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        vuMeter = new VuMeterValueImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
-    }
-    
-    @Override
-    public VuMeterValue vuMeter() {
-        return vuMeter;
-    }
+
+  private final VuMeterValue vuMeter;
+
+  ChannelExtImpl(
+    Channel channel,
+    int vuMeterRange,
+    VuMeterChannelMode vuMeterChannelMode,
+    VuMeterPeakMode vuMeterPeakMode
+  ) {
+    vuMeter =
+      new VuMeterValueImpl(
+        channel,
+        vuMeterRange,
+        vuMeterChannelMode,
+        vuMeterPeakMode
+      );
+  }
+
+  @Override
+  public VuMeterValue vuMeter() {
+    return vuMeter;
+  }
 }

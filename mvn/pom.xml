@@ -19,10 +19,10 @@
     <extension.version>${project.version}</extension.version>
     <extension.hardwareVendor>WebSocket RPC</extension.hardwareVendor>
     <extension.hardwareModel>WebSocket RPC</extension.hardwareModel>
-    
+
     <!-- default configuration values -->
     <extension.config.webSocketPort>8887</extension.config.webSocketPort>
-    
+
     <!-- build env -->
     <build.target.java.version>1.8</build.target.java.version>
 
@@ -30,34 +30,34 @@
          default development profile for IDE
          same as -Pdevelopment,extension-api-12
          ===================================== -->
-    
+
     <!-- Bitwig extension definition -->
     <extension.usingBetaAPI>true</extension.usingBetaAPI>
     <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
     <!-- default configuration values -->
     <extension.config.logLevel>TRACE</extension.config.logLevel>
     <extension.config.logOutputSystemConsole>true</extension.config.logOutputSystemConsole>
-    
+
     <!-- build env -->
     <build.production>false</build.production>
 
     <!-- default api-10 profile -->
-    
+
     <!-- dependenceies versions -->
     <commons.lang3.version>3.5</commons.lang3.version>
-    <bitwig.extension.api.version>12</bitwig.extension.api.version>
-    
+    <bitwig.extension.api.version>14</bitwig.extension.api.version>
+
     <!-- extension definition -->
-    <extension.name>WebSocket RPC API 12</extension.name>
+    <extension.name>WebSocket RPC API 14</extension.name>
     <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
-    <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
-    
+    <extension.requiredAPIVersion>14</extension.requiredAPIVersion>
+
     <!-- build env -->
     <build.development>true</build.development>
     <build.production>false</build.production>
     <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
   </properties>
-  
+
   <profiles>
     <profile>
       <id>production</id>
@@ -65,17 +65,17 @@
         <!-- extension definition -->
         <extension.usingBetaAPI>false</extension.usingBetaAPI>
         <extension.shouldFailOnDeprecatedUse>false</extension.shouldFailOnDeprecatedUse>
-        
+
         <!-- default configuration values -->
         <extension.config.logLevel>WARN</extension.config.logLevel>
         <extension.config.logOutputSystemConsole>false</extension.config.logOutputSystemConsole>
-        
+
         <!-- build env -->
         <build.development>false</build.development>
         <build.production>true</build.production>
       </properties>
     </profile>
-    
+
     <profile>
       <id>development</id>
       <properties>
@@ -85,61 +85,64 @@
         <!-- default configuration values -->
         <extension.config.logLevel>TRACE</extension.config.logLevel>
         <extension.config.logOutputSystemConsole>true</extension.config.logOutputSystemConsole>
-        
+
         <!-- build env -->
         <build.development>true</build.development>
         <build.production>false</build.production>
       </properties>
     </profile>
-    
+
     <profile>
       <id>extension-api-8</id>
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.1</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
         <bitwig.extension.api.version>8</bitwig.extension.api.version>
-        
+
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 8</extension.name>
         <extension.uuid>68aa62d8-5a50-48d4-b9e4-9d684307f7ce</extension.uuid>
         <extension.requiredAPIVersion>8</extension.requiredAPIVersion>
-        
+
         <!-- build env -->
         <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API8.bwextension</build.extension.file.name>
       </properties>
     </profile>
-    
+
     <profile>
       <id>extension-api-9</id>
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.1</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
         <bitwig.extension.api.version>9</bitwig.extension.api.version>
-        
+
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 9</extension.name>
         <extension.uuid>841a3f11-ed53-4b4f-999e-51b4e90f4c7b</extension.uuid>
         <extension.requiredAPIVersion>9</extension.requiredAPIVersion>
-        
+
         <!-- build env -->
         <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API9.bwextension</build.extension.file.name>
       </properties>
     </profile>
-    
+
     <profile>
       <id>extension-api-10</id>
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
         <bitwig.extension.api.version>10</bitwig.extension.api.version>
-        
+
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 10</extension.name>
         <extension.uuid>eb3fc630-deca-4a46-91fd-d10652d1d366</extension.uuid>
         <extension.requiredAPIVersion>10</extension.requiredAPIVersion>
-        
+
         <!-- build env -->
         <build.target.java.version>1.8</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API10.bwextension</build.extension.file.name>
@@ -151,13 +154,14 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
         <bitwig.extension.api.version>11</bitwig.extension.api.version>
-        
+
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 11</extension.name>
         <extension.uuid>7bf57411-ba57-4f4f-9ba9-ef06ae1755ca</extension.uuid>
         <extension.requiredAPIVersion>11</extension.requiredAPIVersion>
-        
+
         <!-- build env -->
         <build.target.java.version>11</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API11.bwextension</build.extension.file.name>
@@ -169,19 +173,58 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
         <bitwig.extension.api.version>12</bitwig.extension.api.version>
-        
+
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 12</extension.name>
-        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.uuid>ae8b769b-d96b-456e-b2e8-7b747904e398</extension.uuid>
         <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
-        
+
         <!-- build env -->
         <build.target.java.version>11</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
       </properties>
     </profile>
-    
+
+    <profile>
+      <id>extension-api-13</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <gson.scope>compile</gson.scope>
+        <bitwig.extension.api.version>13</bitwig.extension.api.version>
+
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 13</extension.name>
+        <extension.uuid>d3a412e1-953e-4e56-bcf1-aa6f7977c405</extension.uuid>
+        <extension.requiredAPIVersion>12</extension.requiredAPIVersion>
+
+        <!-- build env -->
+        <build.target.java.version>11</build.target.java.version>
+        <build.extension.file.name>WebSocketRpcServer-API13.bwextension</build.extension.file.name>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>extension-api-14</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.5</commons.lang3.version>
+        <gson.scope>provided</gson.scope>
+        <bitwig.extension.api.version>14</bitwig.extension.api.version>
+
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 14</extension.name>
+        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.requiredAPIVersion>14</extension.requiredAPIVersion>
+
+        <!-- build env -->
+        <build.target.java.version>11</build.target.java.version>
+        <build.extension.file.name>WebSocketRpcServer-API14.bwextension</build.extension.file.name>
+      </properties>
+    </profile>
+
     <profile>
       <id>mac-profile</id>
       <activation>
@@ -257,6 +300,7 @@
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
       <version>2.8.6</version>
+      <scope>${gson.scope}</scope>
     </dependency>
     <dependency>
       <groupId>org.java-websocket</groupId>
@@ -266,25 +310,25 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.25</version>
+      <version>1.7.30</version>
     </dependency>
-	<dependency>
-	  <groupId>com.github.jhorology</groupId>
-	  <artifactId>nls-net-ssdp</artifactId>
-	  <version>0.1.3-mod-20191221-2</version>
-	</dependency>
+	  <dependency>
+	    <groupId>com.github.jhorology</groupId>
+	    <artifactId>nls-net-ssdp</artifactId>
+	    <version>0.1.3-mod-20191221-2</version>
+	  </dependency>
     <!--
-	<dependency>
-	  <groupId>com.9ls</groupId>
-	  <artifactId>nls-net-ssdp</artifactId>
-	  <version>0.1.3</version>
-	</dependency>
-    --> 
- </dependencies>
+	      <dependency>
+	      <groupId>com.9ls</groupId>
+	      <artifactId>nls-net-ssdp</artifactId>
+	      <version>0.1.3</version>
+	      </dependency>
+    -->
+  </dependencies>
 
   <build>
     <plugins>
-      
+
       <plugin>
         <groupId>com.igormaznitsa</groupId>
         <artifactId>jcp</artifactId>
@@ -311,7 +355,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
-        <version>3.1.0</version>
+        <version>3.2.0</version>
         <configuration>
           <encoding>UTF-8</encoding>
           <resources>
@@ -322,7 +366,7 @@
           </resources>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -339,7 +383,7 @@
 
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>3.2.0</version>
+        <version>3.3.0</version>
         <configuration>
           <descriptorRefs>
             <descriptorRef>jar-with-dependencies</descriptorRef>
@@ -374,6 +418,44 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.11.1</version>
+        <configuration>
+          <java>
+            <toggleOffOn>
+              <off>//@formatter:off</off>
+              <on>//@formatter:on</on>
+            </toggleOffOn>
+            <includes>
+              <include>src/main/java/com/github/jhorology/**/*.java</include>
+            </includes>
+            <prettier>
+
+              <!-- Specify at most one of the following 3 configs: either 'prettierVersion' (2.0.5 is default), 'devDependencies' or 'devDependencyProperties'  -->
+              <devDependencyProperties>
+                <property>
+                  <name>prettier</name>
+                  <value>2.0.5</value>
+                </property>
+                <property>
+                  <name>prettier-plugin-java</name>
+                  <value>1.1.1</value>
+                </property>
+              </devDependencyProperties>
+            </prettier>
+
+
+            <!--
+                <googleJavaFormat>
+                <version>1.10.0</version>
+                <style>GOOGLE</style>
+                </googleJavaFormat>
+            -->
+          </java>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 
@@ -384,8 +466,8 @@
       <url>https://maven.bitwig.com</url>
     </repository>
     <repository>
-	  <id>jitpack.io</id>
-	  <url>https://www.jitpack.io</url>
+	    <id>jitpack.io</id>
+	    <url>https://www.jitpack.io</url>
     </repository>
   </repositories>
 </project>

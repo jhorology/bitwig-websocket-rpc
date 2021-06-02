@@ -5,14 +5,15 @@ import org.java_websocket.framing.Framedata;
 
 @Deprecated
 public class FragmentEvent extends AbstractWebSocketEvent {
-    private final Framedata fragment;
-    
-    FragmentEvent(WebSocket conn, Framedata fragment) {
-        super(conn);
-        this.fragment = fragment;
-    }
 
-    public Framedata getFragment() {
-        return fragment;
-    }
+  private final Framedata fragment;
+
+  FragmentEvent(WebSocket conn, Framedata fragment) {
+    super(conn);
+    this.fragment = fragment;
+  }
+
+  public Framedata getFragment() {
+    return fragment;
+  }
 }

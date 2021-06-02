@@ -23,30 +23,30 @@
 package com.github.jhorology.bitwig.ext.api;
 
 public enum VuMeterChannelMode {
-    MONO("Sum of Left and Right"),
-    LEFT("Left"),
-    RIGHT("Right"),
-    STEREO("Each of Left and Right");
+  MONO("Sum of Left and Right"),
+  LEFT("Left"),
+  RIGHT("Right"),
+  STEREO("Each of Left and Right");
 
-    private final String displayValue;
-    
-    VuMeterChannelMode(String displayValue) {
-        this.displayValue = displayValue;
-    }
+  private final String displayValue;
 
-    public String getDisplayValue() {
-        return displayValue;
-    }
-    
-    public boolean hasMono() {
-        return this == MONO;
-    }
-    
-    public boolean hasLeft() {
-        return this == LEFT || this == STEREO;
-    }
-    
-    public boolean hasRight() {
-        return this == RIGHT || this == STEREO;
-    }
+  VuMeterChannelMode(String displayValue) {
+    this.displayValue = displayValue;
+  }
+
+  public String getDisplayValue() {
+    return displayValue;
+  }
+
+  public boolean hasMono() {
+    return this == MONO;
+  }
+
+  public boolean hasLeft() {
+    return this == LEFT || this == STEREO;
+  }
+
+  public boolean hasRight() {
+    return this == RIGHT || this == STEREO;
+  }
 }

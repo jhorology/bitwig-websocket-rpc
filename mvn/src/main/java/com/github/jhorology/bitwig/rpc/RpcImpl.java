@@ -22,168 +22,166 @@
  */
 package com.github.jhorology.bitwig.rpc;
 
-// jdk
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-// bitwig api
 import com.bitwig.extension.controller.api.StringValue;
-
-// provided dependencies
-import org.apache.commons.lang3.StringUtils;
-
-// dependencies
-import org.java_websocket.WebSocket;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-// source
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExecutionContext;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.java_websocket.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of the core RPC methods.
  */
 public class RpcImpl implements Rpc {
-    private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);
-    private final RpcRegistry registry;
-    
-    public RpcImpl(RpcRegistry registry) {
-        this.registry = registry;
-    }
-    
-    /**
-     * Add the remote connection to subscriber list of each event.
-     * @param eventNames the names of event to subscribe.
-     * @return the mapped results of each event. "ok" or error message.
-     * @see https://github.com/elpheria/rpc-websockets
-     */
-    @Override
-    public Map<String, String> on(String... eventNames) {
-        return acceptEvents(eventNames, (e, c) -> e.subscribe(c));
-    }
 
-    /**
-     * Remove the remote connection from subscriber list of each event.
-     * @param eventNames the names of event to unsubscribe.
-     * @return the mapped results of each event. "ok" or error message.
-     */
-    @Override
-    public Map<String, String> off(String... eventNames) {
-        return acceptEvents(eventNames, (e, c) -> e.unsubscribe(c));
-    }
+  private static final Logger LOG = LoggerFactory.getLogger(RpcImpl.class);
+  private final RpcRegistry registry;
 
-    /**
-     * log event for debugging
-     * @return
-     */
-    @Override
-    public StringValue log() {
-        Logger log = LoggerFactory.getLogger("rpc.log");
-        log.info("Hello!");
-        return (StringValue)log;
-    }
+  public RpcImpl(RpcRegistry registry) {
+    this.registry = registry;
+  }
 
-    /**
-     * just return back message to remote connection.
-     * @param message
-     * @return message
-     */
-    @Override
-    public String echo(String message) {
-        return message;
-    }
+  /**
+   * Add the remote connection to subscriber list of each event.
+   * @param eventNames the names of event to subscribe.
+   * @return the mapped results of each event. "ok" or error message.
+   * @see https://github.com/elpheria/rpc-websockets
+   */
+  @Override
+  public Map<String, String> on(String... eventNames) {
+    return acceptEvents(eventNames, (e, c) -> e.subscribe(c));
+  }
 
-    /**
-     * broadcast message to all remote connections.
-     * @param notification
-     * @param params
-     */
-    @Override
-    public void broadcast(String notification, Object... params) {
-        RequestContext context = RequestContext.getContext();
-        PushModel pushModel = context.getPushModel();
-        if (pushModel != null) {
-            pushModel.broadcast(new Notification(notification, params));
-        }
-    }
+  /**
+   * Remove the remote connection from subscriber list of each event.
+   * @param eventNames the names of event to unsubscribe.
+   * @return the mapped results of each event. "ok" or error message.
+   */
+  @Override
+  public Map<String, String> off(String... eventNames) {
+    return acceptEvents(eventNames, (e, c) -> e.unsubscribe(c));
+  }
 
-    /**
-     * report all RPC methods and events.
-     * @return report
-     */
-    @Override
-    public Object report() {
-        return registry.report();
-    }
+  /**
+   * log event for debugging
+   * @return
+   */
+  @Override
+  public StringValue log() {
+    Logger log = LoggerFactory.getLogger("rpc.log");
+    log.info("Hello!");
+    return (StringValue) log;
+  }
 
-    /**
-     * report all RPC events of current configuration.
-     * @return List of event definition
-     */
-    @Override
-    public Object reportEvents() {
-        return registry.reportEvents();
-    }
-    
-    /**
-     * remote configuration
-     * @param config
-     */
-    @Override
-    @SuppressWarnings("unchecked")
-    public void config(Config config) {
-        ((AbstractExtension<Config>)ExecutionContext
-            .getContext()
-            .getExtension())
-            .restart(config);
-    }
+  /**
+   * just return back message to remote connection.
+   * @param message
+   * @return message
+   */
+  @Override
+  public String echo(String message) {
+    return message;
+  }
 
-    /**
-     * Return a current configuration
-     * @return
-     */
-    @Override
-    public Config config() {
-        return ((Config)ExecutionContext.getContext().getConfig());
+  /**
+   * broadcast message to all remote connections.
+   * @param notification
+   * @param params
+   */
+  @Override
+  public void broadcast(String notification, Object... params) {
+    RequestContext context = RequestContext.getContext();
+    PushModel pushModel = context.getPushModel();
+    if (pushModel != null) {
+      pushModel.broadcast(new Notification(notification, params));
     }
+  }
 
-    private Map<String, String> acceptEvents(String[] eventNames, BiConsumer<RpcEvent, WebSocket> lambda) {
-        return Stream.of(eventNames)
-            .map(s -> acceptEvent(s, lambda))
-            .collect(Collectors.toMap(r -> r[0], r -> r[1]));
-    }
+  /**
+   * report all RPC methods and events.
+   * @return report
+   */
+  @Override
+  public Object report() {
+    return registry.report();
+  }
 
-    private String[] acceptEvent(String eventName, BiConsumer<RpcEvent, WebSocket> lambda) {
-        RequestContext context = RequestContext.getContext();
-        WebSocket client = context.getConnection();
-        RpcEvent event = registry.getRpcEvent(eventName);
-        if (event == null) {
-            return new String[] {eventName, ERROR_EVENT_NOT_FOUND};
-        }
-        try {
-            lambda.accept(event, client);
-            return new String[] {eventName, OK};
-        } catch (RpcException ex) {
-            LOG.error("Error on acceptEvents()", ex);
-            return new String [] {eventName, ex.getMessage()};
-        } catch (Throwable ex) {
-            LOG.error("Error on acceptEvents()", ex);
-            return new String [] {eventName, error(ex, ERROR_INTERNAL_ERROR)};
-        }
-    }
+  /**
+   * report all RPC events of current configuration.
+   * @return List of event definition
+   */
+  @Override
+  public Object reportEvents() {
+    return registry.reportEvents();
+  }
 
-    private static String error(Throwable ex, String defaultMessage) {
-        String errorMessage = ex.getMessage();
-        if (StringUtils.isEmpty(errorMessage)) {
-            errorMessage = defaultMessage;
-        }
-        return errorMessage;
+  /**
+   * remote configuration
+   * @param config
+   */
+  @Override
+  @SuppressWarnings("unchecked")
+  public void config(Config config) {
+    (
+      (AbstractExtension<Config>) ExecutionContext.getContext().getExtension()
+    ).restart(config);
+  }
+
+  /**
+   * Return a current configuration
+   * @return
+   */
+  @Override
+  public Config config() {
+    return ((Config) ExecutionContext.getContext().getConfig());
+  }
+
+  private Map<String, String> acceptEvents(
+    String[] eventNames,
+    BiConsumer<RpcEvent, WebSocket> lambda
+  ) {
+    return Stream
+      .of(eventNames)
+      .map(s -> acceptEvent(s, lambda))
+      .collect(Collectors.toMap(r -> r[0], r -> r[1]));
+  }
+
+  private String[] acceptEvent(
+    String eventName,
+    BiConsumer<RpcEvent, WebSocket> lambda
+  ) {
+    RequestContext context = RequestContext.getContext();
+    WebSocket client = context.getConnection();
+    RpcEvent event = registry.getRpcEvent(eventName);
+    if (event == null) {
+      return new String[] { eventName, ERROR_EVENT_NOT_FOUND };
     }
+    try {
+      lambda.accept(event, client);
+      return new String[] { eventName, OK };
+    } catch (RpcException ex) {
+      LOG.error("Error on acceptEvents()", ex);
+      return new String[] { eventName, ex.getMessage() };
+    } catch (Throwable ex) {
+      LOG.error("Error on acceptEvents()", ex);
+      return new String[] { eventName, error(ex, ERROR_INTERNAL_ERROR) };
+    }
+  }
+
+  private static String error(Throwable ex, String defaultMessage) {
+    String errorMessage = ex.getMessage();
+    if (StringUtils.isEmpty(errorMessage)) {
+      errorMessage = defaultMessage;
+    }
+    return errorMessage;
+  }
 }

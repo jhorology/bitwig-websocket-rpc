@@ -23,83 +23,81 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// jdk
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-// bitwig api
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.NoteStep;
-
-// source
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
-
 
 /**
  * an implementation of extended Clip API.
  */
 class NoteStepValueImpl implements CollectionValue<NoteStep> {
-    private final Map<ImmutableTriple<Integer, Integer, Integer>, NoteStep> values;
-    private final List<ObjectValueChangedCallback<NoteStep>> callbacks;
-    private int subscribeCount;
 
-    /**
-     * Constructor.
-     * @param clip the instance or Clip API.
-     */
-    NoteStepValueImpl(Clip clip, int gridWidth, int gridHeight) {
-        values = new HashMap<>();
-        callbacks = new ArrayList<>();
-        clip.addNoteStepObserver(this::notifyNoteStep);
-    }
-    
-    @Override
-    public Collection<NoteStep> values() {
-        return values.values();
-    }
+  private final Map<ImmutableTriple<Integer, Integer, Integer>, NoteStep> values;
+  private final List<ObjectValueChangedCallback<NoteStep>> callbacks;
+  private int subscribeCount;
 
-    @Override
-    public void markInterested() {
-        subscribe();
-    }
+  /**
+   * Constructor.
+   * @param clip the instance or Clip API.
+   */
+  NoteStepValueImpl(Clip clip, int gridWidth, int gridHeight) {
+    values = new HashMap<>();
+    callbacks = new ArrayList<>();
+    clip.addNoteStepObserver(this::notifyNoteStep);
+  }
 
-    @Override
-    public void addValueObserver(ObjectValueChangedCallback<NoteStep> callback) {
-        callbacks.add(callback);
-    }
+  @Override
+  public Collection<NoteStep> values() {
+    return values.values();
+  }
 
-    @Override
-    public boolean isSubscribed() {
-        return subscribeCount > 0;
-    }
+  @Override
+  public void markInterested() {
+    subscribe();
+  }
 
-    @Override
-    @Deprecated
-    public void setIsSubscribed(boolean subscribed) {
-    }
+  @Override
+  public void addValueObserver(ObjectValueChangedCallback<NoteStep> callback) {
+    callbacks.add(callback);
+  }
 
-    @Override
-    public void subscribe() {
-        subscribeCount++;
-    }
+  @Override
+  public boolean isSubscribed() {
+    return subscribeCount > 0;
+  }
 
-    @Override
-    public void unsubscribe() {
-        if (subscribeCount > 0) {
-            subscribeCount++;
-        }
+  @Override
+  @Deprecated
+  public void setIsSubscribed(boolean subscribed) {}
+
+  @Override
+  public void subscribe() {
+    subscribeCount++;
+  }
+
+  @Override
+  public void unsubscribe() {
+    if (subscribeCount > 0) {
+      subscribeCount++;
     }
-    
-    private void notifyNoteStep(NoteStep noteStep) {
-        ImmutableTriple key = ImmutableTriple.of(noteStep.x(), noteStep.y(), noteStep.channel());
-        values.put(key, noteStep);
-        if (isSubscribed()) {
-            callbacks.forEach(c -> c.valueChanged(noteStep));
-        }
+  }
+
+  private void notifyNoteStep(NoteStep noteStep) {
+    ImmutableTriple key = ImmutableTriple.of(
+      noteStep.x(),
+      noteStep.y(),
+      noteStep.channel()
+    );
+    values.put(key, noteStep);
+    if (isSubscribed()) {
+      callbacks.forEach(c -> c.valueChanged(noteStep));
     }
+  }
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2018 Masafumi Fujimaru
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -8,10 +8,10 @@
  * distribute, sublicense, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -22,77 +22,80 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jdk
+import com.github.jhorology.bitwig.rpc.RpcParamType;
+import com.google.common.base.Objects;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-// provided dependencies
-import com.google.common.base.Objects;
-
-// source
-import com.github.jhorology.bitwig.rpc.RpcParamType;
-import java.lang.reflect.Type;
-
 /**
  * A identifier class that is used as hash key for RegistryNode.
  */
 class MethodIdentifier implements Comparable<MethodIdentifier> {
-    private final String name;
-    private final List<RpcParamType> rpcParamTypes;
-    
-    MethodIdentifier(String name, RpcParamType[] rpcParamTypes) {
-        this.name = name;
-        this.rpcParamTypes = Arrays.asList(rpcParamTypes);
-    }
-    
-    MethodIdentifier(String name, Type[] paramTypes) {
-        this.name = name;
-        this.rpcParamTypes = Stream.of(paramTypes)
-            .map(t -> RpcParamType.of(t, true)) // true = allowAny
-            .collect(Collectors.toList());
-    }
 
-    
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(name, rpcParamTypes);
-    }
+  private final String name;
+  private final List<RpcParamType> rpcParamTypes;
 
-    @Override
-    public boolean equals(Object o) {
-        if (o instanceof MethodIdentifier) {
-            MethodIdentifier ident = (MethodIdentifier) o;
-            return name.equals(ident.name) && rpcParamTypes.equals(ident.rpcParamTypes);
-        }
-        return false;
-    }
+  MethodIdentifier(String name, RpcParamType[] rpcParamTypes) {
+    this.name = name;
+    this.rpcParamTypes = Arrays.asList(rpcParamTypes);
+  }
 
-    @Override
-    public int compareTo(MethodIdentifier other) {
-        int ret = name.compareTo(other.name);
-        if(ret != 0) return ret;
-        int length = rpcParamTypes.size();
-        ret = length - other.rpcParamTypes.size();
-        if(ret != 0) return ret;
-        
-        if (length > 0) {
-            for(int i = 0; i < length; i++) {
-                ret = rpcParamTypes.get(i).compareTo(other.rpcParamTypes.get(i));
-                if (ret != 0) break;
-            }
-        }
-        return ret;
+  MethodIdentifier(String name, Type[] paramTypes) {
+    this.name = name;
+    this.rpcParamTypes =
+      Stream
+        .of(paramTypes)
+        .map(t -> RpcParamType.of(t, true)) // true = allowAny
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(name, rpcParamTypes);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o instanceof MethodIdentifier) {
+      MethodIdentifier ident = (MethodIdentifier) o;
+      return (
+        name.equals(ident.name) && rpcParamTypes.equals(ident.rpcParamTypes)
+      );
     }
-    
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder(name); 
-      sb.append('(');
-      sb.append(rpcParamTypes.stream()
-        .map(p -> p.getExpression()).collect(Collectors.joining(", ")));
-      sb.append(')');
-      return sb.toString();
+    return false;
+  }
+
+  @Override
+  public int compareTo(MethodIdentifier other) {
+    int ret = name.compareTo(other.name);
+    if (ret != 0) return ret;
+    int length = rpcParamTypes.size();
+    ret = length - other.rpcParamTypes.size();
+    if (ret != 0) return ret;
+
+    if (length > 0) {
+      for (int i = 0; i < length; i++) {
+        ret = rpcParamTypes.get(i).compareTo(other.rpcParamTypes.get(i));
+        if (ret != 0) break;
+      }
     }
+    return ret;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder(name);
+    sb.append('(');
+    sb.append(
+      rpcParamTypes
+        .stream()
+        .map(p -> p.getExpression())
+        .collect(Collectors.joining(", "))
+    );
+    sb.append(')');
+    return sb.toString();
+  }
 }

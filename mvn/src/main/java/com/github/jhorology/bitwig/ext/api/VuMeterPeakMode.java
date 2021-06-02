@@ -23,25 +23,25 @@
 package com.github.jhorology.bitwig.ext.api;
 
 public enum VuMeterPeakMode {
-    RMS("RMS"),
-    PEAK("Peak"),
-    BOTH("RMS + Peak");
+  RMS("RMS"),
+  PEAK("Peak"),
+  BOTH("RMS + Peak");
 
-    private final String displayValue;
-    
-    private VuMeterPeakMode(String displayValue) {
-        this.displayValue = displayValue;
-    }
+  private final String displayValue;
 
-    public String getDisplayValue() {
-        return displayValue;
-    }
-    
-    public boolean hasRMS() {
-        return this == RMS || this == BOTH;
-    }
-    
-    public boolean hasPeak() {
-        return this == PEAK || this == BOTH;
-    }
+  private VuMeterPeakMode(String displayValue) {
+    this.displayValue = displayValue;
+  }
+
+  public String getDisplayValue() {
+    return displayValue;
+  }
+
+  public boolean hasRMS() {
+    return this == RMS || this == BOTH;
+  }
+
+  public boolean hasPeak() {
+    return this == PEAK || this == BOTH;
+  }
 }

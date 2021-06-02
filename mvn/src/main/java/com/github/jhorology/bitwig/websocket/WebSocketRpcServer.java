@@ -22,308 +22,325 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
-// jdk
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
-import java.util.function.Supplier;
-
-// bitwig api
 import com.bitwig.extension.controller.api.ControllerHost;
-
-// provided dependencies
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.Subscribe;
-import com.google.common.eventbus.SubscriberExceptionHandler;
-import com.google.common.eventbus.SubscriberExceptionContext;
-
-// dependencies
-import org.java_websocket.WebSocket;
-import org.java_websocket.handshake.ClientHandshake;
-import org.java_websocket.server.WebSocketServer;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.exceptions.InvalidDataException;
-import org.java_websocket.framing.CloseFrame;
-import org.java_websocket.handshake.ServerHandshakeBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-// source
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
+import com.google.common.eventbus.AsyncEventBus;
+import com.google.common.eventbus.Subscribe;
+import com.google.common.eventbus.SubscriberExceptionContext;
+import com.google.common.eventbus.SubscriberExceptionHandler;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.function.Supplier;
+import org.java_websocket.WebSocket;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.exceptions.InvalidDataException;
+import org.java_websocket.framing.CloseFrame;
+import org.java_websocket.handshake.ClientHandshake;
+import org.java_websocket.handshake.ServerHandshakeBuilder;
+import org.java_websocket.server.WebSocketServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of WebSocketServer.
  * Bassically do nothing in this class, it just exists for dispatching events to 'Control Surface Session" thread.
  */
 public class WebSocketRpcServer
-    extends WebSocketServer
-    implements SubscriberExceptionHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(WebSocketRpcServer.class);
+  extends WebSocketServer
+  implements SubscriberExceptionHandler {
 
-    private AsyncEventBus eventBus;
-    private final ProtocolHandler protocol;
-    private DigestAuthentication auth;
-    private boolean running;
-    private boolean fullDrained;
+  private static final Logger LOG = LoggerFactory.getLogger(
+    WebSocketRpcServer.class
+  );
 
-    /**
-     * Construct a server.
-     * @param port
-     * @param protocol
-     * @param numWorkerThreads
-     * @throws java.net.UnknownHostException
-     */
-    public WebSocketRpcServer(int port, ProtocolHandler protocol, int numWorkerThreads)
-        throws UnknownHostException {
-        this(new InetSocketAddress(port), protocol, numWorkerThreads);
-    }
+  private AsyncEventBus eventBus;
+  private final ProtocolHandler protocol;
+  private DigestAuthentication auth;
+  private boolean running;
+  private boolean fullDrained;
 
-    /**
-     * Construct a server.
-     * @param address
-     * @param protocol
-     * @param numWorkerThreads
-     */
-    public WebSocketRpcServer(InetSocketAddress address, ProtocolHandler protocol, int numWorkerThreads) {
-        super(address, numWorkerThreads);
-        this.protocol = protocol;
+  /**
+   * Construct a server.
+   * @param port
+   * @param protocol
+   * @param numWorkerThreads
+   * @throws java.net.UnknownHostException
+   */
+  public WebSocketRpcServer(
+    int port,
+    ProtocolHandler protocol,
+    int numWorkerThreads
+  ) throws UnknownHostException {
+    this(new InetSocketAddress(port), protocol, numWorkerThreads);
+  }
 
-        // ServerSocket#setReuseAddress()
-        //
-        // When a TCP connection is closed the connection may remain in a timeout state for a
-        // period of time after the connection is closed (typically known as the TIME_WAIT state
-        // or 2MSL wait state). For applications using a well known socket address or port it may
-        // not be possible to bind a socket to the required SocketAddress if there is a connection
-        // in the timeout state involving the socket address or port.
-        //
-        // Enabling SO_REUSEADDR prior to binding the socket using bind(SocketAddress) allows the 
-        // socket to be bound even though a previous connection is in a timeout state.
-        //
-        // When a ServerSocket is created the initial setting of SO_REUSEADDR is not defined. 
-        // Applications can use getReuseAddress() to determine the initial setting of SO_REUSEADDR.
-        //
-        //The behaviour when SO_REUSEADDR is enabled or disabled after a socket is bound
-        // (See isBound()) is not defined.
-        setReuseAddr(true);
-    }
+  /**
+   * Construct a server.
+   * @param address
+   * @param protocol
+   * @param numWorkerThreads
+   */
+  public WebSocketRpcServer(
+    InetSocketAddress address,
+    ProtocolHandler protocol,
+    int numWorkerThreads
+  ) {
+    super(address, numWorkerThreads);
+    this.protocol = protocol;
 
-    // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
-    
-    /**
-     * Initialize at extension's start of life-cycle.<b>
-     * This method is called from within 'Control Surfaces Session' thread.
-     * @param e
-     */
-    @Subscribe
-    public final void onInit(InitEvent<Config> e) {
-        this.auth = new DigestAuthentication(
-            resourceDescriptor -> e.getConfig().isAuthRequired(),
-            e.getConfig()::getAuthPassword);
-        // event bus for dispatching events to 'Control Surface Session' thread.
-        eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
-        eventBus.register(protocol);
-        start(e.getHost());
-    }
-    
-    /**
-     * De-initialize at extension's end of life-cycle.
-     * This method is called from within 'Control Surfaces Session' thread.
-     * @param e
-     */
-    @Subscribe
-    @SuppressWarnings("UseSpecificCatch")
-    public final void onExit(ExitEvent<Config> e) {
-        try {
-            LOG.info("waiting for WebSocket RPC server stop.");
-            eventBus.post(new StopEvent());
-            // --> unnecessary, but it's depend on FlushExecutor
-            // eventBus.register(this);
-            // fullDrained = false;
-            // eventBus.post(new FullDrainedEvent());
-            // waitFor(() -> fullDrained, 500L);
-            // if (fullDrained) {
-            //     LOG.info("AsyncEventBus has been full drained.");
-            // }
-            // <--
-            stop();
-            // prevent Address in use error on restart extension.
-            waitFor(() -> !running, 200L);
-            if (!running) {
-                LOG.info("WebSocketServer has been stopped.");
-            }
-            LOG.info("WebSocket RPC server stopped.");
-        } catch (Exception ex) {
-            LOG.error("Error on onExit().", ex);
-        } finally {
-            eventBus.unregister(this);
-            eventBus.unregister(protocol);
-        }
-    }
-    
-    /**
-     * An implementation of Runnable#run().<br>
-     * A override of {@link WebSocketServer#run()}
-     */
-    @Override
-    public void run() {
-        running = true;
-        try {
-            super.run();
-        } finally {
-            running = false;
-        }
-    }
+    // ServerSocket#setReuseAddress()
+    //
+    // When a TCP connection is closed the connection may remain in a timeout state for a
+    // period of time after the connection is closed (typically known as the TIME_WAIT state
+    // or 2MSL wait state). For applications using a well known socket address or port it may
+    // not be possible to bind a socket to the required SocketAddress if there is a connection
+    // in the timeout state involving the socket address or port.
+    //
+    // Enabling SO_REUSEADDR prior to binding the socket using bind(SocketAddress) allows the
+    // socket to be bound even though a previous connection is in a timeout state.
+    //
+    // When a ServerSocket is created the initial setting of SO_REUSEADDR is not defined.
+    // Applications can use getReuseAddress() to determine the initial setting of SO_REUSEADDR.
+    //
+    //The behaviour when SO_REUSEADDR is enabled or disabled after a socket is bound
+    // (See isBound()) is not defined.
+    setReuseAddr(true);
+  }
 
-    /**
-     * Called when the server started up successfully.<br>
-     * If any error occured, onError is called instead.<br>
-     * An implementation of {@link WebSocketServer#onStart()}
-     */
-    @Override
-    public void onStart() {
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new StartEvent(this));
-    }
+  // TODO Guava 19 or above EventBus is able to register non-public @﻿Subscribe
 
-    /**
-     * @see https://github.com/TooTallNate/Java-WebSocket/blob/master/src/main/example/ServerRejectHandshakeExample.java
-     * @param conn
-     * @param draft
-     * @param request
-     * @return
-     * @throws InvalidDataException 
-     */
-    @Override
-    public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(WebSocket conn, Draft draft, ClientHandshake request)
-        throws InvalidDataException {
-        ServerHandshakeBuilder builder = super.onWebsocketHandshakeReceivedAsServer(conn, draft, request);
-        if (!auth.authenticate(conn, request)) {
-            throw new InvalidDataException(CloseFrame.POLICY_VALIDATION, "Not accepted!");
-        }
-        return builder;
-    }
-    
-    /**
-     * Called after an opening handshake has been performed and the given websocket is ready to be written on.<br>
-     * An implementation of {@link WebSocketServer#onOpen(WebSocket, ClientHandshake)}
-     * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
-     * @param request The handshake of the websocket instance
-     */
-    @Override
-    public void onOpen(WebSocket conn, ClientHandshake request) {
-        if (auth.challenge(conn, request)) {
-            return;
-        }
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new OpenEvent(conn, request));
-    }
-    
-    /**
-     * Called after the websocket connection has been closed.<br>
-     * An implementation of {@link WebSocketServer#onClose(WebSocket, int, String, boolean)}
-     * @param conn   The <tt>WebSocket</tt> instance this event is occuring on.
-     * @param code   The codes can be looked up here: {@link CloseFrame}
-     * @param reason Additional information string
-     * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
-     */
-    @Override
-    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new CloseEvent(conn, code, reason, remote));
-    }
+  /**
+   * Initialize at extension's start of life-cycle.<b>
+   * This method is called from within 'Control Surfaces Session' thread.
+   * @param e
+   */
+  @Subscribe
+  public final void onInit(InitEvent<Config> e) {
+    this.auth =
+      new DigestAuthentication(
+        resourceDescriptor -> e.getConfig().isAuthRequired(),
+        e.getConfig()::getAuthPassword
+      );
+    // event bus for dispatching events to 'Control Surface Session' thread.
+    eventBus = new AsyncEventBus(e.getAsyncExecutor(), this);
+    eventBus.register(protocol);
+    start(e.getHost());
+  }
 
-    /**
-     * Callback for string messages received from the remote host<br>
-     * An implementation of {@link WebSocketServer#onMessage(WebSocket, String)}
-     * @see #onMessage(WebSocket, ByteBuffer)
-     * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
-     * @param message The UTF-8 decoded message that was received.
-     */
-    @Override
-    public void onMessage(WebSocket conn, String message) {
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new TextMessageEvent(conn, message));
+  /**
+   * De-initialize at extension's end of life-cycle.
+   * This method is called from within 'Control Surfaces Session' thread.
+   * @param e
+   */
+  @Subscribe
+  @SuppressWarnings("UseSpecificCatch")
+  public final void onExit(ExitEvent<Config> e) {
+    try {
+      LOG.info("waiting for WebSocket RPC server stop.");
+      eventBus.post(new StopEvent());
+      // --> unnecessary, but it's depend on FlushExecutor
+      // eventBus.register(this);
+      // fullDrained = false;
+      // eventBus.post(new FullDrainedEvent());
+      // waitFor(() -> fullDrained, 500L);
+      // if (fullDrained) {
+      //     LOG.info("AsyncEventBus has been full drained.");
+      // }
+      // <--
+      stop();
+      // prevent Address in use error on restart extension.
+      waitFor(() -> !running, 200L);
+      if (!running) {
+        LOG.info("WebSocketServer has been stopped.");
+      }
+      LOG.info("WebSocket RPC server stopped.");
+    } catch (Exception ex) {
+      LOG.error("Error on onExit().", ex);
+    } finally {
+      eventBus.unregister(this);
+      eventBus.unregister(protocol);
     }
+  }
 
-    /**
-     * Callback for binary messages received from the remote host.
-     * A override of {@link WebSocketServer#onMessage(WebSocket, ByteBuffer)}
-     * @see #onMessage(WebSocket, ByteBuffer)
-     * @param conn
-     *            The <tt>WebSocket</tt> instance this event is occurring on.
-     * @param message
-     *            The binary message that was received.
-     */
-    @Override
-    public void onMessage(WebSocket conn, ByteBuffer message) {
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new BinaryMessageEvent(conn, message));
+  /**
+   * An implementation of Runnable#run().<br>
+   * A override of {@link WebSocketServer#run()}
+   */
+  @Override
+  public void run() {
+    running = true;
+    try {
+      super.run();
+    } finally {
+      running = false;
     }
+  }
 
-    /**
-     * Called when errors occurs. If an error causes the websocket connection to fail
-     * {@link #onClose(WebSocket, int, String, boolean)} will be called additionally.<br>
-     * This method will be called primarily because of IO or protocol errors.<br>
-     * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
-     * An implementation of {@link WebSocketServer#onError(WebSocket, Exception)}
-     * @param conn Can be null if there error does not belong to one specific websocket.
-     * For example if the servers port could not be bound.
-     * @param ex The exception causing this error
-     */
-    @Override
-    public void onError(WebSocket conn, Exception ex) {
-        // dispatch to 'Control Surface Session' thread.
-        eventBus.post(new ErrorEvent(conn, ex));
-    }
+  /**
+   * Called when the server started up successfully.<br>
+   * If any error occured, onError is called instead.<br>
+   * An implementation of {@link WebSocketServer#onStart()}
+   */
+  @Override
+  public void onStart() {
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new StartEvent(this));
+  }
 
-    /**
-     * To knows AsyncEvent bus is full drained.
-     * @param e
-     */
-    @Subscribe
-    @SuppressWarnings("NonPublicExported")
-    public void onFullDrained(FullDrainedEvent e) {
-        fullDrained = true;
+  /**
+   * @see https://github.com/TooTallNate/Java-WebSocket/blob/master/src/main/example/ServerRejectHandshakeExample.java
+   * @param conn
+   * @param draft
+   * @param request
+   * @return
+   * @throws InvalidDataException
+   */
+  @Override
+  public ServerHandshakeBuilder onWebsocketHandshakeReceivedAsServer(
+    WebSocket conn,
+    Draft draft,
+    ClientHandshake request
+  ) throws InvalidDataException {
+    ServerHandshakeBuilder builder = super.onWebsocketHandshakeReceivedAsServer(
+      conn,
+      draft,
+      request
+    );
+    if (!auth.authenticate(conn, request)) {
+      throw new InvalidDataException(
+        CloseFrame.POLICY_VALIDATION,
+        "Not accepted!"
+      );
     }
+    return builder;
+  }
 
-    /**
-     * Handles exceptions thrown by subscribers of eventBus.<br>
-     * An implementation of {@link SubscriberExceptionHandler#handleException(Throwable, SubscriberExceptionContext)}
-     * @param ex
-     * @param context
-     */
-    @Override
-    public void handleException(
-        Throwable ex,
-        SubscriberExceptionContext context) {
-        LOG.error("websocket event handling error. event:" +  context.getEvent().toString(), ex);
+  /**
+   * Called after an opening handshake has been performed and the given websocket is ready to be written on.<br>
+   * An implementation of {@link WebSocketServer#onOpen(WebSocket, ClientHandshake)}
+   * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+   * @param request The handshake of the websocket instance
+   */
+  @Override
+  public void onOpen(WebSocket conn, ClientHandshake request) {
+    if (auth.challenge(conn, request)) {
+      return;
     }
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new OpenEvent(conn, request));
+  }
 
-    private void start(ControllerHost host) {
-        if (protocol.isReady()) {
-            start();
-            LOG.info("WebSocket RPC server started on port " + getPort() + ".");
-        } else {
-            LOG.debug("Protocol is not yet ready.");
-            host.scheduleTask(() -> start(host), 200L);
-        }
-    }
+  /**
+   * Called after the websocket connection has been closed.<br>
+   * An implementation of {@link WebSocketServer#onClose(WebSocket, int, String, boolean)}
+   * @param conn   The <tt>WebSocket</tt> instance this event is occuring on.
+   * @param code   The codes can be looked up here: {@link CloseFrame}
+   * @param reason Additional information string
+   * @param remote Returns whether or not the closing of the connection was initiated by the remote host.
+   */
+  @Override
+  public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new CloseEvent(conn, code, reason, remote));
+  }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    private void waitFor(Supplier<Boolean> lambda, long maxMills) {
-        long startTime = System.currentTimeMillis();
-        long elapsedTime = 0;
-        while (!lambda.get() && elapsedTime < maxMills) {
-            try {
-                Thread.sleep(50L);
-            } catch (InterruptedException ex) {
-                LOG.error("", ex);
-            } finally {
-                elapsedTime = System.currentTimeMillis() - startTime;
-            }
-        }
+  /**
+   * Callback for string messages received from the remote host<br>
+   * An implementation of {@link WebSocketServer#onMessage(WebSocket, String)}
+   * @see #onMessage(WebSocket, ByteBuffer)
+   * @param conn The <tt>WebSocket</tt> instance this event is occuring on.
+   * @param message The UTF-8 decoded message that was received.
+   */
+  @Override
+  public void onMessage(WebSocket conn, String message) {
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new TextMessageEvent(conn, message));
+  }
+
+  /**
+   * Callback for binary messages received from the remote host.
+   * A override of {@link WebSocketServer#onMessage(WebSocket, ByteBuffer)}
+   * @see #onMessage(WebSocket, ByteBuffer)
+   * @param conn
+   *            The <tt>WebSocket</tt> instance this event is occurring on.
+   * @param message
+   *            The binary message that was received.
+   */
+  @Override
+  public void onMessage(WebSocket conn, ByteBuffer message) {
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new BinaryMessageEvent(conn, message));
+  }
+
+  /**
+   * Called when errors occurs. If an error causes the websocket connection to fail
+   * {@link #onClose(WebSocket, int, String, boolean)} will be called additionally.<br>
+   * This method will be called primarily because of IO or protocol errors.<br>
+   * If the given exception is an RuntimeException that probably means that you encountered a bug.<br>
+   * An implementation of {@link WebSocketServer#onError(WebSocket, Exception)}
+   * @param conn Can be null if there error does not belong to one specific websocket.
+   * For example if the servers port could not be bound.
+   * @param ex The exception causing this error
+   */
+  @Override
+  public void onError(WebSocket conn, Exception ex) {
+    // dispatch to 'Control Surface Session' thread.
+    eventBus.post(new ErrorEvent(conn, ex));
+  }
+
+  /**
+   * To knows AsyncEvent bus is full drained.
+   * @param e
+   */
+  @Subscribe
+  @SuppressWarnings("NonPublicExported")
+  public void onFullDrained(FullDrainedEvent e) {
+    fullDrained = true;
+  }
+
+  /**
+   * Handles exceptions thrown by subscribers of eventBus.<br>
+   * An implementation of {@link SubscriberExceptionHandler#handleException(Throwable, SubscriberExceptionContext)}
+   * @param ex
+   * @param context
+   */
+  @Override
+  public void handleException(
+    Throwable ex,
+    SubscriberExceptionContext context
+  ) {
+    LOG.error(
+      "websocket event handling error. event:" + context.getEvent().toString(),
+      ex
+    );
+  }
+
+  private void start(ControllerHost host) {
+    if (protocol.isReady()) {
+      start();
+      LOG.info("WebSocket RPC server started on port " + getPort() + ".");
+    } else {
+      LOG.debug("Protocol is not yet ready.");
+      host.scheduleTask(() -> start(host), 200L);
     }
+  }
+
+  @SuppressWarnings("SleepWhileInLoop")
+  private void waitFor(Supplier<Boolean> lambda, long maxMills) {
+    long startTime = System.currentTimeMillis();
+    long elapsedTime = 0;
+    while (!lambda.get() && elapsedTime < maxMills) {
+      try {
+        Thread.sleep(50L);
+      } catch (InterruptedException ex) {
+        LOG.error("", ex);
+      } finally {
+        elapsedTime = System.currentTimeMillis() - startTime;
+      }
+    }
+  }
 }

@@ -22,7 +22,9 @@
  */
 package com.github.jhorology.bitwig.extension;
 
-// jdk
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.InstanceCreator;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -32,102 +34,104 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-// bitwig api
-
-// dependencies
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.InstanceCreator;
-
 /**
  * A set of utility functions for Bitwig API.
  */
 public class ExtensionUtils {
-    /**
-     * Populate JSON properties to fields of specified object instance.
-     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>          the type of the specified object
-     * @param resourceName the resource name of JSON.
-     * @param instance     an object of type T.
-     * @throws java.io.IOException
-     */
-    public static <T> void populateJsonProperties(String resourceName, T instance)
-        throws IOException {
-        try (Reader reader =
-             new InputStreamReader(instance.getClass()
-                                   .getClassLoader()
-                                   .getResourceAsStream(resourceName),
-                                   "UTF-8")) {
-            populateJsonProperties(reader, instance);
-        }
-    }
 
-    /**
-     * Populate JSON properties to fields of specified object instance.
-     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>      the type of the specified object
-     * @param file     the file path of JSON.
-     * @param instance an object of type T.
-     * @throws java.io.IOException
-     */
-    public static <T> void populateJsonProperties(Path file, T instance)
-        throws IOException {
-        if (!Files.isReadable(file)) return;
-        try (Reader reader =
-             Files.newBufferedReader(file,
-                                     Charset.forName("UTF-8"))) {
-            populateJsonProperties(reader, instance);
-        }
+  /**
+   * Populate JSON properties to fields of specified object instance.
+   * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+   * @param <T>          the type of the specified object
+   * @param resourceName the resource name of JSON.
+   * @param instance     an object of type T.
+   * @throws java.io.IOException
+   */
+  public static <T> void populateJsonProperties(
+    String resourceName,
+    T instance
+  ) throws IOException {
+    try (
+      Reader reader = new InputStreamReader(
+        instance.getClass().getClassLoader().getResourceAsStream(resourceName),
+        "UTF-8"
+      )
+    ) {
+      populateJsonProperties(reader, instance);
     }
+  }
 
-    /**
-     * Populate JSON properties to fields of specified object instance.
-     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param <T>      the type of the specified object
-     * @param reader   the reader producing the JSON.
-     * @param instance an object of type T.
-     */
-    public static <T> void populateJsonProperties(Reader reader, T instance) {
-        Gson gson = new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .registerTypeAdapter(instance.getClass(),
-                                 (InstanceCreator<T>)t -> instance)
-            .create();
-        gson.fromJson(reader, instance.getClass());
+  /**
+   * Populate JSON properties to fields of specified object instance.
+   * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+   * @param <T>      the type of the specified object
+   * @param file     the file path of JSON.
+   * @param instance an object of type T.
+   * @throws java.io.IOException
+   */
+  public static <T> void populateJsonProperties(Path file, T instance)
+    throws IOException {
+    if (!Files.isReadable(file)) return;
+    try (
+      Reader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))
+    ) {
+      populateJsonProperties(reader, instance);
     }
+  }
 
-    /**
-     * deep copy all properties that are annotated with @Expose.<br>
-     * @param src
-     * @param dst
-     */
-    public static <T> void deepCopy(T src, T dst) {
-        Gson gson = new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .registerTypeAdapter(dst.getClass(),
-                                 (InstanceCreator<T>)t -> dst)
-            .create();
-        String json = gson.toJson(src);
-        gson.fromJson(json, dst.getClass());
+  /**
+   * Populate JSON properties to fields of specified object instance.
+   * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+   * @param <T>      the type of the specified object
+   * @param reader   the reader producing the JSON.
+   * @param instance an object of type T.
+   */
+  public static <T> void populateJsonProperties(Reader reader, T instance) {
+    Gson gson = new GsonBuilder()
+      .excludeFieldsWithoutExposeAnnotation()
+      .registerTypeAdapter(
+        instance.getClass(),
+        (InstanceCreator<T>) t -> instance
+      )
+      .create();
+    gson.fromJson(reader, instance.getClass());
+  }
+
+  /**
+   * deep copy all properties that are annotated with @Expose.<br>
+   * @param src
+   * @param dst
+   */
+  public static <T> void deepCopy(T src, T dst) {
+    Gson gson = new GsonBuilder()
+      .excludeFieldsWithoutExposeAnnotation()
+      .registerTypeAdapter(dst.getClass(), (InstanceCreator<T>) t -> dst)
+      .create();
+    String json = gson.toJson(src);
+    gson.fromJson(json, dst.getClass());
+  }
+
+  /**
+   * Write the JSON file of specified instance.<br>
+   * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
+   * @param instance      the object for which JSON representation is to be created.
+   * @param file          to which the JSON file of instance needs to be written.
+   * @throws IOException
+   */
+  public static void writeJsonFile(Object instance, Path file)
+    throws IOException {
+    Gson gson = new GsonBuilder()
+      .excludeFieldsWithoutExposeAnnotation()
+      .create();
+    try (
+      Writer writer = Files.newBufferedWriter(
+        file,
+        Charset.forName("UTF-8"),
+        StandardOpenOption.CREATE,
+        StandardOpenOption.TRUNCATE_EXISTING
+      )
+    ) {
+      gson.toJson(instance, writer);
     }
-    
-    /**
-     * Write the JSON file of specified instance.<br>
-     * The fields of instance should be annotated with {@link com.google.gson.annotations.Expose @Expose}.
-     * @param instance      the object for which JSON representation is to be created.
-     * @param file          to which the JSON file of instance needs to be written.
-     * @throws IOException
-     */
-    public static void writeJsonFile(Object instance, Path file) throws IOException {
-        Gson gson = new GsonBuilder()
-            .excludeFieldsWithoutExposeAnnotation()
-            .create();
-        try (Writer writer =
-             Files.newBufferedWriter(file,
-                                     Charset.forName("UTF-8"),
-                                     StandardOpenOption.CREATE,
-                                     StandardOpenOption.TRUNCATE_EXISTING)) {
-            gson.toJson(instance, writer);
-        }
-    }
+  }
 }

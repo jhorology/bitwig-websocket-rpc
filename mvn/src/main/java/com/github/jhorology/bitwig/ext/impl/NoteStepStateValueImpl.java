@@ -22,109 +22,103 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// jdk
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-
-// bitwig api
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.controller.api.Clip;
-
-// provided dependencies
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-// source
 import com.github.jhorology.bitwig.ext.NoteStepState;
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * an implementation of extended Clip API.
  */
 class NoteStepStateValueImpl implements CollectionValue<NoteStepState> {
-    private final List<ObjectValueChangedCallback<NoteStepState>> callbacks;
-    private final Map<ImmutablePair<Integer, Integer>, NoteStepState> values;
-    private int subscribeCount;
 
-    /**
-     * Constructor.
-     * @param clip the instance or Clip API.
-     */
-    NoteStepStateValueImpl(Clip clip, int gridWidth, int gridHeight) {
-        callbacks = new ArrayList<>();
-        values = new HashMap<>();
-        clip.addStepDataObserver(this::notifyNoteStepState);
-    }
-    
-    @Override
-    public Collection<NoteStepState> values() {
-        return values.values();
-    }
+  private final List<ObjectValueChangedCallback<NoteStepState>> callbacks;
+  private final Map<ImmutablePair<Integer, Integer>, NoteStepState> values;
+  private int subscribeCount;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markInterested() {
-        subscribe();
-    }
+  /**
+   * Constructor.
+   * @param clip the instance or Clip API.
+   */
+  NoteStepStateValueImpl(Clip clip, int gridWidth, int gridHeight) {
+    callbacks = new ArrayList<>();
+    values = new HashMap<>();
+    clip.addStepDataObserver(this::notifyNoteStepState);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addValueObserver(ObjectValueChangedCallback<NoteStepState> callback) {
-        callbacks.add(callback);
-    }
+  @Override
+  public Collection<NoteStepState> values() {
+    return values.values();
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isSubscribed() {
-        return subscribeCount > 0;
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void markInterested() {
+    subscribe();
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated
-    public void setIsSubscribed(boolean subscribed) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void addValueObserver(
+    ObjectValueChangedCallback<NoteStepState> callback
+  ) {
+    callbacks.add(callback);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void subscribe() {
-        subscribeCount++;
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isSubscribed() {
+    return subscribeCount > 0;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void unsubscribe() {
-        if (subscribeCount > 0) {
-            subscribeCount--;
-        }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  @Deprecated
+  public void setIsSubscribed(boolean subscribed) {}
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void subscribe() {
+    subscribeCount++;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void unsubscribe() {
+    if (subscribeCount > 0) {
+      subscribeCount--;
     }
-    
-    private void notifyNoteStepState(int x, int y, int state) {
-        ImmutablePair<Integer, Integer> key = ImmutablePair.of(x, y);
-        NoteStepState v = values.get(key);
-        if (v == null) {
-            v = new NoteStepState(x, y);
-            values.put(key, v);
-        }
-        v.setState(state);
-        if (isSubscribed()) {
-            final NoteStepState value = v;
-            callbacks.forEach(c -> c.valueChanged(value));
-        }
+  }
+
+  private void notifyNoteStepState(int x, int y, int state) {
+    ImmutablePair<Integer, Integer> key = ImmutablePair.of(x, y);
+    NoteStepState v = values.get(key);
+    if (v == null) {
+      v = new NoteStepState(x, y);
+      values.put(key, v);
     }
+    v.setState(state);
+    if (isSubscribed()) {
+      final NoteStepState value = v;
+      callbacks.forEach(c -> c.valueChanged(value));
+    }
+  }
 }

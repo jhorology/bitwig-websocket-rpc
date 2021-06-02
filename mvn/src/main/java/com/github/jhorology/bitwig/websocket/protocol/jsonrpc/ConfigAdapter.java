@@ -34,11 +34,11 @@ import java.lang.reflect.Type;
  */
 public class ConfigAdapter implements InstanceCreator<Config> {
 
-    @Override
-    public Config createInstance(Type type) {
-        return (Config)ExecutionContext.getContext()
-            .getDefinition()
-            .newDefaultConfig();
-    }
-    
+  @Override
+  public Config createInstance(Type type) {
+    return (Config) ExecutionContext
+      .getContext()
+      .getDefinition()
+      .newDefaultConfig();
+  }
 }

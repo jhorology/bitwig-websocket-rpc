@@ -22,7 +22,6 @@
  */
 package com.github.jhorology.bitwig.ext;
 
-// dependencies
 import com.google.gson.annotations.Expose;
 
 /**
@@ -30,52 +29,55 @@ import com.google.gson.annotations.Expose;
  * @author masafumi
  */
 public class VuMeterLevel {
-    @Expose
-    private final int ch;
-    @Expose
-    private final boolean peak;
-    @Expose
-    private int value;
 
-    /**
-     * Return a integer value that mean channel as 0 = left 1=right -1=sum of left and right.
-     * @param ch channel, 0=left 1=right -1=sum of left and right.
-     * @param peak peak value or not.
-     */
-    public VuMeterLevel(int ch, boolean peak) {
-        this.ch = ch;
-        this.peak = peak;
-    }
+  @Expose
+  private final int ch;
 
-    /**
-     * Return a integer value that mean channel as 0 = left 1=right -1=sum of left and right.
-     * @return
-     */
-    public int getChannel() {
-        return ch;
-    }
-    
-    /**
-     * Return this value is peek value or not.
-     * @return peak or not
-     */
-    public boolean isPeak() {
-        return peak;
-    }
-    
-    /**
-     * Return a meter level value that is ranged by configuration vuMeterRange.
-     * @return ranged value.
-     */
-    public int getValue() {
-        return value;
-    }
-    
-    /**
-     * Return a meter level value that is ranged by configuration vuMeterRange.
-     * @param value ranged value.
-     */
-    public void setValue(int value) {
-        this.value = value;
-    }
+  @Expose
+  private final boolean peak;
+
+  @Expose
+  private int value;
+
+  /**
+   * Return a integer value that mean channel as 0 = left 1=right -1=sum of left and right.
+   * @param ch channel, 0=left 1=right -1=sum of left and right.
+   * @param peak peak value or not.
+   */
+  public VuMeterLevel(int ch, boolean peak) {
+    this.ch = ch;
+    this.peak = peak;
+  }
+
+  /**
+   * Return a integer value that mean channel as 0 = left 1=right -1=sum of left and right.
+   * @return
+   */
+  public int getChannel() {
+    return ch;
+  }
+
+  /**
+   * Return this value is peek value or not.
+   * @return peak or not
+   */
+  public boolean isPeak() {
+    return peak;
+  }
+
+  /**
+   * Return a meter level value that is ranged by configuration vuMeterRange.
+   * @return ranged value.
+   */
+  public int getValue() {
+    return value;
+  }
+
+  /**
+   * Return a meter level value that is ranged by configuration vuMeterRange.
+   * @param value ranged value.
+   */
+  public void setValue(int value) {
+    this.value = value;
+  }
 }

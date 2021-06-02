@@ -22,28 +22,28 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
-// dependencies
 import org.java_websocket.WebSocket;
 
 /**
  * An abstract base class for websockt events.
  */
 public abstract class AbstractWebSocketEvent {
-    protected final WebSocket conn;
 
-    /**
-     * Constructor.
-     * @param conn the client connection.
-     */
-    protected AbstractWebSocketEvent(WebSocket conn) {
-        this.conn = conn;
-    }
+  protected final WebSocket conn;
 
-    /**
-     * Get a client connection that's undwrlying this event.
-     * @return the client connection, mayby it's null.
-     */
-    public WebSocket getConnection() {
-        return conn;
-    }
+  /**
+   * Constructor.
+   * @param conn the client connection.
+   */
+  protected AbstractWebSocketEvent(WebSocket conn) {
+    this.conn = conn;
+  }
+
+  /**
+   * Get a client connection that's undwrlying this event.
+   * @return the client connection, mayby it's null.
+   */
+  public WebSocket getConnection() {
+    return conn;
+  }
 }

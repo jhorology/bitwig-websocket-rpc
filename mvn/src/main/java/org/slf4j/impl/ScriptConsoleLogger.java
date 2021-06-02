@@ -56,7 +56,7 @@ import org.slf4j.helpers.MessageFormatter;
 public class ScriptConsoleLogger
     extends MarkerIgnoringBase
     implements StringValue {
-    
+
     private static final long serialVersionUID = 1L;
     private static final int TAIL_QUEUE_SIZE = 24;
     private static final long START_TIME = System.currentTimeMillis();
@@ -93,7 +93,7 @@ public class ScriptConsoleLogger
         indentColumnSize = CONFIG_PARAMS.columnSize - CONFIG_PARAMS.indentPrefix.length();
         globalLogLevel = CONFIG_PARAMS.defaultLogLevel;
     }
-    
+
     /**
      * set a severity level of logger.
      * @param level
@@ -101,13 +101,14 @@ public class ScriptConsoleLogger
     public static void setGlobalLogLevel(LogSeverity level) {
         globalLogLevel = level;
     }
-    
+
     /**
      * set a severity level of logger.
      * @param namePrefix
      * @param level
      */
     public static void setLogLevel(String namePrefix, LogSeverity level) {
+        lazyInit();
         if (CONFIG_PARAMS.logLevels == null) {
             CONFIG_PARAMS.logLevels = new HashMap<>();
         }
@@ -121,7 +122,7 @@ public class ScriptConsoleLogger
     public static void setOutputSystemConsole(boolean on) {
         outputSystemConsole = on;
     }
-    
+
     /**
      * Set a instance of ControllerHost.
      * @param host
@@ -135,7 +136,7 @@ public class ScriptConsoleLogger
     private LogSeverity logLevel = LogSeverity.INFO;
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
-    
+
     /**
      * Package access allows only {@link ExtensionLoggerFactory} to instantiate
      * ExtensionLogger instances.
@@ -146,8 +147,8 @@ public class ScriptConsoleLogger
     }
 
     // ------------------------------- implementation of Logger
-    
-    /** 
+
+    /**
      * Are {@code trace} messages currently enabled?
      * @return
      */
@@ -212,7 +213,7 @@ public class ScriptConsoleLogger
 
     /**
      * Are {@code debug} messages currently enabled?
-     * @return 
+     * @return
      */
     @Override
     public boolean isDebugEnabled() {
@@ -275,7 +276,7 @@ public class ScriptConsoleLogger
 
     /**
      * Are {@code info} messages currently enabled?
-     * @return 
+     * @return
      */
     @Override
     public boolean isInfoEnabled() {
@@ -336,9 +337,9 @@ public class ScriptConsoleLogger
         log(LogSeverity.INFO, msg, t);
     }
 
-    /** 
+    /**
      * Are {@code warn} messages currently enabled?
-     * @return 
+     * @return
      */
     @Override
     public boolean isWarnEnabled() {
@@ -401,7 +402,7 @@ public class ScriptConsoleLogger
 
     /**
      * Are {@code error} messages currently enabled?
-     * @return 
+     * @return
      */
     @Override
     public boolean isErrorEnabled() {
@@ -549,9 +550,9 @@ public class ScriptConsoleLogger
         }
         return message;
     }
-    
+
     // ------------------------------- private routines
-    
+
     /**
      * This is our internal implementation for logging regular
      * (non-parameterized) log messages.
@@ -612,11 +613,11 @@ public class ScriptConsoleLogger
             buf.append(createStackTraceString(t));
         }
         String logMessage = buf.toString();
-        
+
         if (outputSystemConsole) {
             System.out.println(logMessage);
         }
-        
+
         // trigger value changed event.
         // only support within control surface session,
         // 'cause need to consider too many things...
@@ -686,17 +687,17 @@ public class ScriptConsoleLogger
      *
      * @param logLevel
      *            is this level enabled?
-     * @return 
+     * @return
      */
     private boolean isLevelEnabled(LogSeverity level) {
         // log level are numerically ordered so can use simple numeric
         // comparison
-        
+
         return logLevel != null
                 ? logLevel.compareTo(level) <= 0
                 : globalLogLevel.compareTo(level) <= 0;
     }
-    
+
     private String createStackTraceString(Throwable ex) {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
@@ -738,7 +739,7 @@ public class ScriptConsoleLogger
         }
         br.lines().forEach(l -> outputLineFollowing(l, out));
     }
-    
+
     private void outputLineFollowing(String line, Consumer<String> out) {
         while (line.length() > indentColumnSize) {
             out.accept(CONFIG_PARAMS.indentPrefix + line.substring(0, indentColumnSize));

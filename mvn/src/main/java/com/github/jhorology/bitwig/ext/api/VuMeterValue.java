@@ -22,7 +22,6 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// source
 import com.github.jhorology.bitwig.ext.VuMeterLevel;
 
 /**
@@ -30,5 +29,5 @@ import com.github.jhorology.bitwig.ext.VuMeterLevel;
  * @author masafumi
  */
 public interface VuMeterValue extends CollectionValue<VuMeterLevel> {
-    VuMeterLevel get(int ch, boolean peak);
+  VuMeterLevel get(int ch, boolean peak);
 }

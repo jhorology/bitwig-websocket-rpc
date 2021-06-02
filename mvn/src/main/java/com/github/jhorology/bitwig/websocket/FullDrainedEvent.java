@@ -25,5 +25,4 @@ package com.github.jhorology.bitwig.websocket;
 /**
  * An event class that is used to establish AsyncEventBus had beeen full drained.
  */
-class FullDrainedEvent {
-}
+class FullDrainedEvent {}

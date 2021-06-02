@@ -22,22 +22,18 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// bitwig api
 import com.bitwig.extension.controller.api.Application;
 import com.bitwig.extension.controller.api.Channel;
 import com.bitwig.extension.controller.api.Clip;
 import com.bitwig.extension.controller.api.Device;
-
-// source
-
 // TODO Action#isEnabled() is dead at 3.1 Beta 4
 //#if bitwig.extension.api.version >= 99
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 //#endif
 import com.github.jhorology.bitwig.ext.api.ChannelExt;
 import com.github.jhorology.bitwig.ext.api.ClipExt;
-import com.github.jhorology.bitwig.ext.api.ExtApi;
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
+import com.github.jhorology.bitwig.ext.api.ExtApi;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 
@@ -46,38 +42,50 @@ import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
  * @author masafumi
  */
 public class DefaultExtApiFactory implements ExtApi {
-    // TODO Action#isEnabled() is dead at 3.1 Beta 4
-    //#if bitwig.extension.api.version >= 99
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ApplicationExt createApplicationExt(Application application) {
-        return new ApplicationExtImpl(application);
-    }
-    //#endif
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public DeviceExt createDeviceExt(Device device) {
-        return new DeviceExtImpl(device);
-    }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ChannelExt createChannelExt(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        return new ChannelExtImpl(channel, vuMeterRange, vuMeterChannelMode, vuMeterPeakMode);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ClipExt createClipExt(Clip clip, int gridWidth, int gridHeight) {
-        return new ClipExtImpl(clip, gridWidth, gridHeight);
-    }
+  // TODO Action#isEnabled() is dead at 3.1 Beta 4
+  //#if bitwig.extension.api.version >= 99
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ApplicationExt createApplicationExt(Application application) {
+    return new ApplicationExtImpl(application);
+  }
+
+  //#endif
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public DeviceExt createDeviceExt(Device device) {
+    return new DeviceExtImpl(device);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ChannelExt createChannelExt(
+    Channel channel,
+    int vuMeterRange,
+    VuMeterChannelMode vuMeterChannelMode,
+    VuMeterPeakMode vuMeterPeakMode
+  ) {
+    return new ChannelExtImpl(
+      channel,
+      vuMeterRange,
+      vuMeterChannelMode,
+      vuMeterPeakMode
+    );
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ClipExt createClipExt(Clip clip, int gridWidth, int gridHeight) {
+    return new ClipExtImpl(clip, gridWidth, gridHeight);
+  }
 }

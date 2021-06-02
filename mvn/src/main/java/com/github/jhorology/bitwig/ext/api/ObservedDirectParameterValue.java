@@ -22,15 +22,15 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// source
 import com.github.jhorology.bitwig.ext.IdValuePair;
 
 /**
  * Value interface for observing direct parameters.
  * @author masafumi
- * @param <T> 
+ * @param <T>
  */
-public interface ObservedDirectParameterValue<T> extends CollectionValue<IdValuePair<String, T>> {
-    T get(String id);
-    void setObservedIds(String[] ids);
+public interface ObservedDirectParameterValue<T>
+  extends CollectionValue<IdValuePair<String, T>> {
+  T get(String id);
+  void setObservedIds(String[] ids);
 }

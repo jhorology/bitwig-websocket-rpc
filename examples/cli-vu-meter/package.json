@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "bitwig-websocket-rpc": "file:../..",
-    "chalk": "^4.1.0",
-    "commander": "^6.2.0"
+    "chalk": "^4.1.1",
+    "commander": "^7.2.0"
   }
 }

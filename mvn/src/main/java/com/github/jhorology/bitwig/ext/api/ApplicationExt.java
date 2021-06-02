@@ -28,9 +28,9 @@ package com.github.jhorology.bitwig.ext.api;
  * The extended API that allows to access VU Meter of Channel.
  */
 public interface ApplicationExt {
-    /**
-     * Return a Value object that report action's enabled state.
-     * @return 
-     */
-    ObservedActionValue observedAction();
+  /**
+   * Return a Value object that report action's enabled state.
+   * @return
+   */
+  ObservedActionValue observedAction();
 }

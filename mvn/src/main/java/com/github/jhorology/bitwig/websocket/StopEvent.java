@@ -26,10 +26,11 @@ package com.github.jhorology.bitwig.websocket;
  * An event class for notification of websocket server's endt-of-lifecycle.
  */
 public class StopEvent extends AbstractWebSocketEvent {
-    /**
-     * Constructor.
-     */
-    StopEvent() {
-        super(null);
-    }
+
+  /**
+   * Constructor.
+   */
+  StopEvent() {
+    super(null);
+  }
 }

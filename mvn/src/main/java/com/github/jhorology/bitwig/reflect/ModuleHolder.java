@@ -22,84 +22,91 @@
  */
 package com.github.jhorology.bitwig.reflect;
 
-// jdk
+import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.ext.ExtApiFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-// source
-import com.github.jhorology.bitwig.Config;
-import com.github.jhorology.bitwig.ext.ExtApiFactory;
-
 public class ModuleHolder extends RegistryNode {
-    /**
-     * the instance of this module.
-     */
-    private final Object moduleInstance;
 
-    protected final Map<Class<?>, Integer> bankItemCounts;
+  /**
+   * the instance of this module.
+   */
+  private final Object moduleInstance;
 
-    /**
-     * Constructor
-     * @param config
-     * @param moduleName
-     * @param interfaceType
-     * @param moduleInstance
-     */
-    ModuleHolder(Config config, String nodeName,
-                 Class<?> nodeType, Object moduleInstance) {
-        super(config, nodeName, nodeType, null, 0);
-        this.bankItemCounts = new HashMap<>();
-        // instance may be proxy object that implements extended API.
-        this.moduleInstance = ExtApiFactory.newMixinInstance(config, nodeType, moduleInstance);
-    }
-    
-    // TODO need to support Bank#setSizeOfBank()
-    
-    /**
-     * Register item count of specified Bank class.
-     * @param bankType the type of bank.
-     * @param count the count of bank items.
-     * @return this instance.
-     */
-    public ModuleHolder registerBankItemCount(Class<?> bankType, int count) {
-        bankItemCounts.put(bankType, count);
-        return this;
-    }
+  protected final Map<Class<?>, Integer> bankItemCounts;
 
-    /**
-     * Returns a bank item count of specified bank item class.
-     * @param bankItemType
-     * @return
-     */
-    Object getModuleInstance() {
-        return moduleInstance;
-    }
-    
-    /**
-     * Returns a bank item count of specified bank item class.
-     * @param bankItemType
-     * @return
-     */
-    int getBankItemCount(Class<?> bankType) {
-        Integer count = bankItemCounts.get(bankType);
-        if (count != null) {
-            return count;
-        }
-        count = bankItemCounts.keySet().stream()
-            .filter(c -> c.isAssignableFrom(bankType))
-            .map(c -> bankItemCounts.get(c))
-            .findFirst().orElse(null);
-        if (count != null) {
-            return count;
-        }
-        return 0;
-    }
+  /**
+   * Constructor
+   * @param config
+   * @param moduleName
+   * @param interfaceType
+   * @param moduleInstance
+   */
+  ModuleHolder(
+    Config config,
+    String nodeName,
+    Class<?> nodeType,
+    Object moduleInstance
+  ) {
+    super(config, nodeName, nodeType, null, 0);
+    this.bankItemCounts = new HashMap<>();
+    // instance may be proxy object that implements extended API.
+    this.moduleInstance =
+      ExtApiFactory.newMixinInstance(config, nodeType, moduleInstance);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    void clear() {
-        bankItemCounts.clear();
+  // TODO need to support Bank#setSizeOfBank()
+
+  /**
+   * Register item count of specified Bank class.
+   * @param bankType the type of bank.
+   * @param count the count of bank items.
+   * @return this instance.
+   */
+  public ModuleHolder registerBankItemCount(Class<?> bankType, int count) {
+    bankItemCounts.put(bankType, count);
+    return this;
+  }
+
+  /**
+   * Returns a bank item count of specified bank item class.
+   * @param bankItemType
+   * @return
+   */
+  Object getModuleInstance() {
+    return moduleInstance;
+  }
+
+  /**
+   * Returns a bank item count of specified bank item class.
+   * @param bankItemType
+   * @return
+   */
+  int getBankItemCount(Class<?> bankType) {
+    Integer count = bankItemCounts.get(bankType);
+    if (count != null) {
+      return count;
     }
+    count =
+      bankItemCounts
+        .keySet()
+        .stream()
+        .filter(c -> c.isAssignableFrom(bankType))
+        .map(c -> bankItemCounts.get(c))
+        .findFirst()
+        .orElse(null);
+    if (count != null) {
+      return count;
+    }
+    return 0;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  void clear() {
+    bankItemCounts.clear();
+  }
 }

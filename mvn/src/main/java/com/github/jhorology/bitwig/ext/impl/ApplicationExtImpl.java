@@ -24,33 +24,30 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// bitwig api
 import com.bitwig.extension.controller.api.Application;
-
-// source
 import com.github.jhorology.bitwig.ext.api.ApplicationExt;
 import com.github.jhorology.bitwig.ext.api.ObservedActionValue;
-
 
 /**
  * an implementation of extended Application API.
  */
 class ApplicationExtImpl implements ApplicationExt {
-    private final ObservedActionValueImpl observedAction;
 
-    /**
-     * Constructor.
-     * @param device
-     */
-    ApplicationExtImpl(Application application) {
-        observedAction = new ObservedActionValueImpl(application);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ObservedActionValue observedAction() {
-        return observedAction;
-    }
+  private final ObservedActionValueImpl observedAction;
+
+  /**
+   * Constructor.
+   * @param device
+   */
+  ApplicationExtImpl(Application application) {
+    observedAction = new ObservedActionValueImpl(application);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ObservedActionValue observedAction() {
+    return observedAction;
+  }
 }

@@ -23,18 +23,18 @@
 package com.github.jhorology.bitwig.ext.api;
 
 public enum VuMeterUsedFor {
-    NONE("None"),
-    CURSOR_TRACK("Cursor Track"),
-    TRACK("All Track"),
-    CHANNEL("All Channel (include Track)");
+  NONE("None"),
+  CURSOR_TRACK("Cursor Track"),
+  TRACK("All Track"),
+  CHANNEL("All Channel (include Track)");
 
-    private final String displayValue;
-    
-    private VuMeterUsedFor(String displayValue) {
-        this.displayValue = displayValue;
-    }
+  private final String displayValue;
 
-    public String getDisplayValue() {
-        return displayValue;
-    }
+  private VuMeterUsedFor(String displayValue) {
+    this.displayValue = displayValue;
+  }
+
+  public String getDisplayValue() {
+    return displayValue;
+  }
 }

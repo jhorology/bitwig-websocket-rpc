@@ -22,38 +22,38 @@
  */
 package com.github.jhorology.bitwig.ext;
 
-// dependencies
 import com.google.gson.annotations.Expose;
 
 /**
  * JSON serializable raw value object class for id/value pair.
  * @author masafumi
  */
-public class IdValuePair<I,V> {
-    @Expose
-    private final I id;
+public class IdValuePair<I, V> {
 
-    @Expose
-    private V value;
+  @Expose
+  private final I id;
 
-    public IdValuePair(I id) {
-        this.id = id;
-    }
-    
-    public IdValuePair(I id, V value) {
-        this(id);
-        this.value = value;
-    }
+  @Expose
+  private V value;
 
-    public I getId() {
-        return id;
-    }
-    
-    public V getValue() {
-        return value;
-    }
-    
-    public void setValue(V value) {
-        this.value = value;
-    }
+  public IdValuePair(I id) {
+    this.id = id;
+  }
+
+  public IdValuePair(I id, V value) {
+    this(id);
+    this.value = value;
+  }
+
+  public I getId() {
+    return id;
+  }
+
+  public V getValue() {
+    return value;
+  }
+
+  public void setValue(V value) {
+    this.value = value;
+  }
 }

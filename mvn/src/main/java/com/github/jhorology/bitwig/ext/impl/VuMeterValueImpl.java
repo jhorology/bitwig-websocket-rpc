@@ -22,136 +22,144 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// jdk
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-// bitwig API
 import com.bitwig.extension.callback.ObjectValueChangedCallback;
 import com.bitwig.extension.controller.api.Channel;
-
-// source
 import com.github.jhorology.bitwig.ext.VuMeterLevel;
 import com.github.jhorology.bitwig.ext.api.VuMeterChannelMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterPeakMode;
 import com.github.jhorology.bitwig.ext.api.VuMeterValue;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class VuMeterValueImpl implements VuMeterValue {
-    private final Channel channel;
-    private final List<VuMeterLevel> values;
-    private final List<ObjectValueChangedCallback<VuMeterLevel>> callbacks;
-    private int subscribeCount = 0;
-    
-    VuMeterValueImpl(Channel channel, int vuMeterRange, VuMeterChannelMode vuMeterChannelMode, VuMeterPeakMode vuMeterPeakMode) {
-        this.channel = channel;
-        values = new ArrayList<>();
-        this.callbacks = new ArrayList<>();
-        if (vuMeterPeakMode.hasRMS()) {
-            if (vuMeterChannelMode.hasMono()) {
-                setupVuMeter(vuMeterRange, -1, false);
-            }
-            if (vuMeterChannelMode.hasLeft()) {
-                setupVuMeter(vuMeterRange, 0, false);
-            }
-            if (vuMeterChannelMode.hasRight()) {
-                setupVuMeter(vuMeterRange, 1, false);
-            }
-        }
-        if (vuMeterPeakMode.hasPeak()) {
-            if (vuMeterChannelMode.hasMono()) {
-                setupVuMeter(vuMeterRange, -1, true);
-            }
-            if (vuMeterChannelMode.hasLeft()) {
-                setupVuMeter(vuMeterRange, 0, true);
-            }
-            if (vuMeterChannelMode.hasRight()) {
-                setupVuMeter(vuMeterRange, 1, true);
-            }
-        }
-    }
 
-    @Override
-    public VuMeterLevel get(int ch, boolean peak) {
-        return values.stream()
-            .filter(m -> m.getChannel() == ch && m.isPeak() == peak)
-            .findFirst()
-            .orElse(null);
-    }
+  private final Channel channel;
+  private final List<VuMeterLevel> values;
+  private final List<ObjectValueChangedCallback<VuMeterLevel>> callbacks;
+  private int subscribeCount = 0;
 
-    @Override
-    public Collection<VuMeterLevel> values() {
-        return values;
+  VuMeterValueImpl(
+    Channel channel,
+    int vuMeterRange,
+    VuMeterChannelMode vuMeterChannelMode,
+    VuMeterPeakMode vuMeterPeakMode
+  ) {
+    this.channel = channel;
+    values = new ArrayList<>();
+    this.callbacks = new ArrayList<>();
+    if (vuMeterPeakMode.hasRMS()) {
+      if (vuMeterChannelMode.hasMono()) {
+        setupVuMeter(vuMeterRange, -1, false);
+      }
+      if (vuMeterChannelMode.hasLeft()) {
+        setupVuMeter(vuMeterRange, 0, false);
+      }
+      if (vuMeterChannelMode.hasRight()) {
+        setupVuMeter(vuMeterRange, 1, false);
+      }
     }
+    if (vuMeterPeakMode.hasPeak()) {
+      if (vuMeterChannelMode.hasMono()) {
+        setupVuMeter(vuMeterRange, -1, true);
+      }
+      if (vuMeterChannelMode.hasLeft()) {
+        setupVuMeter(vuMeterRange, 0, true);
+      }
+      if (vuMeterChannelMode.hasRight()) {
+        setupVuMeter(vuMeterRange, 1, true);
+      }
+    }
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markInterested() {
-        subscribe();
-    }
+  @Override
+  public VuMeterLevel get(int ch, boolean peak) {
+    return values
+      .stream()
+      .filter(m -> m.getChannel() == ch && m.isPeak() == peak)
+      .findFirst()
+      .orElse(null);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isSubscribed() {
-        return subscribeCount > 0;
-    }
+  @Override
+  public Collection<VuMeterLevel> values() {
+    return values;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    @Deprecated
-    public void setIsSubscribed(boolean subscribed) {
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void markInterested() {
+    subscribe();
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void subscribe() {
-        subscribeCount++;
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean isSubscribed() {
+    return subscribeCount > 0;
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void unsubscribe() {
-        if (subscribeCount > 0) {
-            subscribeCount--;
-        }
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  @Deprecated
+  public void setIsSubscribed(boolean subscribed) {}
 
-    @Override
-    public void addValueObserver(ObjectValueChangedCallback<VuMeterLevel> callback) {
-        callbacks.add(callback);
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void subscribe() {
+    subscribeCount++;
+  }
 
-    private void setupVuMeter(int range, int ch, boolean peak) {
-        VuMeterLevel meter = new VuMeterLevel(ch, peak);
-        values.add(meter);
-        channel.addVuMeterObserver(range, ch, peak, (int value) -> {
-            meter.setValue(value);
-            notifyValue(meter);
-        });
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void unsubscribe() {
+    if (subscribeCount > 0) {
+      subscribeCount--;
     }
-    
-    /**
-     * Notify observed values to observers.
-     */
-    void notifyValues() {
-        if (isSubscribed()) {
-            values().forEach(this::notifyValue);
-        }
+  }
+
+  @Override
+  public void addValueObserver(
+    ObjectValueChangedCallback<VuMeterLevel> callback
+  ) {
+    callbacks.add(callback);
+  }
+
+  private void setupVuMeter(int range, int ch, boolean peak) {
+    VuMeterLevel meter = new VuMeterLevel(ch, peak);
+    values.add(meter);
+    channel.addVuMeterObserver(
+      range,
+      ch,
+      peak,
+      (int value) -> {
+        meter.setValue(value);
+        notifyValue(meter);
+      }
+    );
+  }
+
+  /**
+   * Notify observed values to observers.
+   */
+  void notifyValues() {
+    if (isSubscribed()) {
+      values().forEach(this::notifyValue);
     }
-    
-    private void notifyValue(VuMeterLevel v) {
-        if (isSubscribed()) {
-            callbacks.forEach(cb -> cb.valueChanged(v));
-        }
+  }
+
+  private void notifyValue(VuMeterLevel v) {
+    if (isSubscribed()) {
+      callbacks.forEach(cb -> cb.valueChanged(v));
     }
+  }
 }

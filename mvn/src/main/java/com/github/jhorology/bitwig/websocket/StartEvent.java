@@ -22,30 +22,29 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
-// dependencies
 import org.java_websocket.server.WebSocketServer;
-
 
 /**
  * An event class for notification of websocket server's start-of-lifecycle.
  */
 public class StartEvent extends AbstractWebSocketEvent {
-    private final WebSocketServer webSocketServer;
 
-    /**
-     * Constructor.
-     * @param webSocketServer the instance of {@link WebSocketServer}
-W     */
-    StartEvent(WebSocketServer webSocketServer) {
-        super(null);
-        this.webSocketServer = webSocketServer;
-    }
-    
-    /**
-     * Get an instance of {@link WebSocketServer}.
-     * @return
-     */
-    public WebSocketServer getWebSocketServer() {
-        return webSocketServer;
-    }
+  private final WebSocketServer webSocketServer;
+
+  /**
+   * Constructor.
+   * @param webSocketServer the instance of {@link WebSocketServer}
+   */
+  StartEvent(WebSocketServer webSocketServer) {
+    super(null);
+    this.webSocketServer = webSocketServer;
+  }
+
+  /**
+   * Get an instance of {@link WebSocketServer}.
+   * @return
+   */
+  public WebSocketServer getWebSocketServer() {
+    return webSocketServer;
+  }
 }

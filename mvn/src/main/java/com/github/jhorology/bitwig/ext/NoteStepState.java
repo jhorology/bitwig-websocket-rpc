@@ -22,64 +22,64 @@
  */
 package com.github.jhorology.bitwig.ext;
 
-// provided dependencies
 import com.google.common.base.Objects;
-
-// dependencies
 import com.google.gson.annotations.Expose;
 
 /**
  * JSON serializable raw value object class for state of grid element.
  */
 public class NoteStepState {
-    @Expose
-    private final int x;
-    @Expose
-    private final int y;
-    @Expose
-    private int state;
 
-    /**
-     * Constructor.
-     * @param x the x (step) coordinate within the note grid (integer).
-     * @param y the y (key) coordinate within the note grid (integer).
-     */
-    public NoteStepState(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
+  @Expose
+  private final int x;
 
-    /**
-     * Returns the x (step) coordinate within the note grid (integer).
-     * @return
-     */
-    public int getX() {
-        return x;
-    }
-    
-    /**
-     * Return the y (key) coordinate within the note grid (integer).
-     * @return
-     */
-    public int getY() {
-        return y;
-    }
-    
-    /**
-     * Returns an integer value that indicates if the step is empty (0) or
-     * if a note continues playing (1) or starts playing (2).
-     * @return
-     */
-    public int getState() {
-        return state;
-    }
-    
-    /**
-     * Sets an integer value that indicates if the step is empty (0) or
-     * if a note continues playing (1) or starts playing (2).
-     * @param state
-     */
-    public void setState(int state) {
-        this.state = state;
-    }
+  @Expose
+  private final int y;
+
+  @Expose
+  private int state;
+
+  /**
+   * Constructor.
+   * @param x the x (step) coordinate within the note grid (integer).
+   * @param y the y (key) coordinate within the note grid (integer).
+   */
+  public NoteStepState(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  /**
+   * Returns the x (step) coordinate within the note grid (integer).
+   * @return
+   */
+  public int getX() {
+    return x;
+  }
+
+  /**
+   * Return the y (key) coordinate within the note grid (integer).
+   * @return
+   */
+  public int getY() {
+    return y;
+  }
+
+  /**
+   * Returns an integer value that indicates if the step is empty (0) or
+   * if a note continues playing (1) or starts playing (2).
+   * @return
+   */
+  public int getState() {
+    return state;
+  }
+
+  /**
+   * Sets an integer value that indicates if the step is empty (0) or
+   * if a note continues playing (1) or starts playing (2).
+   * @param state
+   */
+  public void setState(int state) {
+    this.state = state;
+  }
 }

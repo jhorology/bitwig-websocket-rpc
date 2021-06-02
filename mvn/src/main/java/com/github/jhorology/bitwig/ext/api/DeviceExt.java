@@ -22,42 +22,40 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// bitwig api
 import com.bitwig.extension.controller.api.StringArrayValue;
-
 
 /**
  * The extended API that allows to access direct parameters of Device.
  */
 public interface DeviceExt {
-    /**
-     * Value that reports the all parameter ids of the device.
-     * @return
-     */
-    StringArrayValue directParameterIdArray();
-    
-    /**
-     * Starts observing the parameters according to the given parameter ID array,
-     * or stops observing in case null is passed in for the parameter ID array.
-     * @param ids 
-     */
-    void setObservedDirectParameterIds(String[] ids);
-    
-    /**
-     * Value that reports the observed parameter name of the device.
-     * @return
-     */
-     ObservedDirectParameterValue<String> observedDirectParameterName();
-    
-    /**
-     * Value that reports the observed parameter value formatted as string.
-     * @return
-     */
-     ObservedDirectParameterValue<String> observedDirectParameterDisplayValue();
-     
-    /**
-     * Value that reports the observed parameter value normalized as 0..1.
-     * @return
-     */
-     ObservedDirectParameterValue<Double> observedDirectParameterNormalizedValue();
+  /**
+   * Value that reports the all parameter ids of the device.
+   * @return
+   */
+  StringArrayValue directParameterIdArray();
+
+  /**
+   * Starts observing the parameters according to the given parameter ID array,
+   * or stops observing in case null is passed in for the parameter ID array.
+   * @param ids
+   */
+  void setObservedDirectParameterIds(String[] ids);
+
+  /**
+   * Value that reports the observed parameter name of the device.
+   * @return
+   */
+  ObservedDirectParameterValue<String> observedDirectParameterName();
+
+  /**
+   * Value that reports the observed parameter value formatted as string.
+   * @return
+   */
+  ObservedDirectParameterValue<String> observedDirectParameterDisplayValue();
+
+  /**
+   * Value that reports the observed parameter value normalized as 0..1.
+   * @return
+   */
+  ObservedDirectParameterValue<Double> observedDirectParameterNormalizedValue();
 }

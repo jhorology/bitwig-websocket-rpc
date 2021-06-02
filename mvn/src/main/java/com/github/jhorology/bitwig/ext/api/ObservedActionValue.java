@@ -24,24 +24,24 @@
  */
 package com.github.jhorology.bitwig.ext.api;
 
-// source
 import com.github.jhorology.bitwig.ext.IdValuePair;
 
 /**
  * Value interface for observing action.
  * @author masafumi
  */
-public interface ObservedActionValue extends CollectionValue<IdValuePair<String, Boolean>> {
-    /**
-     * Get a enabled state of specified action.
-     * @param id
-     * @return 
-     */
-    boolean isEnabled(String id);
-    
-    /**
-     * Set an array of action ids that need to be subscribed.
-     * @param ids or null = stop subscribe
-     */
-    void setObservedIds(String[] ids);
+public interface ObservedActionValue
+  extends CollectionValue<IdValuePair<String, Boolean>> {
+  /**
+   * Get a enabled state of specified action.
+   * @param id
+   * @return
+   */
+  boolean isEnabled(String id);
+
+  /**
+   * Set an array of action ids that need to be subscribed.
+   * @param ids or null = stop subscribe
+   */
+  void setObservedIds(String[] ids);
 }

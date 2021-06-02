@@ -22,36 +22,36 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
-// dependencies
 import org.java_websocket.WebSocket;
 
 /**
  * An event class that is used to establish AsyncEventBus had beeen full drained.
  */
 public class CloseEvent extends AbstractWebSocketEvent {
-    private final int code;
-    private final String reason;
-    private final boolean remote;
-    
-    /**
-     * An event class that is used to establish AsyncEventBus had beeen full drained.
-     */
-    CloseEvent(WebSocket conn, int code, String reason, boolean remote) {
-        super(conn);
-        this.code = code;
-        this.reason = reason;
-        this.remote = remote;
-    }
 
-    public int getCode() {
-        return code;
-    }
+  private final int code;
+  private final String reason;
+  private final boolean remote;
 
-    public String getReason() {
-        return reason;
-    }
-    
-    public boolean isRemote() {
-        return remote;
-    }
+  /**
+   * An event class that is used to establish AsyncEventBus had beeen full drained.
+   */
+  CloseEvent(WebSocket conn, int code, String reason, boolean remote) {
+    super(conn);
+    this.code = code;
+    this.reason = reason;
+    this.remote = remote;
+  }
+
+  public int getCode() {
+    return code;
+  }
+
+  public String getReason() {
+    return reason;
+  }
+
+  public boolean isRemote() {
+    return remote;
+  }
 }

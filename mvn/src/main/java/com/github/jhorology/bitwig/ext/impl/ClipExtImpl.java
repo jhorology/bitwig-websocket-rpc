@@ -22,55 +22,52 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// bitwig api
 import com.bitwig.extension.controller.api.Clip;
-
 //#if bitwig.extension.api.version >= 10
 import com.bitwig.extension.controller.api.NoteStep;
 //#endif
-
-// source
 import com.github.jhorology.bitwig.ext.NoteStepState;
 import com.github.jhorology.bitwig.ext.api.ClipExt;
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
-
 
 /**
  * an implementation of extended Clip API.
  */
 class ClipExtImpl implements ClipExt {
-    private final NoteStepStateValueImpl noteStepState;
+
+  private final NoteStepStateValueImpl noteStepState;
+  //#if bitwig.extension.api.version >= 10
+  private final NoteStepValueImpl noteStep;
+
+  //#endif
+
+  /**
+   * Constructor.
+   * @param device
+   */
+  ClipExtImpl(Clip clip, int gridWidth, int gridHeight) {
+    noteStepState = new NoteStepStateValueImpl(clip, gridWidth, gridHeight);
     //#if bitwig.extension.api.version >= 10
-    private final NoteStepValueImpl noteStep;
+    noteStep = new NoteStepValueImpl(clip, gridWidth, gridHeight);
     //#endif
-    
-    /**
-     * Constructor.
-     * @param device
-     */
-    ClipExtImpl(Clip clip, int gridWidth, int gridHeight) {
-        noteStepState = new NoteStepStateValueImpl(clip, gridWidth, gridHeight);
-        //#if bitwig.extension.api.version >= 10
-        noteStep = new NoteStepValueImpl(clip, gridWidth, gridHeight);
-        //#endif
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CollectionValue<NoteStepState> noteStepState() {
-        return noteStepState;
-    }
-    
-    //#if bitwig.extension.api.version >= 10
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public CollectionValue<NoteStep> noteStep() {
-        return noteStep;
-    }
-    //#endif
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CollectionValue<NoteStepState> noteStepState() {
+    return noteStepState;
+  }
+
+  //#if bitwig.extension.api.version >= 10
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public CollectionValue<NoteStep> noteStep() {
+    return noteStep;
+  }
+  //#endif
 
 }

@@ -22,12 +22,9 @@
  */
 package com.github.jhorology.bitwig.ext.impl;
 
-// bitwig api
 import com.bitwig.extension.controller.api.Device;
 import com.bitwig.extension.controller.api.DirectParameterValueDisplayObserver;
 import com.bitwig.extension.controller.api.StringArrayValue;
-
-// source
 import com.github.jhorology.bitwig.ext.api.DeviceExt;
 import com.github.jhorology.bitwig.ext.api.ObservedDirectParameterValue;
 
@@ -35,79 +32,94 @@ import com.github.jhorology.bitwig.ext.api.ObservedDirectParameterValue;
  * an implementation of extended Device API.
  */
 class DeviceExtImpl implements DeviceExt {
-    private final DirectParameterIdArrayValueImpl directParameterIdArrayValue;
-    private final ObservedDirectParameterValueImpl<String> observedDirectParameterNameValue;
-    private final ObservedDirectParameterValueImpl<Double> observedDirectParameterNormalizedValue;
-    private final ObservedDirectParameterValueImpl<String> observedDirectParameterDisplayValue;
-    private final DirectParameterValueDisplayObserver observer;
 
-    /**
-     * Constructor.
-     * @param device
-     */
-    DeviceExtImpl(Device device) {
-        directParameterIdArrayValue = new DirectParameterIdArrayValueImpl();
-        observedDirectParameterNameValue = new ObservedDirectParameterValueImpl<>(true);
-        observedDirectParameterNormalizedValue = new ObservedDirectParameterValueImpl<>(true);
-        observedDirectParameterDisplayValue = new ObservedDirectParameterValueImpl<>(false);
-        
-        device.addDirectParameterIdObserver((String[] parameterIds) -> deviceChanged(parameterIds));
-        device.addDirectParameterNameObserver(256,
-                (String id, String value) -> observedDirectParameterNameValue.put(id, value));
-        device.addDirectParameterNormalizedValueObserver((String id, 
-                double value) -> observedDirectParameterNormalizedValue.put(id, value));
-        observer = device.addDirectParameterValueDisplayObserver(256,
-                (String id, String value) -> observedDirectParameterDisplayValue.put(id, value));
-        observer.setObservedParameterIds(null);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public StringArrayValue directParameterIdArray() {
-        return directParameterIdArrayValue;
-    }
+  private final DirectParameterIdArrayValueImpl directParameterIdArrayValue;
+  private final ObservedDirectParameterValueImpl<String> observedDirectParameterNameValue;
+  private final ObservedDirectParameterValueImpl<Double> observedDirectParameterNormalizedValue;
+  private final ObservedDirectParameterValueImpl<String> observedDirectParameterDisplayValue;
+  private final DirectParameterValueDisplayObserver observer;
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void setObservedDirectParameterIds(String[] ids) {
-        observedDirectParameterNameValue.setObservedIds(ids);
-        observedDirectParameterNormalizedValue.setObservedIds(ids);
-        observedDirectParameterDisplayValue.setObservedIds(ids);
-        observer.setObservedParameterIds(ids);
-    }
+  /**
+   * Constructor.
+   * @param device
+   */
+  DeviceExtImpl(Device device) {
+    directParameterIdArrayValue = new DirectParameterIdArrayValueImpl();
+    observedDirectParameterNameValue =
+      new ObservedDirectParameterValueImpl<>(true);
+    observedDirectParameterNormalizedValue =
+      new ObservedDirectParameterValueImpl<>(true);
+    observedDirectParameterDisplayValue =
+      new ObservedDirectParameterValueImpl<>(false);
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ObservedDirectParameterValue<String> observedDirectParameterDisplayValue() {
-        return observedDirectParameterDisplayValue;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ObservedDirectParameterValue<String> observedDirectParameterName() {
-        return observedDirectParameterNameValue;
-    }
+    device.addDirectParameterIdObserver(
+      (String[] parameterIds) -> deviceChanged(parameterIds)
+    );
+    device.addDirectParameterNameObserver(
+      256,
+      (String id, String value) ->
+        observedDirectParameterNameValue.put(id, value)
+    );
+    device.addDirectParameterNormalizedValueObserver(
+      (String id, double value) ->
+        observedDirectParameterNormalizedValue.put(id, value)
+    );
+    observer =
+      device.addDirectParameterValueDisplayObserver(
+        256,
+        (String id, String value) ->
+          observedDirectParameterDisplayValue.put(id, value)
+      );
+    observer.setObservedParameterIds(null);
+  }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public ObservedDirectParameterValue<Double> observedDirectParameterNormalizedValue() {
-        return observedDirectParameterNormalizedValue;
-    }
-    
-    private void deviceChanged(String[] paramaterIds) {
-        directParameterIdArrayValue.valueChanged(paramaterIds);
-        observedDirectParameterNameValue.deviceChanged();
-        observedDirectParameterNormalizedValue.deviceChanged();
-        observedDirectParameterDisplayValue.deviceChanged();
-    }
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public StringArrayValue directParameterIdArray() {
+    return directParameterIdArrayValue;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void setObservedDirectParameterIds(String[] ids) {
+    observedDirectParameterNameValue.setObservedIds(ids);
+    observedDirectParameterNormalizedValue.setObservedIds(ids);
+    observedDirectParameterDisplayValue.setObservedIds(ids);
+    observer.setObservedParameterIds(ids);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ObservedDirectParameterValue<String> observedDirectParameterDisplayValue() {
+    return observedDirectParameterDisplayValue;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ObservedDirectParameterValue<String> observedDirectParameterName() {
+    return observedDirectParameterNameValue;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public ObservedDirectParameterValue<Double> observedDirectParameterNormalizedValue() {
+    return observedDirectParameterNormalizedValue;
+  }
+
+  private void deviceChanged(String[] paramaterIds) {
+    directParameterIdArrayValue.valueChanged(paramaterIds);
+    observedDirectParameterNameValue.deviceChanged();
+    observedDirectParameterNormalizedValue.deviceChanged();
+    observedDirectParameterDisplayValue.deviceChanged();
+  }
 }

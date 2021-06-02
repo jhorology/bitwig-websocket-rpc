@@ -26,9 +26,9 @@ package com.github.jhorology.bitwig.ext.api;
  * The extended API that allows to access VU Meter of Channel.
  */
 public interface ChannelExt {
-    /**
-     * Value that reports the VU Meter.
-     * @return
-     */
-    VuMeterValue vuMeter();
+  /**
+   * Value that reports the VU Meter.
+   * @return
+   */
+  VuMeterValue vuMeter();
 }
