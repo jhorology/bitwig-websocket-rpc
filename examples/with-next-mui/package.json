@@ -19,7 +19,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.58",
     "bitwig-websocket-rpc": "file:../..",
-    "next": "^10.2.3",
+    "next": "^11.1.0",
     "nipplejs": "^0.9.0",
     "node-fetch": "^2.6.1",
     "node-ssdp": "^4.0.1",
