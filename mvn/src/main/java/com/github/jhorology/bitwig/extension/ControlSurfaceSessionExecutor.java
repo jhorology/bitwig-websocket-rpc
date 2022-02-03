@@ -22,11 +22,11 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Executor class that always runs tasks within 'ControllerHost#flush()' method.

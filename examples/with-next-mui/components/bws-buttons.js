@@ -56,7 +56,8 @@ export function PlayButton(props) {
       event="transport.isPlaying"
       startIcon={<PlayIcon />}
       onClick={() => bws.notify('transport.isPlaying.toggle')}
-      {...props}>
+      {...props}
+    >
       Play
     </TwoStateButton>
   )
@@ -70,7 +71,8 @@ export function StopButton(props) {
       className={classes.button}
       startIcon={<StopIcon />}
       onClick={() => bws.notify('transport.stop')}
-      {...props}>
+      {...props}
+    >
       Stop
     </Button>
   )
@@ -84,7 +86,8 @@ export function ArrangerRecordButton(props) {
       event="transport.isArrangerRecordEnabled"
       startIcon={<RecordIcon />}
       onClick={() => bws.notify('transport.isArrangerRecordEnabled.toggle')}
-      {...props}>
+      {...props}
+    >
       Record
     </TwoStateButton>
   )
@@ -98,7 +101,8 @@ export function ArrangerAutomationWriteButton(props) {
       event="transport.isArrangerAutomationWriteEnabled"
       startIcon={<AutomationWriteIcon />}
       onClick={() => bws.notify('transport.isArrangerAutomationWriteEnabled.toggle')}
-      {...props}>
+      {...props}
+    >
       Automation
     </TwoStateButton>
   )
@@ -111,7 +115,8 @@ export function ArrangerOverdubButton(props) {
       event="transport.isArrangerOverdubEnabled"
       startIcon={<OverdubIcon />}
       onClick={() => bws.notify('transport.isArrangerOverdubEnabled.toggle')}
-      {...props}>
+      {...props}
+    >
       Overdub
     </TwoStateButton>
   )
@@ -126,7 +131,8 @@ export function GrooveButton(props) {
       onClick={params =>
         bws.notify('groove.getEnabled.value.set', [params && params[0] ? 0 : 1])
       }
-      {...props}>
+      {...props}
+    >
       Groove
     </TwoStateButton>
   )
@@ -141,7 +147,8 @@ export function AbletonLinkButton(props) {
       event="transport.tempo.name"
       modifier={params => params[0] === 'AbletonLinkTempo'}
       startIcon={<AbletonIcon />}
-      {...props}>
+      {...props}
+    >
       Link
     </TwoStateButton>
   )

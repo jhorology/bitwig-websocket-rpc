@@ -24,15 +24,14 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.slf4j.impl;
+package com.github.jhorology.bitwig.logging.impl;
 
 // jdk
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
+import org.slf4j.ILoggerFactory;
 // dependencies
 import org.slf4j.Logger;
-import org.slf4j.ILoggerFactory;
 
 /**
  * An implementation of {@link ILoggerFactory} which always returns
@@ -40,40 +39,40 @@ import org.slf4j.ILoggerFactory;
  */
 public class ScriptConsoleLoggerFactory implements ILoggerFactory {
 
-    ConcurrentMap<String, Logger> loggerMap;
+  ConcurrentMap<String, Logger> loggerMap;
 
-    public ScriptConsoleLoggerFactory() {
-        loggerMap = new ConcurrentHashMap<>();
-        ScriptConsoleLogger.lazyInit();
-    }
+  public ScriptConsoleLoggerFactory() {
+    loggerMap = new ConcurrentHashMap<>();
+    ScriptConsoleLogger.lazyInit();
+  }
 
-    /**
-     * Return an appropriate {@link SimpleLogger} instance by name.
-     * @param name
-     * @return 
-     */
-    @Override
-    public Logger getLogger(String name) {
-        Logger simpleLogger = loggerMap.get(name);
-        if (simpleLogger != null) {
-            return simpleLogger;
-        } else {
-            Logger newInstance = new ScriptConsoleLogger(name);
-            Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
-            return oldInstance == null ? newInstance : oldInstance;
-        }
+  /**
+   * Return an appropriate {@link SimpleLogger} instance by name.
+   * @param name
+   * @return
+   */
+  @Override
+  public Logger getLogger(String name) {
+    Logger simpleLogger = loggerMap.get(name);
+    if (simpleLogger != null) {
+      return simpleLogger;
+    } else {
+      Logger newInstance = new ScriptConsoleLogger(name);
+      Logger oldInstance = loggerMap.putIfAbsent(name, newInstance);
+      return oldInstance == null ? newInstance : oldInstance;
     }
+  }
 
-    /**
-     * Clear the internal logger cache.
-     *
-     * This method is intended to be called by classes (in the same package) for
-     * testing purposes. This method is internal. It can be modified, renamed or
-     * removed at any time without notice.
-     *
-     * You are strongly discouraged from calling this method in production code.
-     */
-    void reset() {
-        loggerMap.clear();
-    }
+  /**
+   * Clear the internal logger cache.
+   *
+   * This method is intended to be called by classes (in the same package) for
+   * testing purposes. This method is internal. It can be modified, renamed or
+   * removed at any time without notice.
+   *
+   * You are strongly discouraged from calling this method in production code.
+   */
+  void reset() {
+    loggerMap.clear();
+  }
 }

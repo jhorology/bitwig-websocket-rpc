@@ -27,6 +27,7 @@ import com.bitwig.extension.controller.api.SettableBooleanValue;
 import com.bitwig.extension.controller.api.SettableEnumValue;
 import com.bitwig.extension.controller.api.SettableRangedValue;
 import com.bitwig.extension.controller.api.SettableStringValue;
+import com.github.jhorology.bitwig.logging.impl.LogSeverity;
 import com.google.common.eventbus.Subscribe;
 import com.google.gson.annotations.Expose;
 import java.util.function.Consumer;
@@ -35,7 +36,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import org.slf4j.impl.LogSeverity;
 
 /**
  * A base class for managing extension's configuration.
@@ -149,12 +149,10 @@ public abstract class AbstractConfiguration {
         "Restart this extension",
         "Restart"
       )
-      .addSignalObserver(
-        () -> {
-          requestReset = true;
-          host.restart();
-        }
-      );
+      .addSignalObserver(() -> {
+        requestReset = true;
+        host.restart();
+      });
   }
 
   /**
@@ -288,19 +286,17 @@ public abstract class AbstractConfiguration {
       );
 
     value.set(mapper.apply(getter.get()));
-    value.addValueObserver(
-      (String s) -> {
-        if (ignoreHostPrefValue) {
-          value.set(mapper.apply(getter.get()));
-        } else {
-          T v = valueOf.apply(s);
-          if (getter.get() != v) {
-            setter.accept(v);
-            valueChanged = true;
-          }
+    value.addValueObserver((String s) -> {
+      if (ignoreHostPrefValue) {
+        value.set(mapper.apply(getter.get()));
+      } else {
+        T v = valueOf.apply(s);
+        if (getter.get() != v) {
+          setter.accept(v);
+          valueChanged = true;
         }
       }
-    );
+    });
   }
 
   /**
@@ -340,19 +336,17 @@ public abstract class AbstractConfiguration {
       );
 
     value.set(String.valueOf(safeValue.get()));
-    value.addValueObserver(
-      (String s) -> {
-        if (ignoreHostPrefValue) {
-          value.set(String.valueOf(safeValue.get()));
-        } else {
-          int v = Integer.valueOf(s);
-          if (safeValue.get() != v) {
-            setter.accept(v);
-            valueChanged = true;
-          }
+    value.addValueObserver((String s) -> {
+      if (ignoreHostPrefValue) {
+        value.set(String.valueOf(safeValue.get()));
+      } else {
+        int v = Integer.valueOf(s);
+        if (safeValue.get() != v) {
+          setter.accept(v);
+          valueChanged = true;
         }
       }
-    );
+    });
   }
 
   /**
@@ -392,16 +386,14 @@ public abstract class AbstractConfiguration {
         safeValue.get()
       );
     value.setRaw(safeValue.get());
-    value.addRawValueObserver(
-      (double v) -> {
-        if (ignoreHostPrefValue) {
-          value.setRaw(safeValue.get());
-        } else if (safeValue.get() != (int) v) {
-          setter.accept((int) v);
-          valueChanged = true;
-        }
+    value.addRawValueObserver((double v) -> {
+      if (ignoreHostPrefValue) {
+        value.setRaw(safeValue.get());
+      } else if (safeValue.get() != (int) v) {
+        setter.accept((int) v);
+        valueChanged = true;
       }
-    );
+    });
   }
 
   /**
@@ -441,18 +433,16 @@ public abstract class AbstractConfiguration {
     if (useRcFile) {
       value.set(getter.get());
     }
-    value.addValueObserver(
-      (boolean v) -> {
-        if (useRcFile && ignoreHostPrefValue) {
-          value.set(getter.get());
-        } else if (getter.get() != v) {
-          setter.accept(v);
-          if (useRcFile) {
-            valueChanged = true;
-          }
+    value.addValueObserver((boolean v) -> {
+      if (useRcFile && ignoreHostPrefValue) {
+        value.set(getter.get());
+      } else if (getter.get() != v) {
+        setter.accept(v);
+        if (useRcFile) {
+          valueChanged = true;
         }
       }
-    );
+    });
   }
 
   /**
@@ -497,18 +487,16 @@ public abstract class AbstractConfiguration {
     if (useRcFile) {
       value.set(getter.get());
     }
-    value.addValueObserver(
-      (String v) -> {
-        if (useRcFile && ignoreHostPrefValue) {
-          value.set(getter.get());
-        } else if (!getter.get().equals(v)) {
-          setter.accept(v);
-          if (useRcFile) {
-            valueChanged = true;
-          }
+    value.addValueObserver((String v) -> {
+      if (useRcFile && ignoreHostPrefValue) {
+        value.set(getter.get());
+      } else if (!getter.get().equals(v)) {
+        setter.accept(v);
+        if (useRcFile) {
+          valueChanged = true;
         }
       }
-    );
+    });
   }
 
   private void ignoreHostPrefValue() {

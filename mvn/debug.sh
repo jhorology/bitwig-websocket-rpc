@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CWD=$(cd $(dirname $0); pwd)
-if [ -z ${BITWIG_VERSION+x} ]; then BITWIG_VERSION="3.3"; fi
+if [ -z ${BITWIG_VERSION} ]; then BITWIG_VERSION="3.3.10"; fi
 
 
 wslenv() {
@@ -63,7 +63,7 @@ if [[ -n $clean ]]; then
         cp "${BITWIG_STUDIO_PREFS}.clean" "${BITWIG_STUDIO_PREFS}"
         echo 'preferences file has bean overwrited'
     fi
-    
+
     # clean RC file
     rm -f "${USER_HOME}"/.bitwig.extension.*
 fi

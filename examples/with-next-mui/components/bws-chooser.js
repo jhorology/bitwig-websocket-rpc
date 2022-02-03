@@ -106,7 +106,8 @@ function ChooserTable({ rpcServices, onSelectUrl, onRefreshServices }) {
                     </TableCell>
                     <TableCell className={classes.tableCell}>{row.bitwigVersion}</TableCell>
                     <TableCell
-                      className={classes.tableCell}>{`API-${row.apiVersion}`}</TableCell>
+                      className={classes.tableCell}
+                    >{`API-${row.apiVersion}`}</TableCell>
                   </TableRow>
                 ))}
             </TableBody>
@@ -208,7 +209,8 @@ export default function BwsChooser({ open, isConnecting, errorText, onConnect })
       disableEscapeKeyDown
       maxWidth="xs"
       aria-labelledby="confirmation-dialog-title"
-      open={open}>
+      open={open}
+    >
       <DialogTitle id="confirmation-dialog-title" className={classes.title}>
         <Grid container spacing={2} justify="center" alignItems="center">
           <Grid item>

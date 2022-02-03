@@ -58,6 +58,7 @@ import com.bitwig.extension.controller.api.SendBank;
 import com.bitwig.extension.controller.api.Track;
 import com.bitwig.extension.controller.api.TrackBank;
 import com.bitwig.extension.controller.api.Value;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import java.lang.reflect.GenericArrayType;
@@ -70,7 +71,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * utility class

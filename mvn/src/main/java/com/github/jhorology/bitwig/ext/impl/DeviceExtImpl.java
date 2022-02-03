@@ -52,8 +52,8 @@ class DeviceExtImpl implements DeviceExt {
     observedDirectParameterDisplayValue =
       new ObservedDirectParameterValueImpl<>(false);
 
-    device.addDirectParameterIdObserver(
-      (String[] parameterIds) -> deviceChanged(parameterIds)
+    device.addDirectParameterIdObserver((String[] parameterIds) ->
+      deviceChanged(parameterIds)
     );
     device.addDirectParameterNameObserver(
       256,
@@ -61,8 +61,8 @@ class DeviceExtImpl implements DeviceExt {
         observedDirectParameterNameValue.put(id, value)
     );
     device.addDirectParameterNormalizedValueObserver(
-      (String id, double value) ->
-        observedDirectParameterNormalizedValue.put(id, value)
+        (String id, double value) ->
+      observedDirectParameterNormalizedValue.put(id, value)
     );
     observer =
       device.addDirectParameterValueDisplayObserver(

@@ -106,7 +106,8 @@ export default function Navbar({ onTogglePaletteType }) {
             onClose={handleDrawerToggle}
             ModalProps={{
               keepMounted: true // Better open performance on mobile.
-            }}>
+            }}
+          >
             <List>
               {pages.map((page, i) => (
                 <ListItem key={i}>

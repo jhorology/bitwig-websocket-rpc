@@ -72,7 +72,8 @@ export default function LinearMeter({
       style={{
         width: isVertical ? thickness : size,
         height: isVertical ? size : thickness
-      }}>
+      }}
+    >
       <meter
         className={clsx(
           classes.meter,

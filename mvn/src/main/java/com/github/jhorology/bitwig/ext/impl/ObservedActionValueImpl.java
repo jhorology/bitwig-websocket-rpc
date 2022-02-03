@@ -60,23 +60,17 @@ public class ObservedActionValueImpl implements ObservedActionValue {
     this.observedValues = new HashMap<>();
     Stream
       .of(application.getActions())
-      .forEach(
-        action -> {
-          action
-            .isEnabled()
-            .addValueObserver(
-              (boolean b) -> {
-                IdValuePair<String, Boolean> v = observedValues.get(
-                  action.getId()
-                );
-                if (v != null) {
-                  v.setValue(b);
-                  notifyValue(v);
-                }
-              }
-            );
-        }
-      );
+      .forEach(action -> {
+        action
+          .isEnabled()
+          .addValueObserver((boolean b) -> {
+            IdValuePair<String, Boolean> v = observedValues.get(action.getId());
+            if (v != null) {
+              v.setValue(b);
+              notifyValue(v);
+            }
+          });
+      });
   }
 
   /**
@@ -87,14 +81,12 @@ public class ObservedActionValueImpl implements ObservedActionValue {
     if (ids == null) {
       observedValues
         .values()
-        .forEach(
-          v -> {
-            Action action = application.getAction(v.getId());
-            if (action != null && action.isEnabled().isSubscribed()) {
-              action.isEnabled().unsubscribe();
-            }
+        .forEach(v -> {
+          Action action = application.getAction(v.getId());
+          if (action != null && action.isEnabled().isSubscribed()) {
+            action.isEnabled().unsubscribe();
           }
-        );
+        });
       observedValues.clear();
       return;
     }
@@ -102,37 +94,31 @@ public class ObservedActionValueImpl implements ObservedActionValue {
     List<String> observerdIds = Arrays.asList(ids);
     observedValues
       .values()
-      .forEach(
-        v -> {
-          if (!observerdIds.contains(v.getId())) {
-            dells.add(v);
-          }
+      .forEach(v -> {
+        if (!observerdIds.contains(v.getId())) {
+          dells.add(v);
         }
-      );
-    dells.forEach(
-      v -> {
-        Action action = application.getAction(v.getId());
-        if (action != null && action.isEnabled().isSubscribed()) {
-          action.isEnabled().unsubscribe();
-        }
-        observedValues.remove(v.getId());
+      });
+    dells.forEach(v -> {
+      Action action = application.getAction(v.getId());
+      if (action != null && action.isEnabled().isSubscribed()) {
+        action.isEnabled().unsubscribe();
       }
-    );
+      observedValues.remove(v.getId());
+    });
 
-    observerdIds.forEach(
-      id -> {
-        if (!observedValues.keySet().contains(id)) {
-          Action action = application.getAction(id);
-          if (action != null) {
-            action.isEnabled().subscribe();
-            observedValues.put(
-              id,
-              new IdValuePair<>(id, action.isEnabled().get())
-            );
-          }
+    observerdIds.forEach(id -> {
+      if (!observedValues.keySet().contains(id)) {
+        Action action = application.getAction(id);
+        if (action != null) {
+          action.isEnabled().subscribe();
+          observedValues.put(
+            id,
+            new IdValuePair<>(id, action.isEnabled().get())
+          );
         }
       }
-    );
+    });
 
     if (isSubscribed()) {
       notifyValues();

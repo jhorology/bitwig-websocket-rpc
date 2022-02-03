@@ -21,30 +21,30 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.slf4j.impl;
+package com.github.jhorology.bitwig.logging.impl;
 
 public enum LogSeverity {
-    /**
-     * severity level of trace
-     */
-    TRACE,
-        
-    /**
-     * severity level of debug
-     */
-    DEBUG,
-        
-    /**
-     * severity level of info
-     */
-    INFO,
-    
-    /**
-     * severity level of warning
-     */
-    WARN,
-    /**
-     * severity level of error
-     */
-    ERROR;
+  /**
+   * severity level of trace
+   */
+  TRACE,
+
+  /**
+   * severity level of debug
+   */
+  DEBUG,
+
+  /**
+   * severity level of info
+   */
+  INFO,
+
+  /**
+   * severity level of warning
+   */
+  WARN,
+  /**
+   * severity level of error
+   */
+  ERROR,
 }

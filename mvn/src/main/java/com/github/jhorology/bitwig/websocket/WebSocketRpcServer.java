@@ -26,6 +26,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
@@ -43,7 +44,6 @@ import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.handshake.ServerHandshakeBuilder;
 import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of WebSocketServer.

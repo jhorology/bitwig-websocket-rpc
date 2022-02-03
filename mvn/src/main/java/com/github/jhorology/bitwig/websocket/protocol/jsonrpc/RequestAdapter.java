@@ -222,16 +222,14 @@ public class RequestAdapter implements JsonDeserializer<Request> {
       // params: [1, 2, [[3,4],5]] unsupported
       StreamSupport
         .stream(ja.spliterator(), false)
-        .forEach(
-          e -> {
-            if (e.isJsonArray()) {
-              throw new JsonRpcException(
-                ErrorEnum.INVALID_PARAMS,
-                "unsupported double nested array type of 'params' property."
-              );
-            }
+        .forEach(e -> {
+          if (e.isJsonArray()) {
+            throw new JsonRpcException(
+              ErrorEnum.INVALID_PARAMS,
+              "unsupported double nested array type of 'params' property."
+            );
           }
-        );
+        });
       final RpcParamType firstParamType = ja.get(0).isJsonPrimitive()
         ? primitiveParamTypeOf(ja.get(0).getAsJsonPrimitive())
         : RpcParamType.OBJECT;
@@ -241,11 +239,10 @@ public class RequestAdapter implements JsonDeserializer<Request> {
       boolean allMatch = StreamSupport
         .stream(ja.spliterator(), false)
         .skip(1)
-        .map(
-          e ->
-            e.isJsonPrimitive()
-              ? primitiveParamTypeOf(e.getAsJsonPrimitive())
-              : RpcParamType.OBJECT
+        .map(e ->
+          e.isJsonPrimitive()
+            ? primitiveParamTypeOf(e.getAsJsonPrimitive())
+            : RpcParamType.OBJECT
         )
         .allMatch(e -> e == firstParamType);
       if (allMatch) {

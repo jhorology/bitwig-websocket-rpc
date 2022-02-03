@@ -72,7 +72,7 @@ public class BeatTime {
    * @param beatTimeValue
    */
   public void update(double raw, BeatTimeValue beatTimeValue) {
-    if (raw == 0 || raw == Double.NaN) {
+    if (raw == 0 || Double.isNaN(raw)) {
       this.raw = 0;
       bars = 1;
       beats = 1;

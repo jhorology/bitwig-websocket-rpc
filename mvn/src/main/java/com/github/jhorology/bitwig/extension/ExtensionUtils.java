@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -54,7 +55,7 @@ public class ExtensionUtils {
     try (
       Reader reader = new InputStreamReader(
         instance.getClass().getClassLoader().getResourceAsStream(resourceName),
-        "UTF-8"
+        StandardCharsets.UTF_8
       )
     ) {
       populateJsonProperties(reader, instance);
@@ -73,7 +74,7 @@ public class ExtensionUtils {
     throws IOException {
     if (!Files.isReadable(file)) return;
     try (
-      Reader reader = Files.newBufferedReader(file, Charset.forName("UTF-8"))
+      Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)
     ) {
       populateJsonProperties(reader, instance);
     }
@@ -126,7 +127,7 @@ public class ExtensionUtils {
     try (
       Writer writer = Files.newBufferedWriter(
         file,
-        Charset.forName("UTF-8"),
+        StandardCharsets.UTF_8,
         StandardOpenOption.CREATE,
         StandardOpenOption.TRUNCATE_EXISTING
       )

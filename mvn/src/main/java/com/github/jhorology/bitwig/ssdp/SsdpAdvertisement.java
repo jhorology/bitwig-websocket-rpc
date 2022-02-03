@@ -26,6 +26,7 @@ package com.github.jhorology.bitwig.ssdp;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.google.common.eventbus.Subscribe;
 import com.nls.net.ssdp.SsdpCommonHeaders;
 import com.nls.net.ssdp.SsdpMessage;
@@ -47,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An extension module for SSDP service advertisement.
@@ -137,34 +137,32 @@ public class SsdpAdvertisement implements SsdpPacketListener {
       // notify ssdp:alive
       ssdpService
         .getChannels()
-        .forEach(
-          ch -> {
-            try {
-              NetworkInterface nic = ch.getNetworkInterface();
-              String location = createLocation(
-                nic,
-                e.getConfig().getWebSocketPort()
+        .forEach(ch -> {
+          try {
+            NetworkInterface nic = ch.getNetworkInterface();
+            String location = createLocation(
+              nic,
+              e.getConfig().getWebSocketPort()
+            );
+            if (location != null) {
+              SsdpMessage alive = createNotification(
+                e,
+                SsdpNotificationType.ALIVE,
+                location
               );
-              if (location != null) {
-                SsdpMessage alive = createNotification(
-                  e,
-                  SsdpNotificationType.ALIVE,
-                  location
+              ch.send(alive);
+              if (LOG.isTraceEnabled()) {
+                LOG.trace(
+                  "multicascast notification [\n{}] to [{}]",
+                  alive,
+                  nic
                 );
-                ch.send(alive);
-                if (LOG.isTraceEnabled()) {
-                  LOG.trace(
-                    "multicascast notification [\n{}] to [{}]",
-                    alive,
-                    nic
-                  );
-                }
               }
-            } catch (Exception ex) {
-              LOG.error("couldn't send message.", ex);
             }
+          } catch (Exception ex) {
+            LOG.error("couldn't send message.", ex);
           }
-        );
+        });
     } catch (IOException ex) {
       LOG.error("SSDP initialize error.", ex);
     }
@@ -180,22 +178,20 @@ public class SsdpAdvertisement implements SsdpPacketListener {
     try {
       ssdpService
         .getChannels()
-        .forEach(
-          ch -> {
-            try {
-              ch.send(byebyeMessage);
-              if (LOG.isTraceEnabled()) {
-                LOG.trace(
-                  "multicascast notification [\n{}] to [{}]",
-                  byebyeMessage,
-                  ch.getNetworkInterface()
-                );
-              }
-            } catch (IOException ex) {
-              LOG.error("couldn't send message.", ex);
+        .forEach(ch -> {
+          try {
+            ch.send(byebyeMessage);
+            if (LOG.isTraceEnabled()) {
+              LOG.trace(
+                "multicascast notification [\n{}] to [{}]",
+                byebyeMessage,
+                ch.getNetworkInterface()
+              );
             }
+          } catch (IOException ex) {
+            LOG.error("couldn't send message.", ex);
           }
-        );
+        });
     } finally {
       responses.clear();
       ssdpService.close();

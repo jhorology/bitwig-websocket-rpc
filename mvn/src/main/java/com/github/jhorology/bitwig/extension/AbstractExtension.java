@@ -24,6 +24,9 @@ package com.github.jhorology.bitwig.extension;
 
 import com.bitwig.extension.controller.ControllerExtension;
 import com.bitwig.extension.controller.api.ControllerHost;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
+import com.github.jhorology.bitwig.logging.impl.LogSeverity;
+import com.github.jhorology.bitwig.logging.impl.ScriptConsoleLogger;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.SubscriberExceptionContext;
 import com.google.common.eventbus.SubscriberExceptionHandler;
@@ -35,9 +38,6 @@ import java.util.Stack;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.LogSeverity;
-import org.slf4j.impl.ScriptConsoleLogger;
 
 /**
  * An abstract bass class that is used to trigger extension events.
@@ -252,15 +252,13 @@ public abstract class AbstractExtension<T extends AbstractConfiguration>
         .list(Paths.get(System.getProperty("user.home")))
         .filter(Files::isRegularFile)
         .filter(path -> path.getFileName().toString().startsWith(prefix))
-        .forEach(
-          path -> {
-            try {
-              Files.delete(path);
-            } catch (IOException ex) {
-              LOG.error("Error deleting RC file.", ex);
-            }
+        .forEach(path -> {
+          try {
+            Files.delete(path);
+          } catch (IOException ex) {
+            LOG.error("Error deleting RC file.", ex);
           }
-        );
+        });
     } catch (IOException ex) {
       LOG.error("Error deleting RC file.", ex);
     }

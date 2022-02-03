@@ -22,10 +22,10 @@
  */
 package com.github.jhorology.bitwig.extension;
 
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A context holder for executor task state.<br>

@@ -23,6 +23,7 @@
 package com.github.jhorology.bitwig.websocket.protocol.jsonrpc;
 
 import com.github.jhorology.bitwig.Config;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.RpcMethod;
 import com.github.jhorology.bitwig.websocket.protocol.AbstractProtocolHandler;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
@@ -37,7 +38,6 @@ import java.util.stream.Collectors;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JsonRpcProtocolHandler
   extends AbstractProtocolHandler

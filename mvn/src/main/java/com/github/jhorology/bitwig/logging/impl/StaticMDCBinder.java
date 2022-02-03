@@ -24,7 +24,7 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.slf4j.impl;
+package com.github.jhorology.bitwig.logging.impl;
 
 // dependencies
 import org.slf4j.helpers.NOPMDCAdapter;
@@ -34,33 +34,33 @@ import org.slf4j.spi.MDCAdapter;
  * This implementation is bound to {@link NOPMDCAdapter}.
  */
 public class StaticMDCBinder {
-    /**
-     * The unique instance of this class.
-     */
-    public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
 
-    private StaticMDCBinder() {
-    }
+  /**
+   * The unique instance of this class.
+   */
+  public static final StaticMDCBinder SINGLETON = new StaticMDCBinder();
 
-    /**
-     * Return the singleton of this class.
-     * 
-     * @return the StaticMDCBinder singleton
-     * @since 1.7.14
-     */
-    public static final StaticMDCBinder getSingleton() {
-        return SINGLETON;
-    }
+  private StaticMDCBinder() {}
 
-    /**
-     * Currently this method always returns an instance of 
-     * {@link StaticMDCBinder}.
-     */
-    public MDCAdapter getMDCA() {
-        return new NOPMDCAdapter();
-    }
+  /**
+   * Return the singleton of this class.
+   *
+   * @return the StaticMDCBinder singleton
+   * @since 1.7.14
+   */
+  public static final StaticMDCBinder getSingleton() {
+    return SINGLETON;
+  }
 
-    public String getMDCAdapterClassStr() {
-        return NOPMDCAdapter.class.getName();
-    }
+  /**
+   * Currently this method always returns an instance of
+   * {@link StaticMDCBinder}.
+   */
+  public MDCAdapter getMDCA() {
+    return new NOPMDCAdapter();
+  }
+
+  public String getMDCAdapterClassStr() {
+    return NOPMDCAdapter.class.getName();
+  }
 }

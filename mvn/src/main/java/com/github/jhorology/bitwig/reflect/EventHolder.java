@@ -26,6 +26,7 @@ import com.bitwig.extension.controller.api.ControllerHost;
 import com.bitwig.extension.controller.api.Value;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.ext.api.CollectionValue;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcException;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
@@ -41,7 +42,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.ArrayUtils;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A RPC event holder class.<br>
@@ -178,13 +178,11 @@ public class EventHolder extends MethodHolder implements RpcEvent {
       // 'cause message should be sent at after Request/Reponse sequence.
       if (collectionValue) {
         ((CollectionValue<?>) value).values()
-          .forEach(
-            v -> {
-              RequestContext
-                .getContext()
-                .addNotification(newNotification(new Object[] { v }));
-            }
-          );
+          .forEach(v -> {
+            RequestContext
+              .getContext()
+              .addNotification(newNotification(new Object[] { v }));
+          });
       } else if (lastReportedParams != null) {
         RequestContext
           .getContext()

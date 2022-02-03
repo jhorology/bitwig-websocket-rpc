@@ -17,6 +17,7 @@ nb-configuration.xml
 rpc-implementation-spec.json
 try-and-error.coffee
 .idea/
+*.iml
 node_modules/
 .next/
 .eslintcache

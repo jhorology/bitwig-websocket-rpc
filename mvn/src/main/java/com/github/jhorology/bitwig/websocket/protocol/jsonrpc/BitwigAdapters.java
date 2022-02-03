@@ -159,12 +159,8 @@ public class BitwigAdapters {
    * @return adapted GsonBuilder.
    */
   public static GsonBuilder adapt(GsonBuilder gsonBuilder) {
-    ADAPTED_TYPES.forEach(
-      c ->
-        gsonBuilder.registerTypeHierarchyAdapter(
-          c.getLeft(),
-          c.getRight().get()
-        )
+    ADAPTED_TYPES.forEach(c ->
+      gsonBuilder.registerTypeHierarchyAdapter(c.getLeft(), c.getRight().get())
     );
     return gsonBuilder;
   }

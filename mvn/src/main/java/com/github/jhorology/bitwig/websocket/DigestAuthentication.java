@@ -23,6 +23,7 @@
  */
 package com.github.jhorology.bitwig.websocket;
 
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -41,7 +42,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A class for digest challenge and response authentication.
@@ -243,11 +243,9 @@ public class DigestAuthentication {
       .filter(c -> !c.isValid())
       .map(c -> c.getNonce())
       .collect(Collectors.toList())
-      .forEach(
-        n -> {
-          store.remove(n);
-        }
-      );
+      .forEach(n -> {
+        store.remove(n);
+      });
     if (LOG.isWarnEnabled() && store.size() >= MAX_STORE_SIZE) {
       LOG.warn(
         "Challenge store reached full capacity, maybe malicious attack!!!"

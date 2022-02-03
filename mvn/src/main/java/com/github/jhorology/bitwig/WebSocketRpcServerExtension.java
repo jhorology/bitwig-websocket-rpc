@@ -38,10 +38,10 @@ import java.util.List;
 public class WebSocketRpcServerExtension extends AbstractExtension<Config> {
 
   /**
-     * Constructor
-     * @param definition
-     * @param host
-s     */
+   *  Constructor
+   * @param definition
+   * @param host
+   */
   protected WebSocketRpcServerExtension(
     WebSocketRpcServerExtensionDefinition definition,
     ControllerHost host

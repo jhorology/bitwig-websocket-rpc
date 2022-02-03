@@ -1,8 +1,8 @@
-import React, {forwardRef} from 'react'
+import React, { forwardRef } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import { capitalize } from './utils'
 
-export const styles = (theme) => ({
+export const styles = theme => ({
   /* Styles applied to the root element. */
   root: {
     width: 2,
@@ -72,16 +72,10 @@ export const styles = (theme) => ({
       theme.palette.type === 'light' ? theme.palette.common.black : theme.palette.common.white,
     opacity: theme.palette.type === 'light' ? 0.38 : 0.3
   }
-});
+})
 
 const VuMeter = forwardRef(function VuMeter(props, ref) {
-  const {
-    classes,
-    className,
-    size = 'medium',
-    orientation = 'vertical',
-    ...other
-  } = props;
+  const { classes, className, size = 'medium', orientation = 'vertical', ...other } = props
   return (
     <span
       className={clsx(
@@ -94,9 +88,7 @@ const VuMeter = forwardRef(function VuMeter(props, ref) {
     >
       <span className={classes.track} />
     </span>
-  );
+  )
 })
 
 export default withStyles(styles, { name: 'VuMeter' })(VuMeter)
-
-

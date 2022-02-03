@@ -59,6 +59,7 @@ import com.bitwig.extension.controller.api.Transport;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.ExitEvent;
 import com.github.jhorology.bitwig.extension.InitEvent;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.Rpc;
 import com.github.jhorology.bitwig.rpc.RpcEvent;
 import com.github.jhorology.bitwig.rpc.RpcImpl;
@@ -78,7 +79,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *

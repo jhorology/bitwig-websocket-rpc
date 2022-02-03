@@ -1,5 +1,6 @@
 package com.github.jhorology.bitwig.rpc.test;
 
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 // jdk
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -7,7 +8,6 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 // dependencies
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class TestImpl implements Test {
 

@@ -32,6 +32,7 @@ import com.bitwig.extension.controller.api.SceneBank;
 import com.bitwig.extension.controller.api.Value;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.ext.ExtApiFactory;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.RpcParamType;
 import com.github.jhorology.bitwig.websocket.protocol.ProtocolHandler;
 import java.lang.reflect.Method;
@@ -39,7 +40,6 @@ import java.lang.reflect.Type;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An interface that defines registry node.
@@ -198,18 +198,16 @@ abstract class RegistryNode {
       .filter(m -> !ReflectUtils.hasAnyBitwigObjectParameter(m))
       .filter(m -> !ReflectUtils.hasAnyCallbackParameter(m))
       .filter(m -> !ReflectUtils.isModuleFactory(m))
-      .filter(
-        m -> {
-          if (LOG.isDebugEnabled() && m.isBridge()) {
-            LOG.debug(
-              "node[{}] member method[{}] is bridge method",
-              absoluteName,
-              ReflectUtils.javaExpression(m)
-            );
-          }
-          return !m.isBridge();
+      .filter(m -> {
+        if (LOG.isDebugEnabled() && m.isBridge()) {
+          LOG.debug(
+            "node[{}] member method[{}] is bridge method",
+            absoluteName,
+            ReflectUtils.javaExpression(m)
+          );
         }
-      );
+        return !m.isBridge();
+      });
 
     // markInterested is probably same as Subscribable#subscibe()
     if (Value.class.isAssignableFrom(nodeType)) {
@@ -220,10 +218,9 @@ abstract class RegistryNode {
     // TODO other Host methods ?
     if (ControllerHost.class.isAssignableFrom(nodeType)) {
       methodStream =
-        methodStream.filter(
-          m ->
-            "getNotificationSettings".equals(m.getName()) ||
-            "showPopupNotification".equals(m.getName())
+        methodStream.filter(m ->
+          "getNotificationSettings".equals(m.getName()) ||
+          "showPopupNotification".equals(m.getName())
         );
     }
 
@@ -249,8 +246,8 @@ abstract class RegistryNode {
 
     //#if bitwig.extension.api.version >= 10
     methodStream =
-      methodStream.filter(
-        m -> !ReflectUtils.isPureHardwareBindable(m.getReturnType(), protocol)
+      methodStream.filter(m ->
+        !ReflectUtils.isPureHardwareBindable(m.getReturnType(), protocol)
       );
     //#endif
 

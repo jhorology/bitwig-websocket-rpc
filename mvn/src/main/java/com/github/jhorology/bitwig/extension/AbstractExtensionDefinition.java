@@ -64,7 +64,9 @@ import java.util.function.BiConsumer;
  * }</pre>
  * @param <T>
  */
-public abstract class AbstractExtensionDefinition<T extends AbstractConfiguration>
+public abstract class AbstractExtensionDefinition<
+  T extends AbstractConfiguration
+>
   extends ControllerExtensionDefinition {
 
   private static final String EXTENSION_JSON = "bitwig-extension.json";

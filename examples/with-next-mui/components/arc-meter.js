@@ -124,7 +124,8 @@ export default function ArcMeter({
         ...style
       }}
       viewBox={(viewBox || INITIAL_VIEWBOX).join(',')}
-      {...other}>
+      {...other}
+    >
       {!viewBox && (
         <g ref={boundsGroup} visibilty="hidden">
           <path d={innerArc.path} fill="none" />

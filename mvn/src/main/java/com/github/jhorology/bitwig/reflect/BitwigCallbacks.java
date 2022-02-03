@@ -52,6 +52,7 @@ import com.bitwig.extension.controller.api.BeatTimeValue;
 import com.bitwig.extension.controller.api.RemoteConnection;
 import com.bitwig.extension.controller.api.Value;
 import com.github.jhorology.bitwig.ext.BeatTime;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +61,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A utility class for creating all known callbacks of Bitwig API.
@@ -181,24 +181,23 @@ public class BitwigCallbacks {
    * @return new callback instance
    */
   @SuppressWarnings({ "unchecked" })
-  public static <T extends ValueChangedCallback> T newGeneralValueChangedCallback(
+  public static <
+    T extends ValueChangedCallback
+  > T newGeneralValueChangedCallback(
     Value<T> value,
     Consumer<Object[]> observer
   ) {
     Function<Consumer<Object[]>, ? extends ValueChangedCallback> factory = GENERAL_CALLBACKS
       .stream()
-      .filter(
-        p -> {
-          try {
-            return (
-              value.getClass().getMethod("addValueObserver", p.getLeft()) !=
-              null
-            );
-          } catch (NoSuchMethodException | SecurityException ex) {
-            return false;
-          }
+      .filter(p -> {
+        try {
+          return (
+            value.getClass().getMethod("addValueObserver", p.getLeft()) != null
+          );
+        } catch (NoSuchMethodException | SecurityException ex) {
+          return false;
         }
-      )
+      })
       .map(p -> p.getRight())
       .findFirst()
       .orElse(null);

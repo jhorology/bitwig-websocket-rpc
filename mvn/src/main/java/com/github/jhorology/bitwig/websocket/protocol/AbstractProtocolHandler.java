@@ -22,6 +22,7 @@
  */
 package com.github.jhorology.bitwig.websocket.protocol;
 
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.rpc.RpcRegistry;
 import com.github.jhorology.bitwig.websocket.BinaryMessageEvent;
 import com.github.jhorology.bitwig.websocket.CloseEvent;
@@ -37,7 +38,6 @@ import java.util.List;
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.WebSocketServer;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An abstract base class of ProtocolHandler.<br>

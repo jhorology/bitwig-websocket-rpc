@@ -21,53 +21,65 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-package org.slf4j.impl;
+package com.github.jhorology.bitwig.logging.impl;
 
+// dependencies
+import com.google.gson.annotations.Expose;
 // jdk
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
-// dependencies
-import com.google.gson.annotations.Expose;
-
 public class ScriptConsoleLoggerConfiguration {
-    @Expose
-    boolean showDateTime = true;
-    @Expose
-    boolean showThreadName = false;
-    @Expose
-    boolean showThreadNameOnlyOtherThanControlSurfaceSession = true;
-    @Expose
-    boolean levelInBrackets = true;
-    @Expose
-    boolean showLogName = false;
-    @Expose
-    boolean showShortLogName = true;
-    @Expose
-    String dateTimeFormat = null;
-    @Expose
-    LogSeverity defaultLogLevel = LogSeverity.WARN;
-    @Expose
-    Map<String, LogSeverity> logLevels = null;
-    @Expose
-    int columnSize = 94;
-    @Expose
-    String indentPrefix = " > ";
-    @Expose
-    boolean outputSystemConsole = false;
 
-    DateFormat dateFormatter = null;
-    
-    /**
-     * Initialize.
-     */
-    void init() {
-        if (dateTimeFormat != null) {
-            try {
-                dateFormatter = new SimpleDateFormat(dateTimeFormat);
-            } catch (IllegalArgumentException e) {
-            }
-        }
+  @Expose
+  boolean showDateTime = true;
+
+  @Expose
+  boolean showThreadName = false;
+
+  @Expose
+  boolean showThreadNameOnlyOtherThanControlSurfaceSession = true;
+
+  @Expose
+  boolean levelInBrackets = true;
+
+  @Expose
+  boolean showLogName = false;
+
+  @Expose
+  boolean showShortLogName = true;
+
+  @Expose
+  String dateTimeFormat = null;
+
+  @Expose
+  LogSeverity defaultLogLevel =
+    com.github.jhorology.bitwig.logging.impl.LogSeverity.WARN;
+
+  @Expose
+  Map<String, com.github.jhorology.bitwig.logging.impl.LogSeverity> logLevels =
+    null;
+
+  @Expose
+  int columnSize = 94;
+
+  @Expose
+  String indentPrefix = " > ";
+
+  @Expose
+  boolean outputSystemConsole = false;
+
+  DateFormat dateFormatter = null;
+
+  /**
+   * Initialize.
+   */
+  void init() {
+    if (dateTimeFormat != null) {
+      try {
+        dateFormatter = new SimpleDateFormat(dateTimeFormat);
+      } catch (IllegalArgumentException e) {}
     }
+  }
 }

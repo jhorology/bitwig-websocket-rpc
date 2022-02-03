@@ -26,6 +26,7 @@ import com.bitwig.extension.controller.api.StringValue;
 import com.github.jhorology.bitwig.Config;
 import com.github.jhorology.bitwig.extension.AbstractExtension;
 import com.github.jhorology.bitwig.extension.ExecutionContext;
+import com.github.jhorology.bitwig.logging.LoggerFactory;
 import com.github.jhorology.bitwig.websocket.protocol.Notification;
 import com.github.jhorology.bitwig.websocket.protocol.PushModel;
 import com.github.jhorology.bitwig.websocket.protocol.RequestContext;
@@ -36,7 +37,6 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.java_websocket.WebSocket;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An implementation of the core RPC methods.

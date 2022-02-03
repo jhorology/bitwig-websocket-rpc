@@ -13,7 +13,6 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <!-- Bitwig extension definition -->
-    <extension.name>WebSocket RPC API 8</extension.name>
     <extension.author>Masafumi</extension.author>
     <extension.errorReportingEMail>jhorology2014@gmail.com</extension.errorReportingEMail>
     <extension.version>${project.version}</extension.version>
@@ -23,39 +22,26 @@
     <!-- default configuration values -->
     <extension.config.webSocketPort>8887</extension.config.webSocketPort>
 
-    <!-- build env -->
-    <build.target.java.version>1.8</build.target.java.version>
-
     <!-- =====================================
          default development profile for IDE
-         same as -Pdevelopment,extension-api-12
+         same as -Pdevelopment,extension-api-15
          ===================================== -->
 
-    <!-- Bitwig extension definition -->
-    <extension.usingBetaAPI>true</extension.usingBetaAPI>
-    <extension.shouldFailOnDeprecatedUse>true</extension.shouldFailOnDeprecatedUse>
-    <!-- default configuration values -->
-    <extension.config.logLevel>TRACE</extension.config.logLevel>
-    <extension.config.logOutputSystemConsole>true</extension.config.logOutputSystemConsole>
-
-    <!-- build env -->
-    <build.production>false</build.production>
-
-    <!-- default api-10 profile -->
-
     <!-- dependenceies versions -->
-    <commons.lang3.version>3.5</commons.lang3.version>
-    <bitwig.extension.api.version>14</bitwig.extension.api.version>
+    <commons.lang3.version>3.8.1</commons.lang3.version>
+    <commons.codec.version>1.15</commons.codec.version>
+    <gson.scope>provided</gson.scope>
+    <slf4j.scope>provided</slf4j.scope>
+    <bitwig.extension.api.version>15</bitwig.extension.api.version>
 
     <!-- extension definition -->
-    <extension.name>WebSocket RPC API 14</extension.name>
+    <extension.name>WebSocket RPC API 15</extension.name>
     <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
-    <extension.requiredAPIVersion>14</extension.requiredAPIVersion>
+    <extension.requiredAPIVersion>15</extension.requiredAPIVersion>
 
     <!-- build env -->
-    <build.development>true</build.development>
-    <build.production>false</build.production>
-    <build.extension.file.name>WebSocketRpcServer-API12.bwextension</build.extension.file.name>
+    <build.target.java.version>17</build.target.java.version>
+    <build.extension.file.name>WebSocketRpcServer-API15.bwextension</build.extension.file.name>
   </properties>
 
   <profiles>
@@ -97,7 +83,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.1</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>8</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -116,7 +104,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.1</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>9</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -135,7 +125,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>10</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -154,7 +146,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>11</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -173,7 +167,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>12</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -192,7 +188,9 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>compile</gson.scope>
+        <slf4j.scope>compile</slf4j.scope>
         <bitwig.extension.api.version>13</bitwig.extension.api.version>
 
         <!-- extension definition -->
@@ -211,17 +209,40 @@
       <properties>
         <!-- dependenceies versions -->
         <commons.lang3.version>3.5</commons.lang3.version>
+        <commons.codec.version>1.8</commons.codec.version>
         <gson.scope>provided</gson.scope>
+        <slf4j.scope>provided</slf4j.scope>
         <bitwig.extension.api.version>14</bitwig.extension.api.version>
 
         <!-- extension definition -->
         <extension.name>WebSocket RPC API 14</extension.name>
-        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.uuid>5a2e007e-db5b-429f-a1ab-c1889782840f</extension.uuid>
         <extension.requiredAPIVersion>14</extension.requiredAPIVersion>
 
         <!-- build env -->
         <build.target.java.version>11</build.target.java.version>
         <build.extension.file.name>WebSocketRpcServer-API14.bwextension</build.extension.file.name>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>extension-api-15</id>
+      <properties>
+        <!-- dependenceies versions -->
+        <commons.lang3.version>3.8.1</commons.lang3.version>
+        <commons.codec.version>1.15</commons.codec.version>
+        <gson.scope>provided</gson.scope>
+        <slf4j.scope>provided</slf4j.scope>
+        <bitwig.extension.api.version>15</bitwig.extension.api.version>
+
+        <!-- extension definition -->
+        <extension.name>WebSocket RPC API 15</extension.name>
+        <extension.uuid>11797f46-6987-4795-ba94-0a6a0c4e8ac5</extension.uuid>
+        <extension.requiredAPIVersion>15</extension.requiredAPIVersion>
+
+        <!-- build env -->
+        <build.target.java.version>17</build.target.java.version>
+        <build.extension.file.name>WebSocketRpcServer-API15.bwextension</build.extension.file.name>
       </properties>
     </profile>
 
@@ -285,7 +306,7 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.8</version>
+      <version>${commons.codec.version}</version>
       <scope>provided</scope> <!-- provided by libs.jar -->
     </dependency>
     <!--
@@ -305,12 +326,13 @@
     <dependency>
       <groupId>org.java-websocket</groupId>
       <artifactId>Java-WebSocket</artifactId>
-      <version>1.5.1</version>
+      <version>1.5.2</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>1.7.30</version>
+      <scope>${slf4j.scope}</scope>
     </dependency>
 	  <dependency>
 	    <groupId>com.github.jhorology</groupId>
@@ -332,7 +354,7 @@
       <plugin>
         <groupId>com.igormaznitsa</groupId>
         <artifactId>jcp</artifactId>
-        <version>7.0.2</version>
+        <version>7.0.5</version>
         <executions>
           <!-- make preprocessing of sources -->
           <execution>
@@ -370,7 +392,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
+        <version>3.9.0</version>
         <configuration>
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
@@ -421,7 +443,7 @@
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
-        <version>2.11.1</version>
+        <version>2.20.0</version>
         <configuration>
           <java>
             <toggleOffOn>
@@ -437,15 +459,14 @@
               <devDependencyProperties>
                 <property>
                   <name>prettier</name>
-                  <value>2.0.5</value>
+                  <value>2.5.1</value>
                 </property>
                 <property>
                   <name>prettier-plugin-java</name>
-                  <value>1.1.1</value>
+                  <value>1.6.1</value>
                 </property>
               </devDependencyProperties>
             </prettier>
-
 
             <!--
                 <googleJavaFormat>
